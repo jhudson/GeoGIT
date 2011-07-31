@@ -10,15 +10,10 @@ package org.geogit.api;
  * @author groldan
  * 
  */
-public class RevBlob extends RevObject {
+public class RevBlob extends AbstractRevObject {
 
     public RevBlob(ObjectId id) {
-        super(id);
-    }
-
-    @Override
-    public TYPE getType() {
-        return TYPE.BLOB;
+        super(id, TYPE.BLOB);
     }
 
 }

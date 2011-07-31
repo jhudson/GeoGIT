@@ -10,19 +10,14 @@ package org.geogit.api;
  * @author groldan
  * 
  */
-public class RevTag extends RevObject {
+public class RevTag extends AbstractRevObject {
 
     private String name;
 
     private ObjectId commit;
 
     public RevTag(ObjectId id) {
-        super(id);
-    }
-
-    @Override
-    public TYPE getType() {
-        return TYPE.TAG;
+        super(id, TYPE.TAG);
     }
 
 }

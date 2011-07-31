@@ -13,7 +13,7 @@ package org.geogit.api;
  * @see RevBlob
  * @see RevTag
  */
-public abstract class RevObject {
+public interface RevObject {
 
     public static enum TYPE {
         COMMIT {
@@ -48,22 +48,14 @@ public abstract class RevObject {
         }
     }
 
-    private ObjectId id;
-
-    public RevObject(final ObjectId id) {
-        this.id = id;
-    }
-
-    public abstract TYPE getType();
+    public TYPE getType();
 
     /**
      * Get the name of this object.
      * 
      * @return unique hash of this object.
      */
-    public final ObjectId getId() {
-        return id;
-    }
+    public ObjectId getId();
 
     /**
      * Equality is based on id
@@ -71,10 +63,5 @@ public abstract class RevObject {
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof RevObject)) {
-            return false;
-        }
-        return id.equals(((RevObject) o).getId());
-    }
+    public boolean equals(Object o);
 }

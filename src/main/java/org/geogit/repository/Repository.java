@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
@@ -144,7 +145,7 @@ public class Repository {
         }
         RevTree tree;
         try {
-            tree = getObjectDatabase().get(treeId, new RevTreeReader(getObjectDatabase()));
+            tree = getObjectDatabase().getCached(treeId, new RevTreeReader(getObjectDatabase()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -223,8 +224,8 @@ public class Repository {
     /**
      * Creates and return a new, empty tree
      */
-    public RevTree newTree() {
-        return new RevSHA1Tree(getObjectDatabase());
+    public MutableTree newTree() {
+        return new RevSHA1Tree(getObjectDatabase()).mutable();
     }
 
     public ObjectId getTreeChildId(String... path) {

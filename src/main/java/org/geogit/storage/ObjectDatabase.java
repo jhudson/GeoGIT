@@ -55,7 +55,6 @@ public interface ObjectDatabase {
      * @return the cached version of the required object.
      * @throws IOException
      */
-    @SuppressWarnings("unchecked")
     public abstract <T> T getCached(final ObjectId id, final ObjectReader<T> reader)
             throws IOException;
 

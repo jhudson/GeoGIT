@@ -9,22 +9,9 @@ import java.util.Iterator;
 
 import com.google.common.base.Predicate;
 
-public abstract class RevTree extends RevObject {
-
-    public RevTree(ObjectId id) {
-        super(id);
-    }
-
-    @Override
-    public final TYPE getType() {
-        return TYPE.TREE;
-    }
-
-    public abstract void put(final Ref ref);
+public interface RevTree extends RevObject {
 
     public abstract Ref get(final String key);
-
-    public abstract Ref remove(final String key);
 
     public abstract void accept(TreeVisitor visitor);
 
@@ -32,7 +19,7 @@ public abstract class RevTree extends RevObject {
 
     public abstract Iterator<Ref> iterator(Predicate<Ref> filter);
 
-    public abstract void normalize();
-
     public abstract boolean isNormalized();
+
+    public abstract MutableTree mutable();
 }

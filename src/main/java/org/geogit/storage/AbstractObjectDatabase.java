@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.util.Map;
 
 import org.apache.commons.collections.map.LRUMap;
+import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.springframework.util.Assert;
 
@@ -71,6 +72,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
         if (object == null) {
             object = get(id, reader);
             if (object != null) {
+                Assert.isTrue(!(object instanceof MutableTree));
                 cache.put(id, object);
             }
         }

@@ -227,6 +227,10 @@ public abstract class RepositoryTestCase extends TestCase {
         String localPart = name.getLocalPart();
         String id = f.getIdentifier().getID();
         boolean existed = index.deleted(namespaceURI, localPart, id);
+        if (existed) {
+            new GeoGIT(getRepository()).add().call();
+        }
+
         return existed;
     }
 

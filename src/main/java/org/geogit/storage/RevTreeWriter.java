@@ -9,7 +9,9 @@ import static org.geogit.storage.BLOBS.TREE;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 
+import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevTree;
@@ -31,17 +33,24 @@ public class RevTreeWriter implements ObjectWriter<RevTree> {
      * @see org.geogit.storage.ObjectWriter#write(java.io.OutputStream)
      */
     public void write(final OutputStream out) throws IOException {
-        tree.normalize();
-
+        RevTree revTree = this.tree;
+        if (!revTree.isNormalized()) {
+            revTree = revTree.mutable();
+            ((MutableTree) revTree).normalize();
+        }
         final BxmlOutputFactory outputFactory = BLOBS.cachedOutputFactory;
         final BxmlStreamWriter writer = outputFactory.createSerializer(out);
 
         try {
             writer.writeStartDocument();
             writer.writeStartElement(TREE);
+            BigInteger size = revTree.size();
+            writer.writeStartAttribute("", "size");
+            writer.writeValue(size.longValue());
+            writer.writeEndAttributes();
             {
                 TreeVisitor visitor = new WriteTreeVisitor(writer);
-                tree.accept(visitor);
+                revTree.accept(visitor);
             }
             writer.writeEndElement();
             writer.writeEndDocument();

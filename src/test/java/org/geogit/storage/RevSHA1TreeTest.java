@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.PrintTreeVisitor;
 import org.geogit.api.Ref;
@@ -104,8 +105,9 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
             }
         });
 
+        tree = tree.mutable();
         for (String key : removedKeys) {
-            tree.remove(key);
+            ((MutableTree) tree).remove(key);
         }
 
         for (String key : removedKeys) {
@@ -130,8 +132,9 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
 
         // add a couple more
         final int added = 25000;
+        tree = tree.mutable();
         for (int i = numEntries; i < numEntries + added; i++) {
-            put(tree, i);
+            put((MutableTree) tree, i);
         }
 
         size = tree.size().intValue();
@@ -146,9 +149,10 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
 
         // remove some keys
         final int removed = RevSHA1Tree.SPLIT_FACTOR;
+        tree = tree.mutable();
         for (int i = 1; i <= removed; i++) {
             String key = "Feature." + (size - i);
-            tree.remove(key);
+            ((MutableTree) tree).remove(key);
         }
 
         size = tree.size().intValue();
@@ -160,10 +164,11 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
         assertEquals(numEntries + added - removed, tree.size().intValue());
 
         // replacing an existing key should not change size
+        tree = tree.mutable();
         for (int i = 0; i < size / 2; i += 2) {
             String key = "Feature." + i;
             ObjectId otherId = ObjectId.forString(key + "changed");
-            tree.put(new Ref(key, otherId, TYPE.BLOB));
+            ((MutableTree) tree).put(new Ref(key, otherId, TYPE.BLOB));
         }
         final int expected = size;
         size = tree.size().intValue();
@@ -214,13 +219,13 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
             throws Exception {
         final ObjectId treeId;
 
-        RevSHA1Tree tree = createTree(numEntries, insertInAscendingKeyOrder);
+        RevTree tree = createTree(numEntries, insertInAscendingKeyOrder);
         treeId = odb.put(new RevTreeWriter(tree));
         return treeId;
     }
 
-    private RevSHA1Tree createTree(final int numEntries, final boolean insertInAscendingKeyOrder) {
-        RevSHA1Tree tree = new RevSHA1Tree(odb);
+    private RevTree createTree(final int numEntries, final boolean insertInAscendingKeyOrder) {
+        MutableTree tree = new RevSHA1Tree(odb).mutable();
 
         final int increment = insertInAscendingKeyOrder ? 1 : -1;
         final int from = insertInAscendingKeyOrder ? 0 : numEntries - 1;
@@ -239,7 +244,7 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
         return tree;
     }
 
-    private void put(RevTree tree, int i) {
+    private void put(MutableTree tree, int i) {
         String key;
         ObjectId oid;
         key = "Feature." + i;

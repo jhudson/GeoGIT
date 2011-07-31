@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevObject.TYPE;
@@ -124,7 +125,8 @@ public class RefDatabase {
         if (oldTarget != null && oldTarget.equals(ref)) {
             return false;
         }
-        refsTree.put(ref);
+        refsTree = refsTree.mutable();
+        ((MutableTree) refsTree).put(ref);
         try {
             db.put(REFS_TREE_ID, new RevTreeWriter(refsTree));
         } catch (Exception e) {

@@ -13,7 +13,7 @@ import java.util.List;
  * @author groldan
  * 
  */
-public class RevCommit extends RevObject {
+public class RevCommit extends AbstractRevObject {
 
     private ObjectId treeId;
 
@@ -28,12 +28,7 @@ public class RevCommit extends RevObject {
     private long timestamp;
 
     public RevCommit(final ObjectId id) {
-        super(id);
-    }
-
-    @Override
-    public TYPE getType() {
-        return TYPE.COMMIT;
+        super(id, TYPE.COMMIT);
     }
 
     /**

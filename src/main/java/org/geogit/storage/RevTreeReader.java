@@ -10,9 +10,12 @@ import static org.geogit.storage.BLOBS.TREE;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
+import java.util.TreeMap;
 
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
+import org.geogit.api.RevObject.TYPE;
 import org.geogit.api.RevTree;
 import org.gvsig.bxml.stream.BxmlInputFactory;
 import org.gvsig.bxml.stream.BxmlStreamReader;
@@ -49,22 +52,29 @@ public class RevTreeReader implements ObjectReader<RevTree> {
         } catch (IllegalStateException e) {
             throw new IllegalArgumentException(e.getMessage());
         }
+
+        BigInteger size = BigInteger.valueOf(Long.valueOf(r.getAttributeValue(null, "size")));
+
+        TreeMap<String, Ref> references = new TreeMap<String, Ref>();
+        TreeMap<Integer, Ref> subtrees = new TreeMap<Integer, Ref>();
+
         EventType event;
-        RevSHA1Tree tree = new RevSHA1Tree(id, objectDb, order);
         while ((event = r.next()) != EventType.END_DOCUMENT) {
             if (EventType.START_ELEMENT.equals(event)) {
                 if (REF.equals(r.getElementName())) {
                     Ref entryRef = parseEntry(r);
-                    tree.put(entryRef);
+                    references.put(entryRef.getName(), entryRef);
                 } else if (TREE.equals(r.getElementName())) {
-                    parseAndSetSubTree(r, tree);
+                    parseAndSetSubTree(r, subtrees);
                 }
             }
         }
+        RevSHA1Tree tree = new RevSHA1Tree(id, objectDb, order, references, subtrees, size);
         return tree;
     }
 
-    private void parseAndSetSubTree(BxmlStreamReader r, RevSHA1Tree tree) throws IOException {
+    private void parseAndSetSubTree(BxmlStreamReader r, TreeMap<Integer, Ref> subtrees)
+            throws IOException {
         int bucket;
         ObjectId subtreeId;
 
@@ -82,7 +92,7 @@ public class RevTreeReader implements ObjectReader<RevTree> {
         r.nextTag();
         r.require(EventType.END_ELEMENT, TREE.getNamespaceURI(), TREE.getLocalPart());
 
-        tree.put(Integer.valueOf(bucket), subtreeId);
+        subtrees.put(Integer.valueOf(bucket), new Ref("", subtreeId, TYPE.TREE));
     }
 
     private Ref parseEntry(BxmlStreamReader r) throws IOException {

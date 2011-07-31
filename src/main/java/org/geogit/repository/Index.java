@@ -15,6 +15,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevObject.TYPE;
@@ -285,15 +286,16 @@ public class Index {
             return new Tuple<ObjectId, BoundingBox>(null, null);
         }
 
-        final RevTree root;
+        final MutableTree root;
         {
             RevTree currRoot = repository.getRootTree();
-            root = currRoot == null ? repository.newTree() : currRoot;
+            root = currRoot == null ? repository.newTree() : currRoot.mutable();
         }
 
         BoundingBox bounds = null;
 
-        Map<List<String>, RevTree> updates = new TreeMap<List<String>, RevTree>(PATH_COMPARATOR);
+        Map<List<String>, MutableTree> updates = new TreeMap<List<String>, MutableTree>(
+                PATH_COMPARATOR);
         final Set<List<String>> typeNames = new TreeSet<List<String>>(PATH_COMPARATOR);
         typeNames.addAll(staged.keySet());
         for (List<String> typeName : typeNames) {
@@ -301,7 +303,7 @@ public class Index {
             final String nsUri = typeName.get(0);
             final String localTypeName = typeName.get(1);
 
-            RevTree typeNameTree = updates.get(typeName);
+            MutableTree typeNameTree = updates.get(typeName);
             if (typeNameTree == null) {
                 typeNameTree = findOrCreateTypeNameTree(root, objectInserter, nsUri, localTypeName);
                 updates.put(typeName, typeNameTree);
@@ -326,9 +328,9 @@ public class Index {
             }
         }
 
-        Map<String, RevTree> nsTrees = new HashMap<String, RevTree>();
+        Map<String, MutableTree> nsTrees = new HashMap<String, MutableTree>();
 
-        for (Map.Entry<List<String>, RevTree> typeTreeEntry : updates.entrySet()) {
+        for (Map.Entry<List<String>, MutableTree> typeTreeEntry : updates.entrySet()) {
 
             final List<String> typePath = typeTreeEntry.getKey();
             final String nsUri = typePath.get(0);
@@ -337,13 +339,13 @@ public class Index {
             final RevTree typeNameTree = typeTreeEntry.getValue();
 
             final ObjectId newTypeTreeId = objectInserter.insert(new RevTreeWriter(typeNameTree));
-            RevTree nsTree = nsTrees.get(nsUri);
+            MutableTree nsTree = nsTrees.get(nsUri);
             if (nsTree == null) {
                 ObjectId nsTreeId = repository.getTreeChildId(root, nsUri);
                 if (nsTreeId == null) {
                     nsTree = repository.newTree();
                 } else {
-                    nsTree = repository.getTree(nsTreeId);
+                    nsTree = repository.getTree(nsTreeId).mutable();
                 }
                 nsTrees.put(nsUri, nsTree);
             }
@@ -351,7 +353,7 @@ public class Index {
             nsTree.put(new Ref(typeName, newTypeTreeId, TYPE.TREE));
         }
 
-        for (Map.Entry<String, RevTree> nste : nsTrees.entrySet()) {
+        for (Map.Entry<String, MutableTree> nste : nsTrees.entrySet()) {
             String nsUri = nste.getKey();
             RevTree nsTree = nste.getValue();
             ObjectId nsTreeId = objectInserter.insert(new RevTreeWriter(nsTree));
@@ -363,7 +365,7 @@ public class Index {
         return new Tuple<ObjectId, BoundingBox>(newRootId, bounds);
     }
 
-    private RevTree findOrCreateTypeNameTree(RevTree root, ObjectInserter objectInserter,
+    private MutableTree findOrCreateTypeNameTree(RevTree root, ObjectInserter objectInserter,
             String nsUri, String typeName) throws Exception {
 
         ObjectId typeNameTreeId = repository.getTreeChildId(root, nsUri, typeName);
@@ -373,7 +375,7 @@ public class Index {
         } else {
             typeNameTree = repository.getTree(typeNameTreeId);
         }
-        return typeNameTree;
+        return typeNameTree.mutable();
     }
 
 }
