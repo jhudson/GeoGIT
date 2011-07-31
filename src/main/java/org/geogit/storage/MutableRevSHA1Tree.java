@@ -17,8 +17,8 @@ import java.util.TreeMap;
 import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
-import org.springframework.util.Assert;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 class MutableRevSHA1Tree extends RevSHA1Tree implements MutableTree {
@@ -84,7 +84,7 @@ class MutableRevSHA1Tree extends RevSHA1Tree implements MutableTree {
      */
     @Override
     public void put(final Ref ref) {
-        Assert.notNull(ref, "ref can't be null");
+        Preconditions.checkNotNull(ref, "ref can't be null");
 
         Ref oldCachedValue = myEntries.put(ref.getName(), ref);
         if (myEntries.size() >= SPLIT_FACTOR) {
@@ -109,7 +109,7 @@ class MutableRevSHA1Tree extends RevSHA1Tree implements MutableTree {
 
     @Override
     public Ref remove(final String key) {
-        Assert.notNull(key, "key can't be null");
+        Preconditions.checkNotNull(key, "key can't be null");
         final Integer bucket = computeBucket(key);
         if (null == mySubTrees.get(bucket)) {
             // we don't even have a subtree for this key's bucket, it's sure this tree doesn't

@@ -11,7 +11,8 @@ import org.geotools.feature.FeatureCollection;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.expression.PropertyName;
 import org.opengis.util.ProgressListener;
-import org.springframework.util.Assert;
+
+import com.google.common.base.Preconditions;
 
 /**
  * A facade to Geo-GIT operations.
@@ -28,7 +29,7 @@ public class GeoGIT {
     private final Repository repository;
 
     public GeoGIT(final Repository repository) {
-        Assert.notNull(repository, "repository can't be null");
+        Preconditions.checkNotNull(repository, "repository can't be null");
         this.repository = repository;
     }
 

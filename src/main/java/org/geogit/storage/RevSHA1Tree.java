@@ -20,8 +20,8 @@ import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevTree;
 import org.geogit.api.TreeVisitor;
-import org.springframework.util.Assert;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Throwables;
@@ -224,8 +224,9 @@ public class RevSHA1Tree extends AbstractRevObject implements RevTree {
     @SuppressWarnings("unchecked")
     @Override
     public Iterator<Ref> iterator(Predicate<Ref> filter) {
-        Assert.isTrue(isNormalized(),
-                "iterator() should only be called on a normalized tree to account for element deletions");
+        Preconditions
+                .checkState(isNormalized(),
+                        "iterator() should only be called on a normalized tree to account for element deletions");
         if (filter == null) {
             filter = Predicates.alwaysTrue();
         }

@@ -14,8 +14,8 @@ import org.geogit.api.ObjectId;
 import org.geogit.storage.AbstractObjectDatabase;
 import org.geogit.storage.ObjectDatabase;
 import org.geotools.util.logging.Logging;
-import org.springframework.util.Assert;
 
+import com.google.common.base.Preconditions;
 import com.sleepycat.collections.CurrentTransaction;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
@@ -68,7 +68,7 @@ public class JEObjectDatabase extends AbstractObjectDatabase implements ObjectDa
      */
     @Override
     public boolean exists(final ObjectId id) {
-        Assert.notNull(id, "id");
+        Preconditions.checkNotNull(id, "id");
 
         DatabaseEntry key = new DatabaseEntry(id.getRawValue());
         DatabaseEntry data = new DatabaseEntry();
@@ -86,7 +86,7 @@ public class JEObjectDatabase extends AbstractObjectDatabase implements ObjectDa
      */
     @Override
     protected InputStream getRawInternal(final ObjectId id) throws IOException {
-        Assert.notNull(id, "id");
+        Preconditions.checkNotNull(id, "id");
         DatabaseEntry key = new DatabaseEntry(id.getRawValue());
         DatabaseEntry data = new DatabaseEntry();
 

@@ -28,8 +28,8 @@ import org.gvsig.bxml.stream.BxmlStreamWriter;
 import org.gvsig.bxml.stream.EventType;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.springframework.util.Assert;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
@@ -345,8 +345,8 @@ public class BLOBS {
      */
     public static void writeWhere(final BxmlStreamWriter w, final BoundingBox bounds)
             throws IOException {
-        Assert.notNull(bounds);
-        Assert.notNull(bounds.getCoordinateReferenceSystem());
+        Preconditions.checkNotNull(bounds);
+        Preconditions.checkNotNull(bounds.getCoordinateReferenceSystem());
 
         final CoordinateReferenceSystem crs = bounds.getCoordinateReferenceSystem();
         final String epsgCode = lookupIdentifier(crs);

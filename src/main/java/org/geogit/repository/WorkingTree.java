@@ -24,7 +24,8 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.expression.PropertyName;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.util.ProgressListener;
-import org.springframework.util.Assert;
+
+import com.google.common.base.Preconditions;
 
 /**
  * A working tree is the collection of Features for a single FeatureType in GeoServer that has a
@@ -57,10 +58,10 @@ public class WorkingTree {
     private final Repository repository;
 
     public WorkingTree(final Repository repository) {
-        Assert.notNull(repository);
+        Preconditions.checkNotNull(repository);
         this.repository = repository;
         this.index = repository.getIndex();
-        Assert.notNull(index);
+        Preconditions.checkState(index != null);
     }
 
     public void init(final FeatureType featureType) throws Exception {

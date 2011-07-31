@@ -15,10 +15,11 @@ import org.geogit.api.ShowOp;
 import org.geogit.test.RepositoryTestCase;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geometry.jts.WKTReader2;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+
+import com.vividsolutions.jts.io.WKTReader;
 
 public class IndexTest extends RepositoryTestCase {
 
@@ -63,7 +64,7 @@ public class IndexTest extends RepositoryTestCase {
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(featureType);
         builder.set("sp", "String Property");
         builder.set("ip", Integer.valueOf(1000));
-        builder.set("pp", new WKTReader2()
+        builder.set("pp", new WKTReader()
                 .read("LINESTRING(1 1, 2 2, 3 3, 4 4, 5 5, 6 6, 7 7, 8 8, 9 9 , 10 10)"));
 
         Feature feature1 = builder.buildFeature("TestType.feature.1");
@@ -72,7 +73,7 @@ public class IndexTest extends RepositoryTestCase {
         builder = new SimpleFeatureBuilder(featureType);
         builder.set("sp", "String Property");
         builder.set("ip", Integer.valueOf(1000));
-        builder.set("pp", new WKTReader2()
+        builder.set("pp", new WKTReader()
                 .read("LINESTRING(1 1, 2 2, 3 3, 4 4, 5 5, 6 6, 7 7, 8 8, 9 9 , 10 10)"));
 
         Feature feature2 = builder.buildFeature("TestType.feature.2");

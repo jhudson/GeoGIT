@@ -47,8 +47,8 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.springframework.util.Assert;
 
+import com.google.common.base.Preconditions;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.OutStream;
 import com.vividsolutions.jts.io.WKBWriter;
@@ -58,7 +58,8 @@ public class FeatureWriter implements ObjectWriter<Feature> {
     private final Feature feature;
 
     public FeatureWriter(final Feature feature) {
-        Assert.isTrue(feature instanceof SimpleFeature, "Only SimpleFeature is supported so far");
+        Preconditions.checkArgument(feature instanceof SimpleFeature,
+                "Only SimpleFeature is supported so far");
         this.feature = feature;
     }
 

@@ -26,7 +26,8 @@ import org.geogit.storage.ObjectWriter;
 import org.geogit.storage.RevTreeWriter;
 import org.geotools.util.logging.Logging;
 import org.opengis.geometry.BoundingBox;
-import org.springframework.util.Assert;
+
+import com.google.common.base.Preconditions;
 
 /**
  * The Index keeps track of the changes not yet committed to the repository.
@@ -138,8 +139,8 @@ public class Index {
      * Marks the object (tree or feature) addressed by {@code path} as an unstaged delete
      */
     public boolean deleted(final String... path) {
-        Assert.notNull(path);
-        Assert.isTrue(path.length > 0);
+        Preconditions.checkNotNull(path);
+        Preconditions.checkArgument(path.length > 0);
 
         final String fid = path[2];
         final String typeName = path[1];
@@ -168,9 +169,8 @@ public class Index {
      */
     public ObjectId inserted(final ObjectWriter<?> object, final BoundingBox bounds,
             final String... path) throws Exception {
-        Assert.notNull(object);
-        Assert.notNull(path);
-        Assert.noNullElements(path);
+        Preconditions.checkNotNull(object);
+        Preconditions.checkNotNull(path);
 
         final ObjectInserter objectInserter = repository.newObjectInserter();
         final ObjectId blobId = objectInserter.insert(object);

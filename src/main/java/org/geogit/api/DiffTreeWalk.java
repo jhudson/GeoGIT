@@ -15,8 +15,8 @@ import org.geogit.api.DiffEntry.ChangeType;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.repository.DepthSearch;
 import org.geogit.repository.Repository;
-import org.springframework.util.Assert;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
@@ -32,9 +32,9 @@ class DiffTreeWalk {
     private List<String> basePath;
 
     public DiffTreeWalk(final Repository repo, final ObjectId fromCommit, final ObjectId toCommit) {
-        Assert.notNull(repo);
-        Assert.notNull(fromCommit);
-        Assert.notNull(toCommit);
+        Preconditions.checkNotNull(repo);
+        Preconditions.checkNotNull(fromCommit);
+        Preconditions.checkNotNull(toCommit);
 
         this.repo = repo;
         this.fromCommit = fromCommit;
@@ -82,8 +82,8 @@ class DiffTreeWalk {
         final ObjectId newTreeId = newObject == null ? ObjectId.NULL : newObject.getObjectId();
         final RevTree oldTree = repo.getTree(oldTreeId);
         final RevTree newTree = repo.getTree(newTreeId);
-        Assert.isTrue(oldTree.isNormalized());
-        Assert.isTrue(newTree.isNormalized());
+        Preconditions.checkState(oldTree.isNormalized());
+        Preconditions.checkState(newTree.isNormalized());
 
         return new TreeDiffEntryIterator(basePath, fromCommit, toCommit, oldTree, newTree, repo);
 
@@ -172,7 +172,7 @@ class DiffTreeWalk {
                 return (DiffEntry) nextObj;
             }
 
-            Assert.isTrue(nextObj instanceof Ref);
+            Preconditions.checkState(nextObj instanceof Ref);
 
             final Ref next = (Ref) nextObj;
             final List<String> childPath = childPath(next.getName());
@@ -187,7 +187,7 @@ class DiffTreeWalk {
                 return computeNext();
             }
 
-            Assert.isTrue(TYPE.BLOB.equals(next.getType()));
+            Preconditions.checkState(TYPE.BLOB.equals(next.getType()));
 
             Ref oldObject = null;
             Ref newObject = null;
@@ -263,8 +263,8 @@ class DiffTreeWalk {
                         newCommit, newEntries, repo);
                 return computeNext();
             }
-            Assert.isTrue(currSubTree == null || !currSubTree.hasNext());
-            Assert.isTrue(oldEntries.hasNext() && newEntries.hasNext());
+            Preconditions.checkState(currSubTree == null || !currSubTree.hasNext());
+            Preconditions.checkState(oldEntries.hasNext() && newEntries.hasNext());
             Ref nextOld = oldEntries.next();
             Ref nextNew = newEntries.next();
 
@@ -300,7 +300,8 @@ class DiffTreeWalk {
                 // comparison
                 final int comparison = ObjectId.forString(oldEntryName).compareTo(
                         ObjectId.forString(newEntryName));
-                Assert.isTrue(comparison != 0, "Comparison can't be 0 if reached this point!");
+                Preconditions.checkState(comparison != 0,
+                        "Comparison can't be 0 if reached this point!");
 
                 if (comparison < 0) {
                     // something was deleted in oldVersion, return a delete diff from oldVersion and
@@ -332,7 +333,7 @@ class DiffTreeWalk {
                 return singleChange;
             }
 
-            Assert.isTrue(RevObject.TYPE.TREE.equals(objectType));
+            Preconditions.checkState(RevObject.TYPE.TREE.equals(objectType));
 
             Iterator<DiffEntry> changesIterator;
 
@@ -346,8 +347,8 @@ class DiffTreeWalk {
                 break;
             }
             case MODIFY: {
-                Assert.isTrue(RevObject.TYPE.TREE.equals(nextOld.getType()));
-                Assert.isTrue(RevObject.TYPE.TREE.equals(nextNew.getType()));
+                Preconditions.checkState(RevObject.TYPE.TREE.equals(nextOld.getType()));
+                Preconditions.checkState(RevObject.TYPE.TREE.equals(nextNew.getType()));
                 RevTree oldChildTree = repo.getTree(oldRef.getObjectId());
                 RevTree newChildTree = repo.getTree(newRef.getObjectId());
                 changesIterator = new TreeDiffEntryIterator(childPath, oldCommit, newCommit,

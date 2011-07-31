@@ -14,8 +14,8 @@ import java.util.Set;
 
 import org.geogit.repository.Repository;
 import org.geotools.util.Range;
-import org.springframework.util.Assert;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.AbstractIterator;
@@ -58,7 +58,7 @@ public class LogOp extends AbstractGeoGitOp<Iterator<RevCommit>> {
     }
 
     public LogOp setLimit(int limit) {
-        Assert.isTrue(limit > 0, "limit shall be > 0: " + limit);
+        Preconditions.checkArgument(limit > 0, "limit shall be > 0: " + limit);
         this.limit = Integer.valueOf(limit);
         return this;
     }
@@ -91,7 +91,7 @@ public class LogOp extends AbstractGeoGitOp<Iterator<RevCommit>> {
      * @see #addPath(List)
      */
     public LogOp addPath(final String... path) {
-        Assert.notNull(path);
+        Preconditions.checkNotNull(path);
         return addPath(Arrays.asList(path));
     }
 
@@ -102,7 +102,8 @@ public class LogOp extends AbstractGeoGitOp<Iterator<RevCommit>> {
      * @return
      */
     public LogOp addPath(final List<String> path) {
-        Assert.notNull(path);
+        Preconditions.checkNotNull(path);
+
         if (this.paths == null) {
             this.paths = new HashSet<List<String>>();
         }
@@ -186,8 +187,8 @@ public class LogOp extends AbstractGeoGitOp<Iterator<RevCommit>> {
             }
             final RevCommit commit = repo.getCommit(nextCommitId);
             List<ObjectId> parentIds = commit.getParentIds();
-            Assert.notNull(parentIds);
-            Assert.isTrue(parentIds.size() > 0);
+            Preconditions.checkNotNull(parentIds);
+            Preconditions.checkState(parentIds.size() > 0);
 
             nextCommitId = commit.getParentIds().get(0);
 
@@ -215,9 +216,9 @@ public class LogOp extends AbstractGeoGitOp<Iterator<RevCommit>> {
 
         public LogFilter(final Repository repo, final ObjectId oldestCommitId,
                 final Range<Long> timeRange, final Set<List<String>> paths) {
-            Assert.notNull(repo);
-            Assert.notNull(oldestCommitId);
-            Assert.notNull(timeRange);
+            Preconditions.checkNotNull(repo);
+            Preconditions.checkNotNull(oldestCommitId);
+            Preconditions.checkNotNull(timeRange);
 
             this.repo = repo;
             this.oldestCommitId = oldestCommitId;

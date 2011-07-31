@@ -4,7 +4,7 @@
  */
 package org.geogit.api;
 
-import org.springframework.util.Assert;
+import com.google.common.base.Preconditions;
 
 /**
  * Pairing of a name and the {@link ObjectId} it currently has.
@@ -41,9 +41,9 @@ public class Ref {
     private ObjectId objectId;
 
     public Ref(final String name, final ObjectId oid, final RevObject.TYPE type) {
-        Assert.notNull(name);
-        Assert.notNull(oid);
-        Assert.notNull(type);
+        Preconditions.checkNotNull(name);
+        Preconditions.checkNotNull(oid);
+        Preconditions.checkNotNull(type);
         this.name = name;
         this.objectId = oid;
         this.type = type;

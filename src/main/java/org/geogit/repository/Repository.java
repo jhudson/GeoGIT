@@ -26,8 +26,8 @@ import org.geogit.storage.RevTreeReader;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
-import org.springframework.util.Assert;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 
 /**
@@ -53,7 +53,7 @@ public class Repository {
     private final WorkingTree workingTree;
 
     public Repository(final RepositoryDatabase repoDb) {
-        Assert.notNull(repoDb);
+        Preconditions.checkNotNull(repoDb);
         this.repoDb = repoDb;
         index = new Index(this);
         workingTree = new WorkingTree(this);
@@ -112,9 +112,9 @@ public class Repository {
 
     public synchronized Ref updateRef(final Ref ref) {
         boolean updated = getRefDatabase().put(ref);
-        Assert.isTrue(updated);
+        Preconditions.checkState(updated);
         Ref ref2 = getRef(ref.getName());
-        Assert.isTrue(ref.equals(ref2));
+        Preconditions.checkState(ref.equals(ref2));
         return ref;
     }
 

@@ -58,6 +58,37 @@
   <dependencyManagement>
     <dependencies>
       <dependency>
+        <!-- used for LRUMap, can be removed once/if AbstractObjectDatabase uses an alternate/external caching mechanism -->
+        <groupId>commons-collections</groupId>
+        <artifactId>commons-collections</artifactId>
+        <version>3.1</version>
+      </dependency>
+      <dependency>
+        <groupId>com.vividsolutions</groupId>
+        <artifactId>jts</artifactId>
+        <version>1.12</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-opengis</artifactId>
+        <version>${gt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-referencing</artifactId>
+        <version>${gt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-epsg-hsql</artifactId>
+        <version>${gt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-main</artifactId>
+        <version>${gt.version}</version>
+      </dependency>
+      <dependency>
         <!-- Google Common Libraries. Featuring com.google.collect collection classes -->
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
@@ -112,13 +143,15 @@
         <artifactId>bxml-utils</artifactId>
         <version>1.0-SNAPSHOT</version>
       </dependency>
-      <dependency>
-        <groupId>org.gvsig</groupId>
-        <artifactId>bxml-geoserver</artifactId>
-        <version>1.0-SNAPSHOT</version>
-      </dependency>
+      <!-- dependency> <groupId>org.gvsig</groupId> <artifactId>bxml-geoserver</artifactId> <version>1.0-SNAPSHOT</version> 
+        </dependency -->
 
       <!-- Test scope dependencies -->
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>1.2</version>
+      </dependency>
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
@@ -138,6 +171,31 @@
   </dependencyManagement>
 
   <dependencies>
+    <dependency>
+      <!-- used for LRUMap, can be removed once/if AbstractObjectDatabase uses an alternate/external caching mechanism -->
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.vividsolutions</groupId>
+      <artifactId>jts</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-opengis</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-referencing</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-epsg-hsql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-main</artifactId>
+    </dependency>
     <dependency>
       <!-- Google Common Libraries. Featuring com.google.collect collection classes -->
       <groupId>com.google.guava</groupId>
@@ -172,12 +230,14 @@
       <groupId>org.gvsig</groupId>
       <artifactId>bxml-utils</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.gvsig</groupId>
-      <artifactId>bxml-geoserver</artifactId>
-    </dependency>
+    <!-- dependency> <groupId>org.gvsig</groupId> <artifactId>bxml-geoserver</artifactId> </dependency -->
 
     <!-- Test scope dependencies -->
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>

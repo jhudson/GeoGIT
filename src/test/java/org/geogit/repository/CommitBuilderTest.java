@@ -23,8 +23,8 @@ public class CommitBuilderTest extends TestCase {
         CommitBuilder b = new CommitBuilder();
         try {
             b.build(null);
-            fail("expected IAE on null id");
-        } catch (IllegalArgumentException e) {
+            fail("expected NPE on null id");
+        } catch (NullPointerException e) {
             assertTrue(e.getMessage().contains("Id"));
         }
 

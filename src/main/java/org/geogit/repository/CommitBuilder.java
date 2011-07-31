@@ -8,7 +8,8 @@ import java.util.List;
 
 import org.geogit.api.ObjectId;
 import org.geogit.api.RevCommit;
-import org.springframework.util.Assert;
+
+import com.google.common.base.Preconditions;
 
 public final class CommitBuilder {
 
@@ -119,7 +120,7 @@ public final class CommitBuilder {
     }
 
     public RevCommit build(final ObjectId id) {
-        Assert.notNull(id, "Id can't be null");
+        Preconditions.checkNotNull(id, "Id can't be null");
 
         if (treeId == null) {
             throw new IllegalStateException("No tree id set");

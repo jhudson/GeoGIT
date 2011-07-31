@@ -9,7 +9,8 @@ import java.util.List;
 
 import org.geogit.repository.SpatialOps;
 import org.opengis.geometry.BoundingBox;
-import org.springframework.util.Assert;
+
+import com.google.common.base.Preconditions;
 
 public class DiffEntry {
 
@@ -112,7 +113,8 @@ public class DiffEntry {
     public static DiffEntry newInstance(final ObjectId fromCommit, final ObjectId toCommit,
             final Ref oldObject, final Ref newObject, final List<String> path) {
 
-        Assert.isTrue(oldObject != null || newObject != null);
+        Preconditions.checkArgument(oldObject != null || newObject != null);
+
         if (oldObject != null && oldObject.equals(newObject)) {
             throw new IllegalArgumentException(
                     "Trying to create a DiffEntry for the same object id, means the object didn't change: "

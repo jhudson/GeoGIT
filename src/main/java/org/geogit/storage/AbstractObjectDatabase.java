@@ -14,8 +14,8 @@ import java.util.Map;
 import org.apache.commons.collections.map.LRUMap;
 import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
-import org.springframework.util.Assert;
 
+import com.google.common.base.Preconditions;
 import com.ning.compress.lzf.LZFInputStream;
 import com.ning.compress.lzf.LZFOutputStream;
 
@@ -45,8 +45,8 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
      *      org.geogit.storage.ObjectReader)
      */
     public <T> T get(final ObjectId id, final ObjectReader<T> reader) throws IOException {
-        Assert.notNull(id, "id");
-        Assert.notNull(reader, "reader");
+        Preconditions.checkNotNull(id, "id");
+        Preconditions.checkNotNull(reader, "reader");
 
         T object;
         InputStream raw = getRaw(id);
@@ -65,14 +65,14 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T getCached(final ObjectId id, final ObjectReader<T> reader) throws IOException {
-        Assert.notNull(id, "id");
-        Assert.notNull(reader, "reader");
+        Preconditions.checkNotNull(id, "id");
+        Preconditions.checkNotNull(reader, "reader");
 
         T object = (T) cache.get(id);
         if (object == null) {
             object = get(id, reader);
             if (object != null) {
-                Assert.isTrue(!(object instanceof MutableTree));
+                assert !(object instanceof MutableTree);
                 cache.put(id, object);
             }
         }

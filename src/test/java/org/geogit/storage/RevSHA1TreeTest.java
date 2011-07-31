@@ -17,7 +17,8 @@ import org.geogit.api.RevObject.TYPE;
 import org.geogit.api.RevTree;
 import org.geogit.api.TreeVisitor;
 import org.geogit.test.RepositoryTestCase;
-import org.springframework.util.StopWatch;
+
+import com.vividsolutions.jts.util.Stopwatch;
 
 public class RevSHA1TreeTest extends RepositoryTestCase {
 
@@ -33,14 +34,14 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
         final int numEntries = 1000 * 100;
         final ObjectId treeId;
 
-        StopWatch sw;
-        sw = new StopWatch();
-        sw.start("put");
+        Stopwatch sw;
+        sw = new Stopwatch();
+        sw.start();
         treeId = createAndSaveTree(numEntries, true);
         sw.stop();
 
         System.err.println("\n" + sw.toString());
-        System.err.println("... at " + (numEntries / sw.getTotalTimeSeconds()) + "/s");
+        System.err.println("... at " + (numEntries / ((double) sw.getTime() / 1000L)) + "/s");
 
         // System.err.println("\nPut " + numEntries + " in " + sw.getLastTaskTimeMillis() + "ms ("
         // + (numEntries / sw.getTotalTimeSeconds()) + "/s)");
@@ -48,21 +49,21 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
         sw.start();
         RevTree tree = odb.get(treeId, new RevTreeReader(odb, 0));
         sw.stop();
-        System.out.println("Retrieved tree in " + sw.getLastTaskTimeMillis() + "ms");
+        System.out.println("Retrieved tree in " + sw.getTime() + "ms");
 
-        sw = new StopWatch();
+        sw = new Stopwatch();
         sw.start();
         PrintWriter writer = new PrintWriter(System.err);
         PrintTreeVisitor visitor = new PrintTreeVisitor(writer, odb);
         tree.accept(visitor);
         writer.flush();
         sw.stop();
-        System.err.println("\nTraversed " + numEntries + " in " + sw.getLastTaskTimeMillis()
-                + "ms (" + (numEntries / sw.getTotalTimeSeconds()) + "/s)\n");
+        System.err.println("\nTraversed " + numEntries + " in " + sw.getTime() + "ms ("
+                + (numEntries / ((double) sw.getTime() / 1000L)) + "/s)\n");
         assertEquals(numEntries, visitor.visitedEntries);
 
         tree = odb.get(treeId, new RevTreeReader(odb, 0));
-        sw = new StopWatch();
+        sw = new Stopwatch();
         sw.start();
         System.err.println("Reading " + numEntries + " entries....");
         for (int i = 0; i < numEntries; i++) {
@@ -78,8 +79,8 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
             assertEquals(key, oid, ref.getObjectId());
         }
         sw.stop();
-        System.err.println("\nGot " + numEntries + " in " + sw.getLastTaskTimeMillis() + "ms ("
-                + (numEntries / sw.getTotalTimeSeconds()) + "/s)\n");
+        System.err.println("\nGot " + numEntries + " in " + sw.getTime() + "ms ("
+                + (numEntries / ((double) sw.getTime() / 1000L)) + "/s)\n");
 
     }
 

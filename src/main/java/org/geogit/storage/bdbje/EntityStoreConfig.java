@@ -4,7 +4,7 @@
  */
 package org.geogit.storage.bdbje;
 
-import org.springframework.util.Assert;
+import com.google.common.base.Preconditions;
 
 public class EntityStoreConfig {
 
@@ -41,13 +41,14 @@ public class EntityStoreConfig {
     }
 
     public void setCacheMemoryPercentAllowed(int cacheMemoryPercentAllowed) {
-        Assert.isTrue(cacheMemoryPercentAllowed > 0 && cacheMemoryPercentAllowed <= 100);
+        Preconditions.checkArgument(cacheMemoryPercentAllowed > 0
+                && cacheMemoryPercentAllowed <= 100);
         this.cacheMemoryPercentAllowed = cacheMemoryPercentAllowed;
         this.cacheSizeMB = null;
     }
 
     public void setCacheSizeMB(int cacheSizeMB) {
-        Assert.isTrue(cacheSizeMB > 0);
+        Preconditions.checkArgument(cacheSizeMB > 0);
         this.cacheSizeMB = cacheSizeMB;
         this.cacheMemoryPercentAllowed = null;
     }

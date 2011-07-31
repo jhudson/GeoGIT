@@ -7,8 +7,7 @@ package org.geogit.api;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
-import org.springframework.util.Assert;
-
+import com.google.common.base.Preconditions;
 import com.sleepycat.persist.model.Persistent;
 
 /**
@@ -29,8 +28,8 @@ public class ObjectId implements Comparable<ObjectId> {
     }
 
     public ObjectId(byte[] raw) {
-        Assert.notNull(raw);
-        Assert.isTrue(raw.length == 20);
+        Preconditions.checkNotNull(raw);
+        Preconditions.checkArgument(raw.length == 20);
         this.raw = raw;
     }
 
@@ -130,7 +129,7 @@ public class ObjectId implements Comparable<ObjectId> {
     }
 
     public static ObjectId forString(final String strToHash) {
-        Assert.notNull(strToHash);
+        Preconditions.checkNotNull(strToHash);
         try {
             MessageDigest md = MessageDigest.getInstance("SHA1");
             byte[] raw = md.digest(strToHash.getBytes("UTF-8"));
