@@ -147,9 +147,16 @@ public class WorkingTree {
         return fids;
     }
 
+    @Deprecated
     public void update(final Filter filter, final List<PropertyName> updatedProperties,
             List<Object> newValues2, final FeatureCollection newValues,
             final ProgressListener listener) throws Exception {
+
+        insert(newValues, listener);
+    }
+
+    public void update(final FeatureCollection newValues, final ProgressListener listener)
+            throws Exception {
 
         insert(newValues, listener);
     }

@@ -130,9 +130,16 @@ public class Index {
         this.staged = new TreeMap<List<String>, TreeMap<String, Entry>>(PATH_COMPARATOR);
     }
 
-    public void created(List<String> path) {
-        // TODO Auto-generated method stub
-
+    public ObjectId created(final List<String> newTreePath) throws Exception {
+        ObjectId treeChildId = repository.getTreeChildId(repository.getRootTree(), newTreePath);
+        if (null != treeChildId) {
+            throw new IllegalArgumentException("Tree exists at " + newTreePath);
+        }
+        ObjectWriter<?> emptyTree = new RevTreeWriter(repository.newTree());
+        BoundingBox bounds = null;
+        ObjectId newSubtreeId = inserted(emptyTree, bounds,
+                newTreePath.toArray(new String[newTreePath.size()]));
+        return newSubtreeId;
     }
 
     /**
@@ -173,13 +180,13 @@ public class Index {
         Preconditions.checkNotNull(path);
 
         final ObjectInserter objectInserter = repository.newObjectInserter();
-        final ObjectId blobId = objectInserter.insert(object);
+        final ObjectId objectId = objectInserter.insert(object);
         final String featureId = path[path.length - 1];
 
         TreeMap<String, Entry> fidMap = getFidMap(path[0], path[1]);
-        fidMap.put(featureId, new Entry(blobId, bounds, Status.NEW_UNSTAGED));
+        fidMap.put(featureId, new Entry(objectId, bounds, Status.NEW_UNSTAGED));
 
-        return blobId;
+        return objectId;
     }
 
     /**
