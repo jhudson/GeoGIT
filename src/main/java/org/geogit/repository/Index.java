@@ -498,11 +498,13 @@ public class Index {
         try {
             insertedId = to.put(new RawObjectWriter(raw));
             from.delete(objectRef.getObjectId());
+
+            Preconditions.checkState(objectRef.getObjectId().equals(insertedId));
+            Preconditions.checkState(to.exists(insertedId));
+
         } finally {
             raw.close();
         }
-
-        Preconditions.checkState(objectRef.getObjectId().equals(insertedId));
 
         if (TYPE.TREE.equals(objectRef.getType())) {
             RevTree tree = from.getTree(objectRef.getObjectId());

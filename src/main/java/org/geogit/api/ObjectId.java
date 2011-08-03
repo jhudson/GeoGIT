@@ -4,6 +4,7 @@
  */
 package org.geogit.api;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
@@ -18,7 +19,6 @@ import com.sleepycat.persist.model.Persistent;
  */
 @Persistent
 public class ObjectId implements Comparable<ObjectId> {
-
     public static final ObjectId NULL = new ObjectId(new byte[20]);
 
     private byte[] raw;
@@ -59,6 +59,26 @@ public class ObjectId implements Comparable<ObjectId> {
     public String toString() {
         final byte[] hash = this.raw;
         return toString(hash);
+    }
+
+    /**
+     * Returns the objectid represented by its string form, this method is the inverse of
+     * {@link #toString()}
+     * 
+     * @return
+     */
+    public static ObjectId valueOf(final String hash) {
+        Preconditions.checkNotNull(hash);
+        Preconditions.checkArgument(hash.length() == 40);
+
+        // this is perhaps the worse way of doing this...
+
+        final byte[] raw = new byte[20];
+        final int radix = 16;
+        for (int i = 0; i < 20; i++) {
+            raw[i] = (byte) Integer.parseInt(hash.substring(2 * i, 2 * i + 2), radix);
+        }
+        return new ObjectId(raw);
     }
 
     public static String toString(final byte[] hash) {
@@ -128,6 +148,15 @@ public class ObjectId implements Comparable<ObjectId> {
         return raw.clone();
     }
 
+    /**
+     * Creates a new SHA-1 ObjectId for the byte[] contents of the given string.
+     * <p>
+     * Note this method is to hash a string, not to convert the string representation of an ObjectId
+     * </p>
+     * 
+     * @param strToHash
+     * @return
+     */
     public static ObjectId forString(final String strToHash) {
         Preconditions.checkNotNull(strToHash);
         try {
