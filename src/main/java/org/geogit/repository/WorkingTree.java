@@ -5,6 +5,7 @@
 package org.geogit.repository;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,7 +25,9 @@ import org.opengis.filter.expression.PropertyName;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.util.ProgressListener;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterators;
 
 /**
  * A working tree is the collection of Features for a single FeatureType in GeoServer that has a
@@ -84,66 +87,59 @@ public class WorkingTree {
 
         final String id = feature.getIdentifier().getID();
 
+        String[] path = path(typeName, id);
+        index.inserted(featureWriter, bounds, path);
+        return id;
+    }
+
+    private String[] path(final Name typeName, final String id) {
         String path[];
         if (typeName.getNamespaceURI() == null) {
             path = new String[] { typeName.getLocalPart(), id };
         } else {
             path = new String[] { typeName.getNamespaceURI(), typeName.getLocalPart(), id };
         }
-        index.inserted(featureWriter, bounds, path);
-        return id;
+        return path;
     }
 
     /**
      * @param typeName
      * @param features
      * @param listener
-     * @return the list of feature ids inserted, or {@code null} if
-     *         {@link ProgressListener#isCanceled() listener.isCanceled()}
      * @throws Exception
      */
-    public List<String> insert(final FeatureCollection features, final ProgressListener listener)
+    @SuppressWarnings("deprecation")
+    public void insert(final FeatureCollection features, final ProgressListener listener)
             throws Exception {
 
-        List<String> fids = new ArrayList<String>();
-        final float size = features.size();
+        final int size = features.size();
 
-        long t = System.currentTimeMillis();
-        // be careful to preserve feature ids. MemoryDataStore does, but when changing it by
-        // something production ready....
-        FeatureIterator iterator = features.features();
+        Iterator<Feature> featureIterator = features.iterator();
         try {
-            repository.beginTransaction();
-            int count = 0;
-            while (iterator.hasNext()) {
-                if (listener.isCanceled()) {
-                    repository.rollbackTransaction();
-                    return null;
-                }
-                Feature next = iterator.next();
-                String id = insert(next);
-                fids.add(id);
-                count++;
-                if (listener.isCanceled()) {
-                    repository.rollbackTransaction();
-                    return null;
-                }
-                if (size > 0) {
-                    listener.progress((count * 100) / size);
-                }
-            }
-            repository.commitTransaction();
-            listener.complete();
-        } catch (Exception e) {
-            repository.rollbackTransaction();
-            throw e;
+            Iterator<Tuple<ObjectWriter<?>, BoundingBox, List<String>>> objects;
+            objects = Iterators.transform(featureIterator,
+                    new Function<Feature, Tuple<ObjectWriter<?>, BoundingBox, List<String>>>() {
+                        @Override
+                        public Tuple<ObjectWriter<?>, BoundingBox, List<String>> apply(
+                                final Feature input) {
+
+                            ObjectWriter<?> featureWriter = new FeatureWriter(input);
+                            final BoundingBox bounds = input.getBounds();
+                            final Name typeName = input.getType().getName();
+                            final String id = input.getIdentifier().getID();
+                            final List<String> path = Arrays.asList(typeName.getNamespaceURI(),
+                                    typeName.getLocalPart(), id);
+
+                            return new Tuple<ObjectWriter<?>, BoundingBox, List<String>>(
+                                    featureWriter, bounds, path);
+                        }
+                    });
+
+            List<Ref> inserted = index.inserted(objects, listener, size <= 0 ? null : size);
         } finally {
-            iterator.close();
+            features.close(featureIterator);
         }
-        // t = System.currentTimeMillis() - t;
-        // System.err.println("Imported " + size + " features from " + typeName.getLocalPart()
-        // + " in " + t + "ms");
-        return fids;
+
     }
 
     @Deprecated

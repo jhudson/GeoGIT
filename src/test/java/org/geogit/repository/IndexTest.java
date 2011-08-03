@@ -5,7 +5,6 @@
 package org.geogit.repository;
 
 import java.io.PrintWriter;
-import java.util.List;
 
 import org.geogit.api.ObjectId;
 import org.geogit.api.PrintVisitor;
@@ -85,10 +84,7 @@ public class IndexTest extends RepositoryTestCase {
     public void testWriteTree() throws Exception {
         assertEquals(repo.getRootTreeId(), index.getDatabase().getStagedRootRef().getObjectId());
 
-        final List<Ref> inserted = insertAndAdd(points1, lines1);
-        assertEquals(2, inserted.size());
-        assertEquals(points1.getIdentifier().getID(), inserted.get(0).getName());
-        assertEquals(lines1.getIdentifier().getID(), inserted.get(1).getName());
+        insertAndAdd(points1, lines1);
 
         Tuple<ObjectId, BoundingBox, ?> result = index.writeTree(repo.getHead());
 
@@ -106,11 +102,9 @@ public class IndexTest extends RepositoryTestCase {
 
         ObjectDatabase odb = repo.getObjectDatabase();
 
-        assertEquals(inserted.get(0),
-                odb.getTreeChild(tree, pointsNs, pointsName, points1.getIdentifier().getID()));
+        assertNotNull(odb.getTreeChild(tree, pointsNs, pointsName, points1.getIdentifier().getID()));
 
-        assertEquals(inserted.get(1),
-                odb.getTreeChild(tree, linesNs, linesName, lines1.getIdentifier().getID()));
+        assertNotNull(odb.getTreeChild(tree, linesNs, linesName, lines1.getIdentifier().getID()));
 
         index.deleted(linesNs, linesName, lines1.getIdentifier().getID());
         index.stage(null);
@@ -122,8 +116,7 @@ public class IndexTest extends RepositoryTestCase {
         assertFalse(repo.getRootTreeId().equals(newRootTreeId));
 
         tree = repo.getTree(newRootTreeId);
-        assertEquals(inserted.get(0),
-                odb.getTreeChild(tree, pointsNs, pointsName, points1.getIdentifier().getID()));
+        assertNotNull(odb.getTreeChild(tree, pointsNs, pointsName, points1.getIdentifier().getID()));
 
         assertNull(odb.getTreeChild(tree, linesNs, linesName, lines1.getIdentifier().getID()));
 

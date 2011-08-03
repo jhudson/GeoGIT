@@ -30,6 +30,7 @@ import org.geogit.storage.bdbje.JERepositoryDatabase;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.WKTReader2;
+import org.geotools.util.NullProgressListener;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -235,13 +236,12 @@ public abstract class RepositoryTestCase extends TestCase {
         return objectId;
     }
 
-    protected List<Ref> insertAndAdd(Feature... features) throws Exception {
-        List<Ref> inserted = insert(features);
+    protected void insertAndAdd(Feature... features) throws Exception {
+        insert(features);
         new GeoGIT(getRepository()).add().call();
-        return inserted;
     }
 
-    protected List<Ref> insert(Feature... features) throws Exception {
+    protected void insert(Feature... features) throws Exception {
 
         final Index index = getRepository().getIndex();
 
@@ -265,9 +265,8 @@ public abstract class RepositoryTestCase extends TestCase {
         };
 
         iterator = Iterators.transform(Iterators.forArray(features), function);
-        List<Ref> inserted = index.inserted(iterator);
 
-        return inserted;
+        index.inserted(iterator, new NullProgressListener(), null);
 
     }
 

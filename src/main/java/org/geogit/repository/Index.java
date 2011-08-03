@@ -29,7 +29,9 @@ import org.geogit.storage.ObjectInserter;
 import org.geogit.storage.ObjectWriter;
 import org.geogit.storage.RawObjectWriter;
 import org.geogit.storage.StagingDatabase;
+import org.geotools.util.NullProgressListener;
 import org.opengis.geometry.BoundingBox;
+import org.opengis.util.ProgressListener;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
@@ -198,7 +200,8 @@ public class Index {
         tuple = new Tuple<ObjectWriter<?>, BoundingBox, List<String>>(blob, bounds,
                 Arrays.asList(path));
 
-        List<Ref> inserted = inserted(Collections.singleton(tuple).iterator());
+        List<Ref> inserted = inserted(Collections.singleton(tuple).iterator(),
+                new NullProgressListener(), null);
 
         return inserted.get(0);
     }
@@ -212,10 +215,12 @@ public class Index {
      * @throws Exception
      */
     public synchronized List<Ref> inserted(
-            final Iterator<Tuple<ObjectWriter<?>, BoundingBox, List<String>>> objects)
-            throws Exception {
+            final Iterator<Tuple<ObjectWriter<?>, BoundingBox, List<String>>> objects,
+            final ProgressListener progress, final Integer size) throws Exception {
 
         Preconditions.checkNotNull(objects);
+        Preconditions.checkNotNull(progress);
+        Preconditions.checkArgument(size == null || size.intValue() > 0);
 
         final MutableTree currentUnstagedRoot = indexDatabase.getUnstagedRoot();
         final ObjectInserter objectInserter = indexDatabase.newObjectInserter();
@@ -229,8 +234,14 @@ public class Index {
 
         Map<List<String>, MutableTree> changedTrees = new HashMap<List<String>, MutableTree>();
 
+        int count = 0;
         // first insert all the objects and hold the modified leaf trees
         while (objects.hasNext()) {
+            count++;
+            if (size != null) {
+                progress.progress((float) (count * 100) / size.intValue());
+            }
+
             next = objects.next();
             object = next.getFirst();
             bounds = next.getMiddle();
