@@ -44,7 +44,7 @@ public class LogOpTest extends RepositoryTestCase {
 
     public void testHeadWithSingleCommit() throws Exception {
 
-        insertAndAdd(feature1_1);
+        insertAndAdd(points1);
         final RevCommit firstCommit = ggit.commit().call();
 
         Iterator<RevCommit> iterator = logOp.call();
@@ -57,10 +57,10 @@ public class LogOpTest extends RepositoryTestCase {
 
     public void testHeadWithTwoCommits() throws Exception {
 
-        insertAndAdd(feature1_1);
+        insertAndAdd(points1);
         final RevCommit firstCommit = ggit.commit().call();
 
-        insertAndAdd(feature2_1);
+        insertAndAdd(lines1);
         final RevCommit secondCommit = ggit.commit().call();
 
         Iterator<RevCommit> iterator = logOp.call();
@@ -78,8 +78,7 @@ public class LogOpTest extends RepositoryTestCase {
 
     public void testHeadWithMultipleCommits() throws Exception {
 
-        List<Feature> features = Arrays.asList(feature1_1, feature2_1, feature1_2, feature2_2,
-                feature1_3, feature2_3);
+        List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
         LinkedList<RevCommit> expected = new LinkedList<RevCommit>();
 
         for (Feature f : features) {
@@ -99,8 +98,7 @@ public class LogOpTest extends RepositoryTestCase {
 
     public void testPathFilterSingleFeature() throws Exception {
 
-        List<Feature> features = Arrays.asList(feature1_1, feature2_1, feature1_2, feature2_2,
-                feature1_3, feature2_3);
+        List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
 
         RevCommit expectedCommit = null;
 
@@ -108,12 +106,12 @@ public class LogOpTest extends RepositoryTestCase {
             insertAndAdd(f);
             String id = f.getIdentifier().getID();
             final RevCommit commit = ggit.commit().call();
-            if (id.equals(feature2_1.getIdentifier().getID())) {
+            if (id.equals(lines1.getIdentifier().getID())) {
                 expectedCommit = commit;
             }
         }
 
-        String[] path = { namespace2, typeName2, feature2_1.getIdentifier().getID() };
+        String[] path = { linesNs, linesName, lines1.getIdentifier().getID() };
 
         List<RevCommit> feature2_1Commits = toList(logOp.addPath(path).call());
         assertEquals(1, feature2_1Commits.size());
@@ -122,8 +120,7 @@ public class LogOpTest extends RepositoryTestCase {
 
     public void testPathFilterByTypeName() throws Exception {
 
-        List<Feature> features = Arrays.asList(feature1_1, feature2_1, feature1_2, feature2_2,
-                feature1_3, feature2_3);
+        List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
         LinkedList<RevCommit> commits = new LinkedList<RevCommit>();
 
         Set<RevCommit> typeName1Commits = new HashSet<RevCommit>();
@@ -132,13 +129,13 @@ public class LogOpTest extends RepositoryTestCase {
             insertAndAdd(f);
             final RevCommit commit = ggit.commit().call();
             commits.addFirst(commit);
-            if (typeName1.equals(f.getType().getName().getLocalPart())) {
+            if (pointsName.equals(f.getType().getName().getLocalPart())) {
                 typeName1Commits.add(commit);
             }
         }
 
         // path to filter commits on type1
-        String[] path = { namespace1, typeName1 };
+        String[] path = { pointsNs, pointsName };
 
         List<RevCommit> logCommits = toList(logOp.addPath(path).call());
         assertEquals(typeName1Commits.size(), logCommits.size());
@@ -147,8 +144,7 @@ public class LogOpTest extends RepositoryTestCase {
 
     public void testLimit() throws Exception {
 
-        List<Feature> features = Arrays.asList(feature1_1, feature2_1, feature1_2, feature2_2,
-                feature1_3, feature2_3);
+        List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
 
         for (Feature f : features) {
             insertAndAdd(f);
@@ -162,8 +158,7 @@ public class LogOpTest extends RepositoryTestCase {
 
     public void testTemporalConstraint() throws Exception {
 
-        List<Feature> features = Arrays.asList(feature1_1, feature2_1, feature1_2, feature2_2,
-                feature1_3, feature2_3);
+        List<Feature> features = Arrays.asList(points1, lines1, points2, lines2, points3, lines3);
         List<Long> timestamps = Arrays.asList(Long.valueOf(1000), Long.valueOf(2000),
                 Long.valueOf(3000), Long.valueOf(4000), Long.valueOf(5000), Long.valueOf(6000));
 
@@ -207,16 +202,16 @@ public class LogOpTest extends RepositoryTestCase {
     }
 
     public void testSinceUntil() throws Exception {
-        final ObjectId oid1_1 = insertAndAdd(feature1_1);
+        final ObjectId oid1_1 = insertAndAdd(points1);
         final RevCommit commit1_1 = ggit.commit().call();
 
-        final ObjectId oid1_2 = insertAndAdd(feature1_2);
+        final ObjectId oid1_2 = insertAndAdd(points2);
         final RevCommit commit1_2 = ggit.commit().call();
 
-        final ObjectId oid2_1 = insertAndAdd(feature2_1);
+        final ObjectId oid2_1 = insertAndAdd(lines1);
         final RevCommit commit2_1 = ggit.commit().call();
 
-        final ObjectId oid2_2 = insertAndAdd(feature2_2);
+        final ObjectId oid2_2 = insertAndAdd(lines2);
         final RevCommit commit2_2 = ggit.commit().call();
 
         try {

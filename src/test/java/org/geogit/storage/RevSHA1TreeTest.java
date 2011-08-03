@@ -31,7 +31,7 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
 
     public void testPutGet() throws Exception {
 
-        final int numEntries = 1000 * 100;
+        final int numEntries = 1000 * 10;
         final ObjectId treeId;
 
         Stopwatch sw;
@@ -85,7 +85,7 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
     }
 
     public void testRemove() throws Exception {
-        final int numEntries = 10000;
+        final int numEntries = 1000;
         ObjectId treeId = createAndSaveTree(numEntries, true);
         RevTree tree = odb.get(treeId, new RevTreeReader(odb, 0));
 
@@ -203,8 +203,8 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
      * @throws Exception
      */
     public void testEquality() throws Exception {
-        testEquality(1000);
-        testEquality(1000 + RevSHA1Tree.SPLIT_FACTOR);
+        testEquality(100);
+        testEquality(100 + RevSHA1Tree.SPLIT_FACTOR);
     }
 
     private void testEquality(final int numEntries) throws Exception {

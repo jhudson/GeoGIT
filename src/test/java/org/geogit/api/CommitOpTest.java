@@ -4,10 +4,7 @@
  */
 package org.geogit.api;
 
-import java.util.List;
-
 import org.geogit.repository.Index;
-import org.geogit.storage.BLOBS;
 import org.geogit.test.RepositoryTestCase;
 
 public class CommitOpTest extends RepositoryTestCase {
@@ -35,10 +32,10 @@ public class CommitOpTest extends RepositoryTestCase {
 
         Index index = repo.getIndex();
 
-        ObjectId oid1 = insertAndAdd(feature1_1);
+        ObjectId oid1 = insertAndAdd(points1);
         // BLOBS.print(repo.getRawObject(insertedId1), System.err);
 
-        ObjectId oid2 = insertAndAdd(feature1_2);
+        ObjectId oid2 = insertAndAdd(points2);
         // BLOBS.print(repo.getRawObject(insertedId2), System.err);
 
         ggit.add().addPattern(".").call();
@@ -57,19 +54,19 @@ public class CommitOpTest extends RepositoryTestCase {
         RevTree root = repo.getTree(treeId);
         assertNotNull(root);
 
-        Ref nsTreeId = root.get(namespace1);
+        Ref nsTreeId = root.get(pointsNs);
         assertNotNull(nsTreeId);
         // BLOBS.print(repo.getRawObject(nsTreeId), System.err);
         RevTree nstree = repo.getTree(nsTreeId.getObjectId());
         assertNotNull(nstree);
 
-        Ref typeTreeId = nstree.get(typeName1);
+        Ref typeTreeId = nstree.get(pointsName);
         assertNotNull(typeTreeId);
         // BLOBS.print(repo.getRawObject(typeTreeId), System.err);
         RevTree typeTree = repo.getTree(typeTreeId.getObjectId());
         assertNotNull(typeTree);
 
-        String featureId = feature1_1.getIdentifier().getID();
+        String featureId = points1.getIdentifier().getID();
         Ref featureBlobId = typeTree.get(featureId);
         assertNotNull(featureBlobId);
         assertEquals(oid1, featureBlobId.getObjectId());
@@ -80,52 +77,85 @@ public class CommitOpTest extends RepositoryTestCase {
 
     public void testMultipleCommits() throws Exception {
 
-        final ObjectId oId1_1 = insertAndAdd(feature1_1);
-        // BLOBS.print(repo.getRawObject(oId1_1), System.err);
+        // insert and commit points1
+        final ObjectId oId1_1 = insertAndAdd(points1);
 
-        // final ObjectId oId2_1 = index.inserted(new FeaturePersister(feature2_1), namespace2,
-        // typeName2, feature2_1.getIdentifier().getID());
-        // BLOBS.print(repo.getRawObject(oId2_1), System.err);
-
-        ggit.add().addPattern(".").call();
+        ggit.add().call();
         final RevCommit commit1 = ggit.commit().setAuthor("groldan").call();
-        assertNotNull(commit1);
-        assertTrue(commit1.getParentIds().get(0).isNull());
-        assertNotNull(commit1.getTreeId());
-        assertNotNull(commit1.getId());
-        assertEquals("groldan", commit1.getAuthor());
-        assertNotNull(repo.getTree(commit1.getTreeId()));
-        assertEquals(commit1.getId(), getRepository().getRef(Ref.HEAD).getObjectId());
+        {
+            assertCommit(commit1, ObjectId.NULL, "groldan", null);
+            // check points1 is there
+            assertEquals(oId1_1, repo.getRootTreeChild(pointsNs, pointsName, idP1).getObjectId());
+            // and check the objects were actually copied
+            assertNotNull(repo.getObjectDatabase().getRaw(oId1_1));
+        }
+        // insert and commit points2, points3 and lines1
+        final ObjectId oId1_2 = insertAndAdd(points2);
+        final ObjectId oId1_3 = insertAndAdd(points3);
+        final ObjectId oId2_1 = insertAndAdd(lines1);
 
-        ObjectId type1SubTreeId = repo.getTreeChildId(namespace1, typeName1);
-        ObjectId type2SubTreeId = repo.getTreeChildId(namespace2, typeName2);
+        ggit.add().call();
+        final RevCommit commit2 = ggit.commit().setAuthor("groldan").setMessage("msg").call();
+        {
+            assertCommit(commit2, commit1.getId(), "groldan", "msg");
 
-        assertNotNull(type1SubTreeId);
-        // assertNotNull(type2SubTreeId);
+            // repo.getHeadTree().accept(
+            // new PrintVisitor(repo.getObjectDatabase(), new PrintWriter(System.out)));
 
-        final ObjectId oId1_2 = insertAndAdd(feature1_2);
-        // BLOBS.print(repo.getRawObject(oId1_2), System.err);
-        final ObjectId oId1_3 = insertAndAdd(feature1_3);
-        // BLOBS.print(repo.getRawObject(oId1_3), System.err);
+            // check points2, points3 and lines1
+            assertEquals(oId1_2, repo.getRootTreeChild(pointsNs, pointsName, idP2).getObjectId());
+            assertEquals(oId1_3, repo.getRootTreeChild(pointsNs, pointsName, idP3).getObjectId());
+            assertEquals(oId2_1, repo.getRootTreeChild(linesNs, linesName, idL3).getObjectId());
+            // and check the objects were actually copied
+            assertNotNull(repo.getObjectDatabase().getRaw(oId1_2));
+            assertNotNull(repo.getObjectDatabase().getRaw(oId1_3));
+            assertNotNull(repo.getObjectDatabase().getRaw(oId2_1));
 
-        // final ObjectId oId2_2 = index.inserted(new FeaturePersister(feature2_2), namespace2,
-        // typeName2, feature2_2.getIdentifier().getID());
-        // // BLOBS.print(repo.getRawObject(oId2_2), System.err);
-        // final ObjectId oId2_3 = index.inserted(new FeaturePersister(feature2_3), namespace2,
-        // typeName2, feature2_3.getIdentifier().getID());
-        // // BLOBS.print(repo.getRawObject(oId2_3), System.err);
+            // as well as feature1_1 from the previous commit
+            assertEquals(oId1_1, repo.getRootTreeChild(pointsNs, pointsName, idP1).getObjectId());
+        }
+        // delete feature1_1, feature1_3, and feature2_1
+        assertTrue(deleteAndAdd(points1));
+        assertTrue(deleteAndAdd(points3));
+        assertTrue(deleteAndAdd(lines1));
+        // and insert feature2_2
+        final ObjectId oId2_2 = insertAndAdd(lines2);
 
-        ggit.add().addPattern(".").call();
-        final RevCommit commit2 = ggit.commit().setAuthor("groldan").call();
-        assertNotNull(commit2);
-        List<ObjectId> parentIds = commit2.getParentIds();
-        assertNotNull(parentIds);
-        assertEquals(1, parentIds.size());
-        assertEquals(commit1.getId(), parentIds.get(0));
+        ggit.add().call();
+        final RevCommit commit3 = ggit.commit().setAuthor("groldan").call();
+        {
+            assertCommit(commit3, commit2.getId(), "groldan", null);
 
-        assertNotNull(commit2.getTreeId());
-        assertFalse(commit1.getTreeId().equals(commit2.getTreeId()));
-        BLOBS.print(repo.getRawObject(commit2.getTreeId()), System.err);
+            // repo.getHeadTree().accept(
+            // new PrintVisitor(repo.getObjectDatabase(), new PrintWriter(System.out)));
+
+            // check only points2 and lines2 remain
+            assertNull(repo.getRootTreeChild(pointsNs, pointsName, idP1));
+            assertNull(repo.getRootTreeChild(pointsNs, pointsName, idP3));
+            assertNull(repo.getRootTreeChild(linesNs, linesName, idL3));
+
+            assertEquals(oId1_2, repo.getRootTreeChild(pointsNs, pointsName, idP2).getObjectId());
+            assertEquals(oId2_2, repo.getRootTreeChild(linesNs, linesName, idL2).getObjectId());
+            // and check the objects were actually copied
+            assertNotNull(repo.getObjectDatabase().getRaw(oId1_2));
+            assertNotNull(repo.getObjectDatabase().getRaw(oId2_2));
+        }
+    }
+
+    private void assertCommit(RevCommit commit, ObjectId parentId, String author, String message) {
+        assertNotNull(commit);
+        assertEquals(1, commit.getParentIds().size());
+        assertEquals(parentId, commit.getParentIds().get(0));
+        assertNotNull(commit.getTreeId());
+        assertNotNull(commit.getId());
+        if (author != null) {
+            assertEquals(author, commit.getAuthor());
+        }
+        if (message != null) {
+            assertEquals(message, commit.getMessage());
+        }
+        assertNotNull(repo.getTree(commit.getTreeId()));
+        assertEquals(commit.getId(), getRepository().getRef(Ref.HEAD).getObjectId());
     }
 
 }

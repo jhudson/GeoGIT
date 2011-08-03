@@ -4,6 +4,7 @@
  */
 package org.geogit.api;
 
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,6 +17,21 @@ import org.geogit.storage.CommitWriter;
 import org.geogit.storage.ObjectInserter;
 import org.opengis.geometry.BoundingBox;
 
+import com.google.common.base.Preconditions;
+
+/**
+ * Commits the staged changed in the index to the repository, creating a new commit pointing to the
+ * new root tree resulting from moving the staged changes to the respository, and updating the HEAD
+ * ref to the new commit object.
+ * <p>
+ * Like {@code git commit -a}, If the {@link #setAll(boolean) all} flag is set, first stages all the
+ * changed objects in the index, but does not state newly created (unstaged) objects that are not
+ * already staged.
+ * </p>
+ * 
+ * @author groldan
+ * 
+ */
 public class CommitOp extends AbstractGeoGitOp<RevCommit> {
 
     private String author;
@@ -49,16 +65,40 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
         return this;
     }
 
+    /**
+     * Sets the {@link RevCommit#getMessage() commit message}.
+     * 
+     * @param message
+     *            description of the changes to record the commit with.
+     * @return {@code this}, to ease command chaining
+     */
     public CommitOp setMessage(final String message) {
         this.message = message;
         return this;
     }
 
+    /**
+     * Sets the {@link RevCommit#getTimestamp() timestamp} the commit will be marked to, or if not
+     * set defaults to the current system time at the time {@link #call()} is called.
+     * 
+     * @param timestamp
+     *            commit timestamp, in milliseconds, as in {@link Date#getTime()}
+     * @return {@code this}, to ease command chaining
+     */
     public CommitOp setTimestamp(final Long timestamp) {
         this.timeStamp = timestamp;
         return this;
     }
 
+    /**
+     * If {@code true}, tells {@link #call()} to stage all the unstaged changes that are not new
+     * object before performing the commit.
+     * 
+     * @param all
+     *            {@code true} to {@link AddOp#setUpdateOnly(boolean) stage changes) before commit,
+     *            {@code false} to not do that. Defaults to {@code false}.
+     * @return {@code this}, to ease command chaining
+     */
     public CommitOp setAll(boolean all) {
         this.all = all;
         return this;
@@ -68,6 +108,8 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
      * @return the commit just applied
      * @see org.geogit.api.AbstractGeoGitOp#call()
      * @throws NothingToCommitException
+     *             if there are no staged changes by comparing the index staging tree and the
+     *             repository HEAD tree.
      */
     public RevCommit call() throws Exception {
         // TODO: check repository is in a state that allows committing
@@ -77,23 +119,22 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
         if (all) {
             ggit.add().addPattern(".").setUpdateOnly(true).call();
         }
-        final Ref currHead = repository.getRef(Ref.HEAD);
-        if (currHead == null) {
-            throw new IllegalStateException("Repository has no HEAD, can't commit");
-        }
+        final Ref currHead = repository.getHead();
+        Preconditions.checkState(currHead != null, "Repository has no HEAD, can't commit");
 
         final ObjectId currHeadCommitId = currHead.getObjectId();
         parents.add(currHeadCommitId);
 
         final Index index = repository.getIndex();
-        final ObjectInserter objectInserter = repository.newObjectInserter();
-        Tuple<ObjectId, BoundingBox> result = index.writeTree(objectInserter);
-        final ObjectId treeId = result.getFirst();
-        final BoundingBox affectedArea = result.getLast();
+        Tuple<ObjectId, BoundingBox, ?> result = index.writeTree(currHead);
+        final ObjectId newTreeId = result.getFirst();
+        final BoundingBox affectedArea = result.getMiddle();
 
-        if (treeId == null) {
+        final ObjectId currentRootTreeId = repository.getRootTreeId();
+        if (currentRootTreeId.equals(newTreeId)) {
             throw new NothingToCommitException("Nothing to commit after " + currHeadCommitId);
         }
+
         final ObjectId commitId;
         {
             CommitBuilder cb = new CommitBuilder();
@@ -101,26 +142,22 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
             cb.setCommitter(committer);
             cb.setMessage(message);
             cb.setParentIds(parents);
-            cb.setTreeId(treeId);
+            cb.setTreeId(newTreeId);
             if (timeStamp != null) {
                 cb.setTimestamp(timeStamp.longValue());
             }
             // cb.setBounds(bounds);
+
+            ObjectInserter objectInserter = repository.newObjectInserter();
             commitId = objectInserter.insert(new CommitWriter(cb.build(ObjectId.NULL)));
         }
         final RevCommit commit = repository.getCommit(commitId);
         // set the HEAD pointing to the new commit
         final Ref newHead = repository.updateRef(new Ref(Ref.HEAD, commitId, TYPE.COMMIT));
         LOGGER.fine("New head: " + newHead);
-
-        // System.err.println("OLD Commit:\n\t");
-        // if (currHeadCommitId.isNull()) {
-        // System.err.println(ObjectId.NULL);
-        // } else {
-        // BLOBS.print(repository.getRawObject(currHeadCommitId), System.err);
-        // }
-        // System.err.println("NEW Commit:\n\t");
-        // BLOBS.print(repository.getRawObject(commitId), System.err);
+        Preconditions.checkState(commitId.equals(newHead.getObjectId()));
+        ObjectId treeId = repository.getCommit(newHead.getObjectId()).getTreeId();
+        Preconditions.checkState(newTreeId.equals(treeId));
 
         return commit;
     }

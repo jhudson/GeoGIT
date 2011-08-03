@@ -10,6 +10,13 @@ import java.util.Set;
 import org.geogit.repository.Index;
 import org.geogit.repository.Repository;
 
+/**
+ * Manipulates the index (staging area) by setting the unstaged changes that match this operation
+ * criteria as staged.
+ * 
+ * @author groldan
+ * 
+ */
 public class AddOp extends AbstractGeoGitOp<Index> {
 
     private Set<String> patterns;
@@ -26,7 +33,8 @@ public class AddOp extends AbstractGeoGitOp<Index> {
      */
     public Index call() throws Exception {
         final Index index = getRepository().getIndex();
-        index.add(null);
+        // this is add all, TODO: implement partial adds
+        index.stage(null);
         return index;
     }
 
@@ -43,7 +51,7 @@ public class AddOp extends AbstractGeoGitOp<Index> {
     /**
      * @param updateOnly
      *            if {@code true}, only add already tracked features (either for modification or
-     *            deletion), but do not stage any newly added one
+     *            deletion), but do not stage any newly added one.
      * @return {@code this}
      */
     public AddOp setUpdateOnly(final boolean updateOnly) {

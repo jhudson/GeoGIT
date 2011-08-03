@@ -14,16 +14,16 @@ import java.util.List;
 import org.geogit.api.DiffEntry.ChangeType;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.repository.DepthSearch;
-import org.geogit.repository.Repository;
+import org.geogit.storage.ObjectDatabase;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Iterators;
 
-class DiffTreeWalk {
+public class DiffTreeWalk {
 
-    private final Repository repo;
+    private final ObjectDatabase objectDb;
 
     private final ObjectId fromCommit;
 
@@ -31,14 +31,31 @@ class DiffTreeWalk {
 
     private List<String> basePath;
 
-    public DiffTreeWalk(final Repository repo, final ObjectId fromCommit, final ObjectId toCommit) {
-        Preconditions.checkNotNull(repo);
+    private Ref oldObject;
+
+    private Ref newObject;
+
+    public DiffTreeWalk(final ObjectDatabase db, final ObjectId fromCommit, final ObjectId toCommit) {
+        Preconditions.checkNotNull(db);
         Preconditions.checkNotNull(fromCommit);
         Preconditions.checkNotNull(toCommit);
 
-        this.repo = repo;
+        this.objectDb = db;
         this.fromCommit = fromCommit;
         this.toCommit = toCommit;
+        this.basePath = Collections.emptyList();
+    }
+
+    public DiffTreeWalk(final ObjectDatabase db, final Ref oldObject, final Ref newObject) {
+        Preconditions.checkNotNull(db);
+        Preconditions.checkNotNull(oldObject);
+        Preconditions.checkNotNull(newObject);
+
+        this.objectDb = db;
+        this.fromCommit = null;
+        this.toCommit = null;
+        this.oldObject = oldObject;
+        this.newObject = newObject;
         this.basePath = Collections.emptyList();
     }
 
@@ -52,15 +69,18 @@ class DiffTreeWalk {
 
     @SuppressWarnings("unchecked")
     public Iterator<DiffEntry> get() {
-        if (fromCommit.equals(toCommit)) {
-            return Collections.EMPTY_LIST.iterator();
-        }
+        if (fromCommit != null) {
+            if (fromCommit.equals(toCommit)) {
+                return Collections.EMPTY_LIST.iterator();
+            }
 
-        final Ref oldObject = getFilteredObject(fromCommit);
-        final Ref newObject = getFilteredObject(toCommit);
-        if (oldObject == null && newObject == null) {
-            // filter didn't match anything
-            return Collections.EMPTY_LIST.iterator();
+            this.oldObject = getFilteredObject(fromCommit);
+            this.newObject = getFilteredObject(toCommit);
+
+            if (oldObject == null && newObject == null) {
+                // filter didn't match anything
+                return Collections.EMPTY_LIST.iterator();
+            }
         }
 
         // easy, filter addressed a single blob
@@ -80,12 +100,12 @@ class DiffTreeWalk {
         // filter addressed a tree...
         final ObjectId oldTreeId = oldObject == null ? ObjectId.NULL : oldObject.getObjectId();
         final ObjectId newTreeId = newObject == null ? ObjectId.NULL : newObject.getObjectId();
-        final RevTree oldTree = repo.getTree(oldTreeId);
-        final RevTree newTree = repo.getTree(newTreeId);
+        final RevTree oldTree = objectDb.getTree(oldTreeId);
+        final RevTree newTree = objectDb.getTree(newTreeId);
         Preconditions.checkState(oldTree.isNormalized());
         Preconditions.checkState(newTree.isNormalized());
 
-        return new TreeDiffEntryIterator(basePath, fromCommit, toCommit, oldTree, newTree, repo);
+        return new TreeDiffEntryIterator(basePath, fromCommit, toCommit, oldTree, newTree, objectDb);
 
     }
 
@@ -96,13 +116,13 @@ class DiffTreeWalk {
         if (commitId.isNull()) {
             return new Ref("", ObjectId.NULL, TYPE.TREE);
         }
-        final RevCommit commit = repo.getCommit(commitId);
+        final RevCommit commit = objectDb.getCommit(commitId);
         final ObjectId treeId = commit.getTreeId();
         if (basePath.isEmpty()) {
             return new Ref("", treeId, TYPE.TREE);
         }
 
-        final DepthSearch search = new DepthSearch(repo);
+        final DepthSearch search = new DepthSearch(objectDb);
         Ref ref = search.find(treeId, basePath);
         return ref;
     }
@@ -142,23 +162,23 @@ class DiffTreeWalk {
 
         private final DiffEntry.ChangeType changeType;
 
-        private final Repository repo;
+        private final ObjectDatabase objectDb;
 
         public AddRemoveAllTreeIterator(final DiffEntry.ChangeType changeType,
                 final List<String> basePath, final ObjectId fromCommit, final ObjectId toCommit,
-                final RevTree tree, final Repository repo) {
-            this(changeType, basePath, fromCommit, toCommit, tree.iterator(null), repo);
+                final RevTree tree, final ObjectDatabase db) {
+            this(changeType, basePath, fromCommit, toCommit, tree.iterator(null), db);
         }
 
         public AddRemoveAllTreeIterator(final DiffEntry.ChangeType changeType,
                 final List<String> basePath, final ObjectId fromCommit, final ObjectId toCommit,
-                final Iterator<Ref> treeIterator, final Repository repo) {
+                final Iterator<Ref> treeIterator, final ObjectDatabase db) {
             super(basePath);
             this.oldCommit = fromCommit;
             this.newCommit = toCommit;
             this.treeIterator = treeIterator;
             this.changeType = changeType;
-            this.repo = repo;
+            this.objectDb = db;
         }
 
         @Override
@@ -178,11 +198,11 @@ class DiffTreeWalk {
             final List<String> childPath = childPath(next.getName());
 
             if (TYPE.TREE.equals(next.getType())) {
-                RevTree tree = repo.getTree(next.getObjectId());
+                RevTree tree = objectDb.getTree(next.getObjectId());
                 Predicate<Ref> filter = null;// TODO: propagate filter?
                 Iterator<?> childTreeIterator;
                 childTreeIterator = new AddRemoveAllTreeIterator(this.changeType, childPath,
-                        oldCommit, newCommit, tree, repo);
+                        oldCommit, newCommit, tree, objectDb);
                 this.treeIterator = Iterators.concat(childTreeIterator, this.treeIterator);
                 return computeNext();
             }
@@ -230,17 +250,17 @@ class DiffTreeWalk {
 
         private RewindableIterator<Ref> newEntries;
 
-        private final Repository repo;
+        private final ObjectDatabase objectDb;
 
         public TreeDiffEntryIterator(final List<String> basePath, final ObjectId fromCommit,
                 final ObjectId toCommit, final RevTree fromTree, final RevTree toTree,
-                final Repository repo) {
+                final ObjectDatabase db) {
             super(basePath);
             this.oldCommit = fromCommit;
             this.newCommit = toCommit;
             this.oldTree = fromTree;
             this.newTree = toTree;
-            this.repo = repo;
+            this.objectDb = db;
             this.oldEntries = new RewindableIterator<Ref>(oldTree.iterator(null));
             this.newEntries = new RewindableIterator<Ref>(newTree.iterator(null));
         }
@@ -255,12 +275,12 @@ class DiffTreeWalk {
             }
             if (oldEntries.hasNext() && !newEntries.hasNext()) {
                 currSubTree = new AddRemoveAllTreeIterator(ChangeType.DELETE, this.basePath,
-                        this.oldCommit, this.newCommit, this.oldEntries, this.repo);
+                        this.oldCommit, this.newCommit, this.oldEntries, this.objectDb);
                 return computeNext();
             }
             if (!oldEntries.hasNext() && newEntries.hasNext()) {
                 currSubTree = new AddRemoveAllTreeIterator(ChangeType.ADD, basePath, oldCommit,
-                        newCommit, newEntries, repo);
+                        newCommit, newEntries, objectDb);
                 return computeNext();
             }
             Preconditions.checkState(currSubTree == null || !currSubTree.hasNext());
@@ -341,18 +361,18 @@ class DiffTreeWalk {
             case ADD:
             case DELETE: {
                 ObjectId treeId = null == oldRef ? newRef.getObjectId() : oldRef.getObjectId();
-                RevTree childTree = repo.getTree(treeId);
+                RevTree childTree = objectDb.getTree(treeId);
                 changesIterator = new AddRemoveAllTreeIterator(changeType, childPath, oldCommit,
-                        newCommit, childTree, repo);
+                        newCommit, childTree, objectDb);
                 break;
             }
             case MODIFY: {
                 Preconditions.checkState(RevObject.TYPE.TREE.equals(nextOld.getType()));
                 Preconditions.checkState(RevObject.TYPE.TREE.equals(nextNew.getType()));
-                RevTree oldChildTree = repo.getTree(oldRef.getObjectId());
-                RevTree newChildTree = repo.getTree(newRef.getObjectId());
+                RevTree oldChildTree = objectDb.getTree(oldRef.getObjectId());
+                RevTree newChildTree = objectDb.getTree(newRef.getObjectId());
                 changesIterator = new TreeDiffEntryIterator(childPath, oldCommit, newCommit,
-                        oldChildTree, newChildTree, repo);
+                        oldChildTree, newChildTree, objectDb);
                 break;
             }
             default:

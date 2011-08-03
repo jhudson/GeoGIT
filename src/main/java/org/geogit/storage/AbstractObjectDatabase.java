@@ -9,11 +9,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.collections.map.LRUMap;
 import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
+import org.geogit.api.Ref;
+import org.geogit.api.RevCommit;
+import org.geogit.api.RevObject.TYPE;
+import org.geogit.api.RevTree;
+import org.geogit.repository.DepthSearch;
 
 import com.google.common.base.Preconditions;
 import com.ning.compress.lzf.LZFInputStream;
@@ -44,6 +51,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
      * @see org.geogit.storage.ObjectDatabase#get(org.geogit.api.ObjectId,
      *      org.geogit.storage.ObjectReader)
      */
+    @Override
     public <T> T get(final ObjectId id, final ObjectReader<T> reader) throws IOException {
         Preconditions.checkNotNull(id, "id");
         Preconditions.checkNotNull(reader, "reader");
@@ -93,6 +101,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     /**
      * @see org.geogit.storage.ObjectDatabase#put(org.geogit.storage.ObjectWriter)
      */
+    @Override
     public final <T> ObjectId put(final ObjectWriter<T> writer) throws Exception {
         MessageDigest sha1;
         sha1 = MessageDigest.getInstance("SHA1");
@@ -126,6 +135,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
      * @see org.geogit.storage.ObjectDatabase#put(org.geogit.api.ObjectId,
      *      org.geogit.storage.ObjectWriter)
      */
+    @Override
     public final boolean put(final ObjectId id, final ObjectWriter<?> writer) throws Exception {
         ByteArrayOutputStream rawOut = new ByteArrayOutputStream();
         // GZIPOutputStream cOut = new GZIPOutputStream(rawOut);
@@ -165,4 +175,113 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
         return new ObjectInserter(this);
     }
 
+    /**
+     * @see org.geogit.storage.ObjectDatabase#getCommit(org.geogit.api.ObjectId)
+     */
+    @Override
+    public RevCommit getCommit(final ObjectId commitId) {
+        RevCommit commit;
+        try {
+            commit = this.getCached(commitId, new CommitReader());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return commit;
+    }
+
+    /**
+     * @see org.geogit.storage.ObjectDatabase#newTree()
+     */
+    @Override
+    public MutableTree newTree() {
+        return new RevSHA1Tree(this).mutable();
+    }
+
+    /**
+     * @see org.geogit.storage.ObjectDatabase#getTree(org.geogit.api.ObjectId)
+     */
+    @Override
+    public RevTree getTree(final ObjectId treeId) {
+        if (treeId.isNull()) {
+            return newTree();
+        }
+        RevTree tree;
+        try {
+            tree = this.getCached(treeId, new RevTreeReader(this));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return tree;
+    }
+
+    /**
+     * If a child tree of {@code parent} addressed by the given {@code childPath} exists, returns
+     * it's mutable copy, otherwise just returns a new mutable tree without any modification to
+     * root.
+     * 
+     * @throws IllegalArgumentException
+     *             if an reference exists for {@code childPath} but is not of type {@code TREE}
+     */
+    @Override
+    public MutableTree getOrCreateSubTree(final RevTree parent, List<String> childPath) {
+        Ref treeChildRef = getTreeChild(parent, childPath);
+        if (treeChildRef == null) {
+            return newTree();
+        }
+        if (!TYPE.TREE.equals(treeChildRef.getType())) {
+            throw new IllegalArgumentException("Object exsits as child of tree " + parent.getId()
+                    + " but is not a tree: " + treeChildRef);
+        }
+        return getTree(treeChildRef.getObjectId()).mutable();
+    }
+
+    /**
+     * @param root
+     * @param tree
+     * @param pathToTree
+     * @return the id of the saved state of the modified root
+     * @throws Exception
+     */
+    @Override
+    public ObjectId writeBack(MutableTree root, final RevTree tree, final List<String> pathToTree)
+            throws Exception {
+
+        final ObjectId treeId = put(new RevTreeWriter(tree));
+        final String treeName = pathToTree.get(pathToTree.size() - 1);
+
+        if (pathToTree.size() == 1) {
+            root.put(new Ref(treeName, treeId, TYPE.TREE));
+            ObjectId newRootId = put(new RevTreeWriter(root));
+            return newRootId;
+        }
+        final List<String> parentPath = pathToTree.subList(0, pathToTree.size() - 1);
+        Ref parentRef = getTreeChild(root, parentPath);
+        MutableTree parent;
+        if (parentRef == null) {
+            parent = newTree();
+        } else {
+            ObjectId parentId = parentRef.getObjectId();
+            parent = getTree(parentId).mutable();
+        }
+        parent.put(new Ref(treeName, treeId, TYPE.TREE));
+        return writeBack(root, parent, parentPath);
+    }
+
+    /**
+     * @see org.geogit.storage.ObjectDatabase#getTreeChild(org.geogit.api.RevTree,
+     *      java.lang.String[])
+     */
+    @Override
+    public Ref getTreeChild(RevTree root, String... path) {
+        return getTreeChild(root, Arrays.asList(path));
+    }
+
+    /**
+     * @see org.geogit.storage.ObjectDatabase#getTreeChild(org.geogit.api.RevTree, java.util.List)
+     */
+    @Override
+    public Ref getTreeChild(RevTree root, List<String> path) {
+        Ref treeRef = new DepthSearch(this).find(root, path);
+        return treeRef;
+    }
 }

@@ -5,7 +5,6 @@
 package org.geogit.repository;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -67,7 +66,7 @@ public class WorkingTree {
     public void init(final FeatureType featureType) throws Exception {
 
         final Name typeName = featureType.getName();
-        index.created(Arrays.asList(typeName.getNamespaceURI(), typeName.getLocalPart()));
+        // index.created(Arrays.asList(typeName.getNamespaceURI(), typeName.getLocalPart()));
     }
 
     public void delete(final Name typeName) throws Exception {
@@ -164,11 +163,12 @@ public class WorkingTree {
     public boolean hasRoot(final Name typeName) {
         String namespaceURI = typeName.getNamespaceURI() == null ? "" : typeName.getNamespaceURI();
         String localPart = typeName.getLocalPart();
-        ObjectId typeNameTreeId = repository.getTreeChildId(namespaceURI, localPart);
-        return typeNameTreeId != null;
+        Ref typeNameTreeRef = repository.getRootTreeChild(namespaceURI, localPart);
+        return typeNameTreeRef != null;
     }
 
-    public void delete(Name typeName, Filter filter, FeatureCollection affectedFeatures) {
+    public void delete(Name typeName, Filter filter, FeatureCollection affectedFeatures)
+            throws Exception {
         final Index index = repository.getIndex();
         String namespaceURI = typeName.getNamespaceURI();
         String localPart = typeName.getLocalPart();
@@ -188,7 +188,7 @@ public class WorkingTree {
      */
     public List<Name> getFeatureTypeNames() {
         List<Name> names = new ArrayList<Name>();
-        RevTree root = repository.getRootTree();
+        RevTree root = repository.getHeadTree();
         if (root != null) {
             Iterator<Ref> namespaces = root.iterator(null);
             while (namespaces.hasNext()) {

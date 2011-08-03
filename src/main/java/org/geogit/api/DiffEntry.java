@@ -31,9 +31,9 @@ public class DiffEntry {
         DELETE
     }
 
-    private final ObjectId oldObjectId;
+    private final Ref oldObject;
 
-    private final ObjectId newObjectId;
+    private final Ref newObject;
 
     private final ChangeType type;
 
@@ -49,31 +49,46 @@ public class DiffEntry {
 
     private final BoundingBox where;
 
-    public DiffEntry(ChangeType type, ObjectId oldCommitId, ObjectId newCommitId,
-            ObjectId oldVersion, ObjectId newVersion, BoundingBox where, List<String> path) {
+    public DiffEntry(ChangeType type, ObjectId oldCommitId, ObjectId newCommitId, Ref oldObject,
+            Ref newObject, BoundingBox where, List<String> path) {
         this.type = type;
         this.oldCommitId = oldCommitId;
         this.newCommitId = newCommitId;
-        this.oldObjectId = oldVersion;
-        this.newObjectId = newVersion;
+        this.oldObject = oldObject;
+        this.newObject = newObject;
         this.where = where;
         this.path = Collections.unmodifiableList(path);
     }
 
     /**
-     * @return the id of the old version of the object, or {@link ObjectId#NULL} if
+     * @return the id of the old version id of the object, or {@link ObjectId#NULL} if
      *         {@link #getType()} is {@code ADD}
      */
     public ObjectId getOldObjectId() {
-        return oldObjectId;
+        return oldObject == null ? ObjectId.NULL : oldObject.getObjectId();
     }
 
     /**
-     * @return the id of the new version of the object, or {@link ObjectId#NULL} if
+     * @return the old object, or {@code null} if {@link #getType()} is {@code ADD}
+     */
+    public Ref getOldObject() {
+        return oldObject;
+    }
+
+    /**
+     * @return the id of the new version id of the object, or {@link ObjectId#NULL} if
      *         {@link #getType()} is {@code DELETE}
      */
     public ObjectId getNewObjectId() {
-        return newObjectId;
+        return newObject == null ? ObjectId.NULL : newObject.getObjectId();
+    }
+
+    /**
+     * @return the id of the new version of the object, or {@code null} if {@link #getType()} is
+     *         {@code DELETE}
+     */
+    public Ref getNewObject() {
+        return newObject;
     }
 
     public ObjectId getOldCommitId() {
@@ -121,33 +136,19 @@ public class DiffEntry {
                             + oldObject.toString());
         }
 
-        ObjectId oldVersion = oldObject == null ? ObjectId.NULL : oldObject.getObjectId();
-        ObjectId newVersion = newObject == null ? ObjectId.NULL : newObject.getObjectId();
         BoundingBox bounds = SpatialOps.aggregatedBounds(oldObject, newObject);
-        return newInstance(fromCommit, toCommit, oldVersion, newVersion, bounds, path);
-    }
-
-    private static DiffEntry newInstance(final ObjectId fromCommit, final ObjectId toCommit,
-            final ObjectId oldVersion, final ObjectId newVersion, final BoundingBox bounds,
-            final List<String> path) {
-
-        if (oldVersion != null && oldVersion.equals(newVersion)) {
-            throw new IllegalArgumentException(
-                    "Trying to create a DiffEntry for the same object id, means the object didn't change: "
-                            + oldVersion.toString());
-        }
 
         ChangeType type;
 
-        if (oldVersion == null || ObjectId.NULL.equals(oldVersion)) {
+        if (oldObject == null || oldObject.getObjectId().isNull()) {
             type = ChangeType.ADD;
-        } else if (newVersion == null || ObjectId.NULL.equals(newVersion)) {
+        } else if (newObject == null || newObject.getObjectId().isNull()) {
             type = ChangeType.DELETE;
         } else {
             type = ChangeType.MODIFY;
         }
 
-        DiffEntry entry = new DiffEntry(type, fromCommit, toCommit, oldVersion, newVersion, bounds,
+        DiffEntry entry = new DiffEntry(type, fromCommit, toCommit, oldObject, newObject, bounds,
                 path);
         return entry;
     }

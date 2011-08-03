@@ -10,6 +10,8 @@ public interface RepositoryDatabase {
 
     public ObjectDatabase getObjectDatabase();
 
+    public StagingDatabase getStagingDatabase();
+
     public void create();
 
     public void close();

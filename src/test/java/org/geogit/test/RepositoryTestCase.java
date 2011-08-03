@@ -16,10 +16,13 @@ import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
 import org.geogit.api.GeoGIT;
 import org.geogit.api.ObjectId;
+import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
 import org.geogit.repository.Index;
 import org.geogit.repository.Repository;
+import org.geogit.repository.Tuple;
 import org.geogit.storage.FeatureWriter;
+import org.geogit.storage.ObjectWriter;
 import org.geogit.storage.RepositoryDatabase;
 import org.geogit.storage.bdbje.EntityStoreConfig;
 import org.geogit.storage.bdbje.EnvironmentBuilder;
@@ -32,7 +35,9 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
+import org.opengis.geometry.BoundingBox;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.sleepycat.je.Environment;
@@ -40,33 +45,45 @@ import com.vividsolutions.jts.io.ParseException;
 
 public abstract class RepositoryTestCase extends TestCase {
 
-    protected String namespace1 = "http://geoserver.org/test";
+    protected static final String idL1 = "Lines.3";
 
-    protected String typeName1 = "TestType";
+    protected static final String idL2 = "Lines.2";
 
-    protected String typeSpec1 = "sp:String,ip:Integer,pp:Point:srid=4326";
+    protected static final String idL3 = "Lines.1";
 
-    protected SimpleFeatureType featureType1;
+    protected static final String idP3 = "Points.3";
 
-    protected Feature feature1_1;
+    protected static final String idP2 = "Points.2";
 
-    protected Feature feature1_2;
+    protected static final String idP1 = "Points.1";
 
-    protected Feature feature1_3;
+    protected String pointsNs = "http://geogit.points";
 
-    protected String namespace2 = "http://geosyncservice.example.com/test";
+    protected String pointsName = "Points";
 
-    protected String typeName2 = "TestLines";
+    protected String pointsTypeSpec = "sp:String,ip:Integer,pp:Point:srid=4326";
 
-    protected String typeSpec2 = "sp:String,ip:Integer,pp:LineString:srid=4326";
+    protected SimpleFeatureType pointsType;
 
-    protected SimpleFeatureType featureType2;
+    protected Feature points1;
 
-    protected Feature feature2_1;
+    protected Feature points2;
 
-    protected Feature feature2_2;
+    protected Feature points3;
 
-    protected Feature feature2_3;
+    protected String linesNs = "http://geogit.lines";
+
+    protected String linesName = "Lines";
+
+    protected String linesTypeSpec = "sp:String,ip:Integer,pp:LineString:srid=4326";
+
+    protected SimpleFeatureType linesType;
+
+    protected Feature lines1;
+
+    protected Feature lines2;
+
+    protected Feature lines3;
 
     protected Repository repo;
 
@@ -82,17 +99,25 @@ public abstract class RepositoryTestCase extends TestCase {
         }
         setup = true;
         Logging.ALL.forceMonolineConsoleOutput();
-        File envHome = new File(new File("target"), "mockblobstore");
+        final File envHome = new File(new File("target"), "mockblobstore");
+        final File repositoryHome = new File(envHome, "repository");
+        final File indexHome = new File(envHome, "index");
+
         FileUtils.deleteDirectory(envHome);
-        envHome.mkdirs();
+        repositoryHome.mkdirs();
+        indexHome.mkdirs();
 
         EntityStoreConfig config = new EntityStoreConfig();
         config.setCacheMemoryPercentAllowed(50);
         EnvironmentBuilder esb = new EnvironmentBuilder(config);
         Properties bdbEnvProperties = null;
         Environment environment;
-        environment = esb.buildEnvironment(envHome, bdbEnvProperties);
-        repositoryDatabase = new JERepositoryDatabase(environment);
+        environment = esb.buildEnvironment(repositoryHome, bdbEnvProperties);
+
+        Environment stagingEnvironment;
+        stagingEnvironment = esb.buildEnvironment(indexHome, bdbEnvProperties);
+
+        repositoryDatabase = new JERepositoryDatabase(environment, stagingEnvironment);
 
         // repositoryDatabase = new FileSystemRepositoryDatabase(envHome);
 
@@ -100,22 +125,19 @@ public abstract class RepositoryTestCase extends TestCase {
 
         repo.create();
 
-        featureType1 = DataUtilities.createType(namespace1, typeName1, typeSpec1);
+        pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);
 
-        feature1_1 = feature(featureType1, "TestType.feature.1", "StringProp1_1",
-                new Integer(1000), "POINT(1 1)");
-        feature1_2 = feature(featureType1, "TestType.feature.2", "StringProp1_2",
-                new Integer(1000), "POINT(2 2)");
-        feature1_3 = feature(featureType1, "TestType.feature.3", "StringProp1_3",
-                new Integer(3000), "POINT(3 3)");
+        points1 = feature(pointsType, idP1, "StringProp1_1", new Integer(1000), "POINT(1 1)");
+        points2 = feature(pointsType, idP2, "StringProp1_2", new Integer(1000), "POINT(2 2)");
+        points3 = feature(pointsType, idP3, "StringProp1_3", new Integer(3000), "POINT(3 3)");
 
-        featureType2 = DataUtilities.createType(namespace2, typeName2, typeSpec2);
+        linesType = DataUtilities.createType(linesNs, linesName, linesTypeSpec);
 
-        feature2_1 = feature(featureType2, "TestLines.1", "StringProp2_1", new Integer(1000),
+        lines1 = feature(linesType, idL3, "StringProp2_1", new Integer(1000),
                 "LINESTRING(1 1, 2 2)");
-        feature2_2 = feature(featureType2, "TestLines.2", "StringProp2_2", new Integer(2000),
+        lines2 = feature(linesType, idL2, "StringProp2_2", new Integer(2000),
                 "LINESTRING(3 3, 4 4)");
-        feature2_3 = feature(featureType2, "TestLines.3", "StringProp2_3", new Integer(3000),
+        lines3 = feature(linesType, idL1, "StringProp2_3", new Integer(3000),
                 "LINESTRING(5 5, 6 6)");
 
         setUpInternal();
@@ -208,9 +230,45 @@ public abstract class RepositoryTestCase extends TestCase {
         String namespaceURI = name.getNamespaceURI();
         String localPart = name.getLocalPart();
         String id = f.getIdentifier().getID();
-        ObjectId objectId = index.inserted(new FeatureWriter(f), f.getBounds(), namespaceURI,
-                localPart, id);
+        Ref ref = index.inserted(new FeatureWriter(f), f.getBounds(), namespaceURI, localPart, id);
+        ObjectId objectId = ref.getObjectId();
         return objectId;
+    }
+
+    protected List<Ref> insertAndAdd(Feature... features) throws Exception {
+        List<Ref> inserted = insert(features);
+        new GeoGIT(getRepository()).add().call();
+        return inserted;
+    }
+
+    protected List<Ref> insert(Feature... features) throws Exception {
+
+        final Index index = getRepository().getIndex();
+
+        Iterator<Tuple<ObjectWriter<?>, BoundingBox, List<String>>> iterator;
+        Function<Feature, Tuple<ObjectWriter<?>, BoundingBox, List<String>>> function = new Function<Feature, Tuple<ObjectWriter<?>, BoundingBox, List<String>>>() {
+
+            @Override
+            public Tuple<ObjectWriter<?>, BoundingBox, List<String>> apply(final Feature f) {
+                Name name = f.getType().getName();
+                String namespaceURI = name.getNamespaceURI();
+                String localPart = name.getLocalPart();
+                String id = f.getIdentifier().getID();
+
+                Tuple<ObjectWriter<?>, BoundingBox, List<String>> tuple;
+                ObjectWriter<?> writer = new FeatureWriter(f);
+                BoundingBox bounds = f.getBounds();
+                List<String> path = Arrays.asList(namespaceURI, localPart, id);
+                tuple = new Tuple<ObjectWriter<?>, BoundingBox, List<String>>(writer, bounds, path);
+                return tuple;
+            }
+        };
+
+        iterator = Iterators.transform(Iterators.forArray(features), function);
+        List<Ref> inserted = index.inserted(iterator);
+
+        return inserted;
+
     }
 
     /**
@@ -220,6 +278,15 @@ public abstract class RepositoryTestCase extends TestCase {
      * @return
      * @throws Exception
      */
+    protected boolean deleteAndAdd(Feature f) throws Exception {
+        boolean existed = delete(f);
+        if (existed) {
+            new GeoGIT(getRepository()).add().call();
+        }
+
+        return existed;
+    }
+
     protected boolean delete(Feature f) throws Exception {
         final Index index = getRepository().getIndex();
         Name name = f.getType().getName();
@@ -227,10 +294,6 @@ public abstract class RepositoryTestCase extends TestCase {
         String localPart = name.getLocalPart();
         String id = f.getIdentifier().getID();
         boolean existed = index.deleted(namespaceURI, localPart, id);
-        if (existed) {
-            new GeoGIT(getRepository()).add().call();
-        }
-
         return existed;
     }
 

@@ -4,14 +4,21 @@
  */
 package org.geogit.repository;
 
-public class Tuple<M, N> {
+public class Tuple<M, N, O> {
 
     private M first;
 
-    private N last;
+    private N middle;
 
-    public Tuple(M first, N last) {
+    private O last;
+
+    public Tuple(M first, N middle) {
+        this(first, middle, null);
+    }
+
+    public Tuple(M first, N middle, O last) {
         this.first = first;
+        this.middle = middle;
         this.last = last;
     }
 
@@ -19,7 +26,11 @@ public class Tuple<M, N> {
         return first;
     }
 
-    public N getLast() {
+    public N getMiddle() {
+        return middle;
+    }
+
+    public O getLast() {
         return last;
     }
 }

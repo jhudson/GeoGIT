@@ -6,11 +6,8 @@ package org.geogit.repository;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Logger;
 
-import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
@@ -21,7 +18,6 @@ import org.geogit.storage.ObjectDatabase;
 import org.geogit.storage.ObjectInserter;
 import org.geogit.storage.RefDatabase;
 import org.geogit.storage.RepositoryDatabase;
-import org.geogit.storage.RevSHA1Tree;
 import org.geogit.storage.RevTreeReader;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.Feature;
@@ -55,7 +51,7 @@ public class Repository {
     public Repository(final RepositoryDatabase repoDb) {
         Preconditions.checkNotNull(repoDb);
         this.repoDb = repoDb;
-        index = new Index(this);
+        index = new Index(repoDb.getStagingDatabase());
         workingTree = new WorkingTree(this);
     }
 
@@ -67,7 +63,7 @@ public class Repository {
         return repoDb.getReferenceDatabase();
     }
 
-    ObjectDatabase getObjectDatabase() {
+    public ObjectDatabase getObjectDatabase() {
         return repoDb.getObjectDatabase();
     }
 
@@ -110,6 +106,10 @@ public class Repository {
         return getRefDatabase().getRef(revStr);
     }
 
+    public Ref getHead() {
+        return getRef(Ref.HEAD);
+    }
+
     public synchronized Ref updateRef(final Ref ref) {
         boolean updated = getRefDatabase().put(ref);
         Preconditions.checkState(updated);
@@ -130,13 +130,7 @@ public class Repository {
     }
 
     public RevCommit getCommit(final ObjectId commitId) {
-        RevCommit commit;
-        try {
-            commit = getObjectDatabase().getCached(commitId, new CommitReader());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return commit;
+        return getObjectDatabase().getCommit(commitId);
     }
 
     public RevTree getTree(final ObjectId treeId) {
@@ -169,10 +163,9 @@ public class Repository {
     }
 
     /**
-     * @param path
      * @return the root tree for the current HEAD
      */
-    public RevTree getRootTree() {
+    public RevTree getHeadTree() {
 
         RevTree root;
         try {
@@ -222,23 +215,14 @@ public class Repository {
     }
 
     /**
-     * Creates and return a new, empty tree
+     * Creates and return a new, empty tree, that stores to this repository's {@link ObjectDatabase}
      */
-    public MutableTree newTree() {
-        return new RevSHA1Tree(getObjectDatabase()).mutable();
+    public RevTree newTree() {
+        return getObjectDatabase().newTree();
     }
 
-    public ObjectId getTreeChildId(String... path) {
-        RevTree root = getRootTree();
-        return getTreeChildId(root, path);
-    }
-
-    public ObjectId getTreeChildId(RevTree root, String... path) {
-        return getTreeChildId(root, Arrays.asList(path));
-    }
-
-    public ObjectId getTreeChildId(RevTree root, List<String> path) {
-        Ref treeRef = new DepthSearch(this).find(root, path);
-        return treeRef == null ? null : treeRef.getObjectId();
+    public Ref getRootTreeChild(String... path) {
+        RevTree root = getHeadTree();
+        return getObjectDatabase().getTreeChild(root, path);
     }
 }

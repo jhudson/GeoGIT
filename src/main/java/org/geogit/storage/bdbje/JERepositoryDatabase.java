@@ -6,43 +6,61 @@ package org.geogit.storage.bdbje;
 
 import org.geogit.storage.RefDatabase;
 import org.geogit.storage.RepositoryDatabase;
+import org.geogit.storage.StagingDatabase;
 
 import com.sleepycat.je.Environment;
 
 public class JERepositoryDatabase implements RepositoryDatabase {
 
-    private final Environment environment;
+    private final Environment repositoryEnvironment;
 
-    private JEObjectDatabase objectDatabase;
+    private final Environment stagingEnvironment;
+
+    private JEObjectDatabase repositoryObjectDb;
 
     private RefDatabase referenceDatabase;
 
-    public JERepositoryDatabase(final Environment environment) {
-        this.environment = environment;
-        objectDatabase = new JEObjectDatabase(environment);
-        referenceDatabase = new RefDatabase(objectDatabase);
+    private StagingDatabase stagingDatabase;
+
+    public JERepositoryDatabase(final Environment repositoryEnvironment,
+            final Environment stagingEnvironment) {
+
+        this.repositoryEnvironment = repositoryEnvironment;
+        this.stagingEnvironment = stagingEnvironment;
+        this.repositoryObjectDb = new JEObjectDatabase(repositoryEnvironment);
+        this.referenceDatabase = new RefDatabase(repositoryObjectDb);
+
+        JEObjectDatabase stagingObjectDb = new JEObjectDatabase(stagingEnvironment);
+        this.stagingDatabase = new StagingDatabase(repositoryObjectDb, stagingObjectDb);
     }
 
     /**
      * @see org.geogit.storage.RepositoryDatabase#create()
      */
+    @Override
     public void create() {
-        objectDatabase.create();
+        repositoryObjectDb.create();
         referenceDatabase.create();
+        stagingDatabase.create();
     }
 
     /**
      * @see org.geogit.storage.RepositoryDatabase#close()
      */
+    @Override
     public void close() {
+        stagingDatabase.close();
+        stagingEnvironment.close();
+
         referenceDatabase.close();
-        objectDatabase.close();
-        environment.close();
+        repositoryObjectDb.close();
+        repositoryEnvironment.close();
     }
 
     /**
      * @see org.geogit.storage.RepositoryDatabase#getReferenceDatabase()
      */
+    @Override
     public RefDatabase getReferenceDatabase() {
         return referenceDatabase;
     }
@@ -50,18 +68,30 @@ public class JERepositoryDatabase implements RepositoryDatabase {
     /**
      * @see org.geogit.storage.RepositoryDatabase#getObjectDatabase()
      */
+    @Override
     public JEObjectDatabase getObjectDatabase() {
-        return objectDatabase;
+        return repositoryObjectDb;
     }
 
+    /**
+     * @see org.geogit.storage.RepositoryDatabase#getStagingDatabase()
+     */
+    @Override
+    public StagingDatabase getStagingDatabase() {
+        return stagingDatabase;
+    }
+
+    @Override
     public void beginTransaction() {
         // CurrentTransaction.getInstance(environment).beginTransaction(null);
     }
 
+    @Override
     public void commitTransaction() {
         // CurrentTransaction.getInstance(environment).commitTransaction();
     }
 
+    @Override
     public void rollbackTransaction() {
         // CurrentTransaction.getInstance(environment).abortTransaction();
     }

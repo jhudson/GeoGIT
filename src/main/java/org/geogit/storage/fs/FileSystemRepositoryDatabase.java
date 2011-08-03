@@ -9,19 +9,44 @@ import java.io.File;
 import org.geogit.storage.ObjectDatabase;
 import org.geogit.storage.RefDatabase;
 import org.geogit.storage.RepositoryDatabase;
+import org.geogit.storage.StagingDatabase;
 
 public class FileSystemRepositoryDatabase implements RepositoryDatabase {
 
-    private final File environment;
+    private final File repositoryEnvironment;
 
-    private FileObjectDatabase objectDatabase;
+    private final File stagingEnvironment;
 
     private RefDatabase referenceDatabase;
 
-    public FileSystemRepositoryDatabase(final File environment) {
-        this.environment = environment;
-        objectDatabase = new FileObjectDatabase(environment);
-        referenceDatabase = new RefDatabase(objectDatabase);
+    private FileObjectDatabase repositoryObjectDb;
+
+    private StagingDatabase stagingDatabase;
+
+    public FileSystemRepositoryDatabase(final File repositoryEnvironment,
+            final File stagingEnvironment) {
+
+        this.repositoryEnvironment = repositoryEnvironment;
+        this.stagingEnvironment = stagingEnvironment;
+        this.repositoryObjectDb = new FileObjectDatabase(repositoryEnvironment);
+        this.referenceDatabase = new RefDatabase(repositoryObjectDb);
+
+        FileObjectDatabase stagingObjectDb = new FileObjectDatabase(stagingEnvironment);
+        this.stagingDatabase = new StagingDatabase(repositoryObjectDb, stagingObjectDb);
+    }
+
+    @Override
+    public void create() {
+        repositoryObjectDb.create();
+        referenceDatabase.create();
+        stagingDatabase.create();
+    }
+
+    @Override
+    public void close() {
+        stagingDatabase.close();
+        referenceDatabase.close();
+        repositoryObjectDb.close();
     }
 
     @Override
@@ -31,19 +56,12 @@ public class FileSystemRepositoryDatabase implements RepositoryDatabase {
 
     @Override
     public ObjectDatabase getObjectDatabase() {
-        return objectDatabase;
+        return repositoryObjectDb;
     }
 
     @Override
-    public void create() {
-        objectDatabase.create();
-        referenceDatabase.create();
-    }
-
-    @Override
-    public void close() {
-        referenceDatabase.close();
-        objectDatabase.close();
+    public StagingDatabase getStagingDatabase() {
+        return stagingDatabase;
     }
 
     @Override

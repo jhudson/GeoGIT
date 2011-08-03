@@ -77,7 +77,7 @@ public class DiffOp extends AbstractGeoGitOp<Iterator<DiffEntry>> {
                     + newVersion.toString());
         }
 
-        DiffTreeWalk diffReader = new DiffTreeWalk(repo, oldVersion, newVersion);
+        DiffTreeWalk diffReader = new DiffTreeWalk(repo.getObjectDatabase(), oldVersion, newVersion);
 
         diffReader.setFilter(this.pathFilter);
 

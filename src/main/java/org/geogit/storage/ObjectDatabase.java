@@ -6,8 +6,13 @@ package org.geogit.storage;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
+import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
+import org.geogit.api.Ref;
+import org.geogit.api.RevCommit;
+import org.geogit.api.RevTree;
 
 public interface ObjectDatabase {
 
@@ -73,6 +78,38 @@ public interface ObjectDatabase {
      */
     public abstract boolean put(final ObjectId id, final ObjectWriter<?> writer) throws Exception;
 
+    /**
+     * @param root
+     * @param tree
+     * @param pathToTree
+     * @return the id of the saved state of the modified root
+     * @throws Exception
+     */
+    public ObjectId writeBack(MutableTree root, final RevTree tree, final List<String> pathToTree)
+            throws Exception;
+
     public abstract ObjectInserter newObjectInserter();
 
+    public RevCommit getCommit(final ObjectId commitId);
+
+    public RevTree getTree(final ObjectId treeId);
+
+    /**
+     * If a child tree of {@code parent} addressed by the given {@code childPath} exists, returns
+     * it's mutable copy, otherwise just returns a new mutable tree without any modification to
+     * root.
+     * 
+     * @throws IllegalArgumentException
+     *             if an reference exists for {@code childPath} but is not of type {@code TREE}
+     */
+    public MutableTree getOrCreateSubTree(final RevTree parent, List<String> childPath);
+
+    /**
+     * Creates and return a new, empty tree, that stores to this {@link ObjectDatabase}
+     */
+    public MutableTree newTree();
+
+    public Ref getTreeChild(RevTree root, String... path);
+
+    public Ref getTreeChild(RevTree root, List<String> path);
 }
