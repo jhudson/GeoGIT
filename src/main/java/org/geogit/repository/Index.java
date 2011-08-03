@@ -334,7 +334,7 @@ public class Index {
     }
 
     private ObjectId copyTreeDiffs(final ObjectId fromTreeId, final ObjectDatabase fromDb,
-            final ObjectId toTreeId, final ObjectDatabase targetDb, final boolean copyContents)
+            final ObjectId toTreeId, final ObjectDatabase targetDb, final boolean moveContents)
             throws Exception {
 
         if (fromTreeId.equals(toTreeId)) {
@@ -370,8 +370,8 @@ public class Index {
             case ADD:
             case MODIFY:
                 parentTree.put(newObject);
-                if (copyContents) {
-                    deepCopy(newObject, fromDb, targetDb);
+                if (moveContents) {
+                    deepMove(newObject, fromDb, targetDb);
                 }
                 break;
             case DELETE:
@@ -479,13 +479,14 @@ public class Index {
      * @param repositoryObjectInserter
      * @throws Exception
      */
-    private void deepCopy(final Ref objectRef, final ObjectDatabase from, final ObjectDatabase to)
+    private void deepMove(final Ref objectRef, final ObjectDatabase from, final ObjectDatabase to)
             throws Exception {
 
         final InputStream raw = from.getRaw(objectRef.getObjectId());
         final ObjectId insertedId;
         try {
             insertedId = to.put(new RawObjectWriter(raw));
+            from.delete(objectRef.getObjectId());
         } finally {
             raw.close();
         }
@@ -499,7 +500,7 @@ public class Index {
                 @Override
                 public boolean visitEntry(final Ref ref) {
                     try {
-                        deepCopy(ref, from, to);
+                        deepMove(ref, from, to);
                     } catch (Exception e) {
                         Throwables.propagate(e);
                     }

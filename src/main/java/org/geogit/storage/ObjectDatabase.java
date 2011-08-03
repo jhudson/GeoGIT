@@ -112,4 +112,6 @@ public interface ObjectDatabase {
     public Ref getTreeChild(RevTree root, String... path);
 
     public Ref getTreeChild(RevTree root, List<String> path);
+
+    public boolean delete(ObjectId objectId);
 }

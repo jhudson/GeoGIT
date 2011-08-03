@@ -290,4 +290,9 @@ public class StagingDatabase implements ObjectDatabase {
         return stagingDb.writeBack(root, tree, pathToTree);
     }
 
+    @Override
+    public boolean delete(final ObjectId objectId) {
+        return stagingDb.delete(objectId);
+    }
+
 }

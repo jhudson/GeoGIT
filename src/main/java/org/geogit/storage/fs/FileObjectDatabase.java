@@ -86,6 +86,11 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
         return true;
     }
 
+    @Override
+    public boolean delete(ObjectId objectId) {
+        return filePath(objectId).delete();
+    }
+
     private File filePath(final ObjectId id) {
         final String idName = id.toString();
         final char[] path1 = new char[2];
@@ -99,4 +104,5 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
         String filePath = sb.toString();
         return new File(filePath);
     }
+
 }

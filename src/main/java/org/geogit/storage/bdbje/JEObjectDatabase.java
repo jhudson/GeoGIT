@@ -126,4 +126,14 @@ public class JEObjectDatabase extends AbstractObjectDatabase implements ObjectDa
         }
         return didntExist;
     }
+
+    @Override
+    public boolean delete(final ObjectId id) {
+        final byte[] rawKey = id.getRawValue();
+        final DatabaseEntry key = new DatabaseEntry(rawKey);
+
+        final OperationStatus status = objectDb.delete(txn.getTransaction(), key);
+
+        return OperationStatus.SUCCESS.equals(status);
+    }
 }
