@@ -51,8 +51,20 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
     // like the -a option in git commit
     private boolean all;
 
+    private AuthenticationResolver authResolver;
+
     public CommitOp(final Repository repository) {
+        this(repository, new PlatformAuthenticationResolver());
+    }
+
+    public CommitOp(final Repository repository, final AuthenticationResolver authResolver) {
         super(repository);
+        this.authResolver = authResolver;
+    }
+
+    public CommitOp setAuthenticationResolver(final AuthenticationResolver auth) {
+        this.authResolver = auth == null ? new PlatformAuthenticationResolver() : auth;
+        return this;
     }
 
     public CommitOp setAuthor(final String author) {
@@ -138,9 +150,9 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
         final ObjectId commitId;
         {
             CommitBuilder cb = new CommitBuilder();
-            cb.setAuthor(author);
-            cb.setCommitter(committer);
-            cb.setMessage(message);
+            cb.setAuthor(getAuthor());
+            cb.setCommitter(getCommitter());
+            cb.setMessage(getMessage());
             cb.setParentIds(parents);
             cb.setTreeId(newTreeId);
             if (timeStamp != null) {
@@ -160,5 +172,17 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
         Preconditions.checkState(newTreeId.equals(treeId));
 
         return commit;
+    }
+
+    private String getMessage() {
+        return message == null ? authResolver.getCommitMessage() : message;
+    }
+
+    private String getCommitter() {
+        return committer == null ? authResolver.getCommitter() : committer;
+    }
+
+    private String getAuthor() {
+        return author == null ? authResolver.getAuthor() : author;
     }
 }

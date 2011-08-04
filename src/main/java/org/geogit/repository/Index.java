@@ -431,7 +431,7 @@ public class Index {
      *        inserted to the database too
      */
     public void reset() {
-        // this.staged.clear();
+        indexDatabase.reset();
     }
 
     /**

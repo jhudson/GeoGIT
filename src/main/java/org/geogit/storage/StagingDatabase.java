@@ -77,27 +77,30 @@ public class StagingDatabase implements ObjectDatabase {
     public void create() {
         stagingDb.create();
         references.create();
-
         Ref stagedTreeRef = references.getRef(STAGED_TREE);
         if (stagedTreeRef == null) {
-            Ref head = references.getRef(Ref.HEAD);
-            ObjectId commitId = head.getObjectId();
-            ObjectId rootTreeId;
-            if (commitId.isNull()) {
-                rootTreeId = ObjectId.NULL;
-            } else {
-                rootTreeId = repoDb.getCommit(commitId).getTreeId();
-            }
-            stagedTreeRef = new Ref(STAGED_TREE, rootTreeId, TYPE.TREE);
-            references.put(stagedTreeRef);
+            reset();
+        }
+    }
+
+    public void reset() {
+
+        Ref head = references.getRef(Ref.HEAD);
+        ObjectId commitId = head.getObjectId();
+        ObjectId rootTreeId;
+        if (commitId.isNull()) {
+            rootTreeId = ObjectId.NULL;
+        } else {
+            rootTreeId = repoDb.getCommit(commitId).getTreeId();
         }
 
+        Ref stagedTreeRef = new Ref(STAGED_TREE, rootTreeId, TYPE.TREE);
+        references.put(stagedTreeRef);
+
         Ref unstagedTreeRef = references.getRef(UNSTAGED_TREE);
-        if (unstagedTreeRef == null) {
-            stagedTreeRef = references.getRef(STAGED_TREE);
-            unstagedTreeRef = new Ref(UNSTAGED_TREE, stagedTreeRef.getObjectId(), TYPE.TREE);
-            references.put(unstagedTreeRef);
-        }
+        stagedTreeRef = references.getRef(STAGED_TREE);
+        unstagedTreeRef = new Ref(UNSTAGED_TREE, stagedTreeRef.getObjectId(), TYPE.TREE);
+        references.put(unstagedTreeRef);
     }
 
     public MutableTree getStagedRoot() {
