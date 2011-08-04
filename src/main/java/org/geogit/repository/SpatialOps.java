@@ -53,6 +53,9 @@ public class SpatialOps {
             targetCrs = target.getCoordinateReferenceSystem();
         }
         CoordinateReferenceSystem sourceCrs = include.getCoordinateReferenceSystem();
+        if (sourceCrs == null) {
+            sourceCrs = targetCrs;
+        }
         try {
             Envelope env = include;
             if (!CRS.equalsIgnoreMetadata(targetCrs, sourceCrs)) {

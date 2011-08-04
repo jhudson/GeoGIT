@@ -346,15 +346,22 @@ public class BLOBS {
     public static void writeWhere(final BxmlStreamWriter w, final BoundingBox bounds)
             throws IOException {
         Preconditions.checkNotNull(bounds);
-        Preconditions.checkNotNull(bounds.getCoordinateReferenceSystem());
+        // Preconditions.checkNotNull(bounds.getCoordinateReferenceSystem());
 
         final CoordinateReferenceSystem crs = bounds.getCoordinateReferenceSystem();
-        final String epsgCode = lookupIdentifier(crs);
+        final String epsgCode;
+        if (crs == null) {
+            epsgCode = null;
+        } else {
+            epsgCode = lookupIdentifier(crs);
+        }
 
         w.writeStartElement(WHERE);
-        w.writeStartAttribute("", "epsg");
-        w.writeValue(epsgCode);
-        w.writeEndAttributes();
+        if (epsgCode != null) {
+            w.writeStartAttribute("", "epsg");
+            w.writeValue(epsgCode);
+            w.writeEndAttributes();
+        }
 
         final double[] value = new double[] { bounds.getMinX(), bounds.getMinY(), bounds.getMaxX(),
                 bounds.getMaxY() };
@@ -370,7 +377,12 @@ public class BLOBS {
         r.require(EventType.START_ELEMENT, WHERE.getNamespaceURI(), WHERE.getLocalPart());
 
         final String epsgCode = r.getAttributeValue(null, "epsg");
-        final CoordinateReferenceSystem crs = lookupCrs(epsgCode);
+        final CoordinateReferenceSystem crs;
+        if (epsgCode == null) {
+            crs = null;
+        } else {
+            crs = lookupCrs(epsgCode);
+        }
 
         r.next();
         r.require(EventType.VALUE_DOUBLE, null, null);
