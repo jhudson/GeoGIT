@@ -28,7 +28,9 @@ public class GeoGIT {
 
     private final Repository repository;
 
-    private static CommitStateResolver commitStateResolver = new PlatformResolver();
+    public static final CommitStateResolver DEFAULT_COMMIT_RESOLVER = new PlatformResolver();
+
+    private static CommitStateResolver commitStateResolver = DEFAULT_COMMIT_RESOLVER;
 
     public GeoGIT(final Repository repository) {
         Preconditions.checkNotNull(repository, "repository can't be null");
