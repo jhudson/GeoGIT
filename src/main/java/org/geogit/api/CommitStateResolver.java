@@ -6,7 +6,7 @@ package org.geogit.api;
  * @author groldan
  * 
  */
-public interface AuthenticationResolver {
+public interface CommitStateResolver {
 
     /**
      * @return {@code null} if annonymous, the name of the current user otherwise
@@ -17,4 +17,5 @@ public interface AuthenticationResolver {
 
     public String getCommitter();
 
+    public long getCurrentTimeMillis();
 }

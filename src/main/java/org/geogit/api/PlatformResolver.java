@@ -1,9 +1,9 @@
 package org.geogit.api;
 
-public class PlatformAuthenticationResolver implements AuthenticationResolver {
+public class PlatformResolver implements CommitStateResolver {
 
     /**
-     * @see org.geoserver.data.versioning.AuthenticationResolver#getAuthor()
+     * @see org.CommitStateResolver.data.versioning.AuthenticationResolver#getAuthor()
      */
     @Override
     public String getAuthor() {
@@ -19,6 +19,11 @@ public class PlatformAuthenticationResolver implements AuthenticationResolver {
     @Override
     public String getCommitter() {
         return getAuthor();
+    }
+
+    @Override
+    public long getCurrentTimeMillis() {
+        return System.currentTimeMillis();
     }
 
 }

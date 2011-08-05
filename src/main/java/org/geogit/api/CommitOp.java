@@ -51,19 +51,19 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
     // like the -a option in git commit
     private boolean all;
 
-    private AuthenticationResolver authResolver;
+    private CommitStateResolver stateResolver;
 
     public CommitOp(final Repository repository) {
-        this(repository, new PlatformAuthenticationResolver());
+        this(repository, new PlatformResolver());
     }
 
-    public CommitOp(final Repository repository, final AuthenticationResolver authResolver) {
+    public CommitOp(final Repository repository, final CommitStateResolver authResolver) {
         super(repository);
-        this.authResolver = authResolver;
+        this.stateResolver = authResolver;
     }
 
-    public CommitOp setAuthenticationResolver(final AuthenticationResolver auth) {
-        this.authResolver = auth == null ? new PlatformAuthenticationResolver() : auth;
+    public CommitOp setStateResolver(final CommitStateResolver auth) {
+        this.stateResolver = auth == null ? new PlatformResolver() : auth;
         return this;
     }
 
@@ -155,9 +155,7 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
             cb.setMessage(getMessage());
             cb.setParentIds(parents);
             cb.setTreeId(newTreeId);
-            if (timeStamp != null) {
-                cb.setTimestamp(timeStamp.longValue());
-            }
+            cb.setTimestamp(getTimeStamp());
             // cb.setBounds(bounds);
 
             ObjectInserter objectInserter = repository.newObjectInserter();
@@ -174,15 +172,19 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
         return commit;
     }
 
+    private long getTimeStamp() {
+        return timeStamp == null ? stateResolver.getCurrentTimeMillis() : timeStamp.longValue();
+    }
+
     private String getMessage() {
-        return message == null ? authResolver.getCommitMessage() : message;
+        return message == null ? stateResolver.getCommitMessage() : message;
     }
 
     private String getCommitter() {
-        return committer == null ? authResolver.getCommitter() : committer;
+        return committer == null ? stateResolver.getCommitter() : committer;
     }
 
     private String getAuthor() {
-        return author == null ? authResolver.getAuthor() : author;
+        return author == null ? stateResolver.getAuthor() : author;
     }
 }

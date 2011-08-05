@@ -28,19 +28,19 @@ public class GeoGIT {
 
     private final Repository repository;
 
-    private static AuthenticationResolver authResolver = new PlatformAuthenticationResolver();
+    private static CommitStateResolver commitStateResolver = new PlatformResolver();
 
     public GeoGIT(final Repository repository) {
         Preconditions.checkNotNull(repository, "repository can't be null");
         this.repository = repository;
     }
 
-    public static AuthenticationResolver getAuthResolver() {
-        return authResolver;
+    public static CommitStateResolver getCommitStateResolver() {
+        return commitStateResolver;
     }
 
-    public static void setAuthResolver(AuthenticationResolver resolver) {
-        authResolver = resolver == null ? new PlatformAuthenticationResolver() : resolver;
+    public static void setCommitStateResolver(CommitStateResolver resolver) {
+        commitStateResolver = resolver == null ? new PlatformResolver() : resolver;
     }
 
     public Repository getRepository() {
@@ -109,7 +109,7 @@ public class GeoGIT {
      * @return commit id
      */
     public CommitOp commit() {
-        return new CommitOp(repository, authResolver);
+        return new CommitOp(repository, commitStateResolver);
     }
 
     /**
