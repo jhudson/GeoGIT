@@ -6,6 +6,7 @@ package org.geogit.repository;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.logging.Logger;
 
 import org.geogit.api.ObjectId;
@@ -219,6 +220,11 @@ public class Repository {
      */
     public RevTree newTree() {
         return getObjectDatabase().newTree();
+    }
+
+    public Ref getRootTreeChild(List<String> path) {
+        RevTree root = getHeadTree();
+        return getObjectDatabase().getTreeChild(root, path);
     }
 
     public Ref getRootTreeChild(String... path) {
