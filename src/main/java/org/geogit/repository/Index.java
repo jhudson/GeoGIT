@@ -75,15 +75,15 @@ public class Index {
         this.indexDatabase = indexDatabase;
     }
 
-    StagingDatabase getDatabase() {
+    public StagingDatabase getDatabase() {
         return indexDatabase;
     }
 
-    RevTree getUnstaged() {
+    public RevTree getUnstaged() {
         return indexDatabase.getUnstagedRoot();
     }
 
-    RevTree getStaged() {
+    public RevTree getStaged() {
         return indexDatabase.getStagedRoot();
     }
 
