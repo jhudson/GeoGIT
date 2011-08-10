@@ -5,7 +5,6 @@
 package org.geogit.repository;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,11 +29,14 @@ import org.geogit.storage.ObjectWriter;
 import org.geogit.storage.RawObjectWriter;
 import org.geogit.storage.StagingDatabase;
 import org.geotools.util.NullProgressListener;
+import org.geotools.util.SimpleInternationalString;
+import org.geotools.util.SubProgressListener;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.util.ProgressListener;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterators;
 
 /**
  * The Index keeps track of the changes not yet committed to the repository.
@@ -190,7 +192,7 @@ public class Index {
      * @return the reference to the newly inserted object.
      * @throws Exception
      */
-    public Ref inserted(final ObjectWriter<?> blob, final BoundingBox bounds, final String... path)
+    public void inserted(final ObjectWriter<?> blob, final BoundingBox bounds, final String... path)
             throws Exception {
 
         Preconditions.checkNotNull(blob);
@@ -200,10 +202,7 @@ public class Index {
         tuple = new Tuple<ObjectWriter<?>, BoundingBox, List<String>>(blob, bounds,
                 Arrays.asList(path));
 
-        List<Ref> inserted = inserted(Collections.singleton(tuple).iterator(),
-                new NullProgressListener(), null);
-
-        return inserted.get(0);
+        inserted(Collections.singleton(tuple).iterator(), new NullProgressListener(), null);
     }
 
     /**
@@ -214,7 +213,7 @@ public class Index {
      * @return list of inserted blob references
      * @throws Exception
      */
-    public synchronized List<Ref> inserted(
+    public synchronized void inserted(
             final Iterator<Tuple<ObjectWriter<?>, BoundingBox, List<String>>> objects,
             final ProgressListener progress, final Integer size) throws Exception {
 
@@ -230,14 +229,15 @@ public class Index {
         BoundingBox bounds;
         List<String> path;
 
-        List<Ref> inserts = new ArrayList<Ref>();
-
         Map<List<String>, MutableTree> changedTrees = new HashMap<List<String>, MutableTree>();
-
+        progress.started();
         int count = 0;
         // first insert all the objects and hold the modified leaf trees
         while (objects.hasNext()) {
             count++;
+            if (progress.isCanceled()) {
+                return;
+            }
             if (size != null) {
                 progress.progress((float) (count * 100) / size.intValue());
             }
@@ -257,8 +257,6 @@ public class Index {
                 blobRef = new SpatialRef(nodeId, blobId, TYPE.BLOB, bounds);
             }
 
-            inserts.add(blobRef);
-
             final List<String> blobParentPath = path.subList(0, path.size() - 1);
             MutableTree parentTree = changedTrees.get(blobParentPath);
             if (parentTree == null) {
@@ -269,14 +267,22 @@ public class Index {
             parentTree.put(blobRef);
         }
 
+        if (progress.isCanceled()) {
+            return;
+        }
         // now write back all changed trees
+        final ObjectId currUnstagedRootId = indexDatabase.getUnstagedRootRef().getObjectId();
         for (Map.Entry<List<String>, MutableTree> e : changedTrees.entrySet()) {
             List<String> treePath = e.getKey();
             MutableTree tree = e.getValue();
             writeBack(tree, treePath, false);
         }
-
-        return inserts;
+        if (progress.isCanceled()) {
+            // revert
+            indexDatabase.setUnstagedRoot(currUnstagedRootId);
+            return;
+        }
+        progress.complete();
     }
 
     private void checkValidInsert(ObjectWriter<?> object, List<String> path) {
@@ -311,22 +317,30 @@ public class Index {
      * </p>
      * 
      * @param path
+     * @param progressListener
      * @throws Exception
      */
-    public synchronized void stage(final String... path) throws Exception {
-        if (path == null) {
-            // add all
-            final ObjectId newStagedRootId = stageAll();
-            // this is the add all operation, so set the unstaged root too
-            indexDatabase.setUnstagedRoot(newStagedRootId);
-
-            return;
+    public synchronized void stage(ProgressListener progress, final String... path)
+            throws Exception {
+        if (progress == null) {
+            progress = new NullProgressListener();
         }
-        checkValidPath(Arrays.asList(path));
-        throw new UnsupportedOperationException("partial staging not yet implemented");
+        progress.started();
+        if (path == null || path.length == 0) {
+            // add all
+            final ObjectId newStagedRootId = stageAll(progress);
+            // this is the add all operation, so set the unstaged root too
+            if (!progress.isCanceled()) {
+                indexDatabase.setUnstagedRoot(newStagedRootId);
+                progress.complete();
+            }
+        } else {
+            checkValidPath(Arrays.asList(path));
+            throw new UnsupportedOperationException("partial staging not yet implemented");
+        }
     }
 
-    private ObjectId stageAll() throws Exception {
+    private ObjectId stageAll(final ProgressListener progress) throws Exception {
         final Ref stagedRoot = indexDatabase.getStagedRootRef();
         final Ref unstagedRoot = indexDatabase.getUnstagedRootRef();
 
@@ -336,17 +350,30 @@ public class Index {
         final StagingDatabase targetDb = indexDatabase;
         final boolean copyContents = false;
         final ObjectId newRootTreeId = copyTreeDiffs(fromTreeId, fromDb, toTreeId, targetDb,
-                copyContents);
+                copyContents, progress);
 
-        indexDatabase.setStagedRoot(newRootTreeId);
+        if (!progress.isCanceled()) {
+            indexDatabase.setStagedRoot(newRootTreeId);
+        }
 
         return newRootTreeId;
 
     }
 
+    /**
+     * @param fromTreeId
+     * @param fromDb
+     * @param toTreeId
+     * @param targetDb
+     * @param moveContents
+     * @param listener
+     * @return the object id of the newly created root tree, or {@code null} iif
+     *         {@code listener.isCanceled()}
+     * @throws Exception
+     */
     private ObjectId copyTreeDiffs(final ObjectId fromTreeId, final ObjectDatabase fromDb,
-            final ObjectId toTreeId, final ObjectDatabase targetDb, final boolean moveContents)
-            throws Exception {
+            final ObjectId toTreeId, final ObjectDatabase targetDb, final boolean moveContents,
+            final ProgressListener listener) throws Exception {
 
         if (fromTreeId.equals(toTreeId)) {
             return fromTreeId;
@@ -360,10 +387,37 @@ public class Index {
         final RevTree targetRoot = targetDb.getTree(toTreeId);
 
         DiffTreeWalk diffTreeWalk = new DiffTreeWalk(fromDb, oldTreeRef, newTreeRef);
+
+        final double numChanges;
+        final ProgressListener progress;
+        if (listener instanceof NullProgressListener) {
+            numChanges = -1;
+            progress = listener;
+        } else {
+            if (listener.isCanceled()) {
+                return null;
+            }
+            listener.setTask(new SimpleInternationalString("Counting changes..."));
+            numChanges = Iterators.size(diffTreeWalk.get());
+            if (listener.isCanceled()) {
+                return null;
+            }
+            listener.progress(50f);
+            progress = new SubProgressListener(listener, 50f);
+        }
+
         Iterator<DiffEntry> diffs = diffTreeWalk.get();
         DiffEntry diff;
+        int count = 0;
         while (diffs.hasNext()) {
+            if (listener.isCanceled()) {
+                return null;
+            }
             diff = diffs.next();
+            if (numChanges > 0) {
+                count++;
+                progress.progress((float) ((count * 100) / numChanges));
+            }
 
             List<String> path = diff.getPath();
 
@@ -393,6 +447,9 @@ public class Index {
             }
         }
 
+        if (listener.isCanceled()) {
+            return null;
+        }
         // now write back all changed trees
         ObjectId newTargetRootId = toTreeId;
         for (Map.Entry<List<String>, MutableTree> e : changedTrees.entrySet()) {
@@ -434,6 +491,10 @@ public class Index {
         indexDatabase.reset();
     }
 
+    public Tuple<ObjectId, BoundingBox, ?> writeTree(final Ref targetRef) throws Exception {
+        return writeTree(targetRef, new NullProgressListener());
+    }
+
     /**
      * Updates the repository target HEAD tree given by {@code targetRootRef} with the staged
      * changes in this index.
@@ -446,7 +507,8 @@ public class Index {
      *         aggregated bounds of the changes, if any.
      * @throws Exception
      */
-    public Tuple<ObjectId, BoundingBox, ?> writeTree(final Ref targetRef) throws Exception {
+    public Tuple<ObjectId, BoundingBox, ?> writeTree(final Ref targetRef,
+            final ProgressListener progress) throws Exception {
         Preconditions.checkNotNull(targetRef);
 
         final ObjectDatabase repositoryDatabase = indexDatabase.getRepositoryDatabase();
@@ -474,8 +536,10 @@ public class Index {
         final boolean copyContents = true;
 
         final ObjectId newRepoTreeId = copyTreeDiffs(fromTreeId, fromDb, toTreeId, targetDb,
-                copyContents);
-
+                copyContents, progress);
+        if (progress.isCanceled()) {
+            return null;
+        }
         indexDatabase.setStagedRoot(newRepoTreeId);
 
         BoundingBox bounds = null;

@@ -117,7 +117,8 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
     }
 
     /**
-     * @return the commit just applied
+     * @return the commit just applied, or {@code null} iif
+     *         {@code getProgressListener().isCanceled()}
      * @see org.geogit.api.AbstractGeoGitOp#call()
      * @throws NothingToCommitException
      *             if there are no staged changes by comparing the index staging tree and the
@@ -126,10 +127,15 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
     public RevCommit call() throws Exception {
         // TODO: check repository is in a state that allows committing
 
+        getProgressListener().started();
         final Repository repository = getRepository();
         GeoGIT ggit = new GeoGIT(repository);
         if (all) {
-            ggit.add().addPattern(".").setUpdateOnly(true).call();
+            ggit.add().addPattern(".").setUpdateOnly(true).setProgressListener(subProgress(49f))
+                    .call();
+        }
+        if (getProgressListener().isCanceled()) {
+            return null;
         }
         final Ref currHead = repository.getHead();
         Preconditions.checkState(currHead != null, "Repository has no HEAD, can't commit");
@@ -138,7 +144,12 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
         parents.add(currHeadCommitId);
 
         final Index index = repository.getIndex();
-        Tuple<ObjectId, BoundingBox, ?> result = index.writeTree(currHead);
+
+        Tuple<ObjectId, BoundingBox, ?> result = index.writeTree(currHead, subProgress(49f));
+        if (getProgressListener().isCanceled()) {
+            return null;
+        }
+
         final ObjectId newTreeId = result.getFirst();
         final BoundingBox affectedArea = result.getMiddle();
 
@@ -158,6 +169,9 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
             cb.setTimestamp(getTimeStamp());
             // cb.setBounds(bounds);
 
+            if (getProgressListener().isCanceled()) {
+                return null;
+            }
             ObjectInserter objectInserter = repository.newObjectInserter();
             commitId = objectInserter.insert(new CommitWriter(cb.build(ObjectId.NULL)));
         }
@@ -168,6 +182,8 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
         Preconditions.checkState(commitId.equals(newHead.getObjectId()));
         ObjectId treeId = repository.getCommit(newHead.getObjectId()).getTreeId();
         Preconditions.checkState(newTreeId.equals(treeId));
+
+        getProgressListener().complete();
 
         return commit;
     }

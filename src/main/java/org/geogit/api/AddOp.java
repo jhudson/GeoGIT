@@ -34,7 +34,7 @@ public class AddOp extends AbstractGeoGitOp<Index> {
     public Index call() throws Exception {
         final Index index = getRepository().getIndex();
         // this is add all, TODO: implement partial adds
-        index.stage(null);
+        index.stage(getProgressListener(), null);
         return index;
     }
 

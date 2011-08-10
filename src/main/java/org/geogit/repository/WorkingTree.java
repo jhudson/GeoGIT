@@ -135,7 +135,7 @@ public class WorkingTree {
                         }
                     });
 
-            List<Ref> inserted = index.inserted(objects, listener, size <= 0 ? null : size);
+            index.inserted(objects, listener, size <= 0 ? null : size);
         } finally {
             features.close(featureIterator);
         }

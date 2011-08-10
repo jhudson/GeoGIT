@@ -67,11 +67,10 @@ public class DiffTreeWalk {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public Iterator<DiffEntry> get() {
         if (fromCommit != null) {
             if (fromCommit.equals(toCommit)) {
-                return Collections.EMPTY_LIST.iterator();
+                return Iterators.emptyIterator();
             }
 
             this.oldObject = getFilteredObject(fromCommit);
@@ -79,7 +78,7 @@ public class DiffTreeWalk {
 
             if (oldObject == null && newObject == null) {
                 // filter didn't match anything
-                return Collections.EMPTY_LIST.iterator();
+                return Iterators.emptyIterator();
             }
         }
 
@@ -94,7 +93,7 @@ public class DiffTreeWalk {
             // ok, found change between new and old version of the filter addressed object
             DiffEntry entry = DiffEntry.newInstance(fromCommit, toCommit, oldObject, newObject,
                     basePath);
-            return Collections.singleton(entry).iterator();
+            return Iterators.singletonIterator(entry);
         }
 
         // filter addressed a tree...
