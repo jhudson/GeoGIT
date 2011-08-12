@@ -6,10 +6,13 @@ package org.geogit.repository;
 
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
+import org.geogit.api.RevBlob;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevObject;
+import org.geogit.api.RevTree;
 import org.geogit.storage.BlobWriter;
 import org.geogit.storage.CommitWriter;
+import org.geogit.storage.RevTreeWriter;
 import org.geogit.test.RepositoryTestCase;
 
 public class RepositoryTest extends RepositoryTestCase {
@@ -80,5 +83,33 @@ public class RepositoryTest extends RepositoryTestCase {
         RevObject blob2 = repo.getBlob(id2);
         assertEquals(blob1, repo.resolve(hash1.substring(0, 8)));
         assertEquals(blob2, repo.resolve(hash2.substring(0, 8)));
+    }
+
+    public void testResolveType() throws Exception {
+        byte[] raw1 = { 'a', 'b', 'c', 'd', 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        byte[] raw2 = { 'a', 'b', 'c', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+        ObjectId treeId = new ObjectId(raw1);
+        String blobHash = treeId.toString();
+
+        ObjectId commitId = new ObjectId(raw2);
+        String commitHash = commitId.toString();
+
+        repo.getObjectDatabase().put(treeId, new RevTreeWriter(repo.newTree()));
+
+        {
+            RevCommit c = new RevCommit(ObjectId.NULL);
+            c.setTreeId(ObjectId.NULL);
+            repo.getObjectDatabase().put(commitId, new CommitWriter(c));
+        }
+
+        String matchingPartialHash = blobHash.substring(0, 6);
+        assertEquals(matchingPartialHash, commitHash.substring(0, 6));
+
+        RevCommit resolvedCommit = repo.resolve(matchingPartialHash, RevCommit.class);
+        assertEquals(commitId, resolvedCommit.getId());
+
+        RevTree resolvedTree = repo.resolve(matchingPartialHash, RevTree.class);
+        assertEquals(treeId, resolvedTree.getId());
     }
 }

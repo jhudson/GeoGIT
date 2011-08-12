@@ -12,14 +12,14 @@ package org.geogit.api;
  */
 public class RevBlob extends AbstractRevObject {
 
-    private final byte[] content;
+    private final Object parsed;
 
-    public RevBlob(ObjectId id, byte[] content) {
+    public RevBlob(ObjectId id, Object parsed) {
         super(id, TYPE.BLOB);
-        this.content = content;
+        this.parsed = parsed;
     }
 
-    public byte[] getContent() {
-        return content;
+    public Object getParsed() {
+        return parsed;
     }
 }

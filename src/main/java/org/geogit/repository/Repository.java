@@ -12,8 +12,10 @@ import java.util.logging.Logger;
 
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
+import org.geogit.api.RevBlob;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevObject;
+import org.geogit.api.RevTag;
 import org.geogit.api.RevTree;
 import org.geogit.storage.CommitReader;
 import org.geogit.storage.FeatureReader;
@@ -88,6 +90,36 @@ public class Repository {
 
     public InputStream getRawObject(final ObjectId oid) throws IOException {
         return getObjectDatabase().getRaw(oid);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends RevObject> T resolve(final String revstr, Class<T> type) {
+        Ref ref = getRef(revstr);
+        if (ref != null) {
+            RevObject parsed = parse(ref);
+            if (!type.isAssignableFrom(parsed.getClass())) {
+                return (T) parsed;
+            }
+        }
+
+        // not a ref name, may be a partial object id?
+        List<ObjectId> lookUp = getObjectDatabase().lookUp(revstr);
+        if (!lookUp.isEmpty()) {
+            for (ObjectId oid : lookUp) {
+                try {
+                    if (RevCommit.class.equals(type) || RevTag.class.equals(type)) {
+                        return (T) getCommit(oid);
+                    } else if (RevTree.class.equals(type)) {
+                        return (T) getTree(oid);
+                    } else if (RevBlob.class.equals(type)) {
+                        return (T) getBlob(oid);
+                    }
+                } catch (Exception wrongType) {
+                    // ignore
+                }
+            }
+        }
+        throw new NoSuchElementException();
     }
 
     /**
