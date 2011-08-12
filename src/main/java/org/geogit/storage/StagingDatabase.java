@@ -8,6 +8,7 @@ import java.util.List;
 import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
+import org.geogit.api.RevBlob;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.api.RevTree;
@@ -296,6 +297,23 @@ public class StagingDatabase implements ObjectDatabase {
     @Override
     public boolean delete(final ObjectId objectId) {
         return stagingDb.delete(objectId);
+    }
+
+    @Override
+    public List<ObjectId> lookUp(String partialId) {
+        List<ObjectId> lookUp = stagingDb.lookUp(partialId);
+        if (lookUp.isEmpty()) {
+            lookUp = repoDb.lookUp(partialId);
+        }
+        return lookUp;
+    }
+
+    @Override
+    public RevBlob getBlob(ObjectId objectId) {
+        if (stagingDb.exists(objectId)) {
+            return stagingDb.getBlob(objectId);
+        }
+        return repoDb.getBlob(objectId);
     }
 
 }

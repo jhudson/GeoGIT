@@ -4,9 +4,16 @@
  */
 package org.geogit.storage.bdbje;
 
+import static com.sleepycat.je.OperationStatus.NOTFOUND;
+import static com.sleepycat.je.OperationStatus.SUCCESS;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,6 +24,8 @@ import org.geotools.util.logging.Logging;
 
 import com.google.common.base.Preconditions;
 import com.sleepycat.collections.CurrentTransaction;
+import com.sleepycat.je.Cursor;
+import com.sleepycat.je.CursorConfig;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
@@ -63,6 +72,45 @@ public class JEObjectDatabase extends AbstractObjectDatabase implements ObjectDa
         this.objectDb = env.openDatabase(null, "BlobStore", dbConfig);
     }
 
+    @Override
+    protected List<ObjectId> lookUpInternal(final byte[] partialId) {
+
+        DatabaseEntry key;
+        {
+            byte[] keyData = partialId.clone();
+            key = new DatabaseEntry(keyData);
+        }
+
+        DatabaseEntry data = new DatabaseEntry();
+        data.setPartial(0, 0, true);// do not retrieve data
+
+        List<ObjectId> matches;
+
+        Cursor cursor = objectDb.openCursor(txn.getTransaction(), CursorConfig.DEFAULT);
+        try {
+            final OperationStatus status = cursor.getSearchKeyRange(key, data, LockMode.DEFAULT);
+            if (SUCCESS.equals(status)) {
+                matches = new ArrayList<ObjectId>(2);
+                final byte[] compKey = new byte[partialId.length];
+                while (true) {
+                    byte[] keyData = key.getData();
+                    System.arraycopy(keyData, 0, compKey, 0, compKey.length);
+                    if (Arrays.equals(partialId, compKey)) {
+                        matches.add(new ObjectId(keyData));
+                    } else {
+                        break;
+                    }
+                    cursor.getNext(key, data, LockMode.DEFAULT);
+                }
+            } else {
+                matches = Collections.emptyList();
+            }
+            return matches;
+        } finally {
+            cursor.close();
+        }
+    }
+
     /**
      * @see org.geogit.storage.ObjectDatabase#exists(org.geogit.api.ObjectId)
      */
@@ -78,7 +126,7 @@ public class JEObjectDatabase extends AbstractObjectDatabase implements ObjectDa
         final LockMode lockMode = LockMode.DEFAULT;
         CurrentTransaction.getInstance(env);
         OperationStatus status = objectDb.get(txn.getTransaction(), key, data, lockMode);
-        return OperationStatus.SUCCESS == status;
+        return SUCCESS == status;
     }
 
     /**
@@ -93,7 +141,7 @@ public class JEObjectDatabase extends AbstractObjectDatabase implements ObjectDa
         final LockMode lockMode = LockMode.READ_COMMITTED;
         Transaction transaction = txn.getTransaction();
         OperationStatus operationStatus = objectDb.get(transaction, key, data, lockMode);
-        if (OperationStatus.NOTFOUND.equals(operationStatus)) {
+        if (NOTFOUND.equals(operationStatus)) {
             throw new IllegalArgumentException("Object does not exist: " + id.toString());
         }
         final byte[] cData = data.getData();
@@ -117,7 +165,7 @@ public class JEObjectDatabase extends AbstractObjectDatabase implements ObjectDa
         } else {
             status = objectDb.putNoOverwrite(txn.getTransaction(), key, data);
         }
-        final boolean didntExist = OperationStatus.SUCCESS.equals(status);
+        final boolean didntExist = SUCCESS.equals(status);
 
         if (LOGGER.isLoggable(Level.FINER)) {
             if (didntExist) {
@@ -134,6 +182,6 @@ public class JEObjectDatabase extends AbstractObjectDatabase implements ObjectDa
 
         final OperationStatus status = objectDb.delete(txn.getTransaction(), key);
 
-        return OperationStatus.SUCCESS.equals(status);
+        return SUCCESS.equals(status);
     }
 }

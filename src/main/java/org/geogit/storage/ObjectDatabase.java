@@ -11,6 +11,7 @@ import java.util.List;
 import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
+import org.geogit.api.RevBlob;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
 
@@ -30,6 +31,8 @@ public interface ObjectDatabase {
      *             if an object with such id does not exist
      */
     public abstract InputStream getRaw(final ObjectId id) throws IOException;
+
+    public List<ObjectId> lookUp(final String partialId);
 
     /**
      * @param <T>
@@ -90,6 +93,8 @@ public interface ObjectDatabase {
 
     public abstract ObjectInserter newObjectInserter();
 
+    public RevBlob getBlob(ObjectId objectId);
+
     public RevCommit getCommit(final ObjectId commitId);
 
     public RevTree getTree(final ObjectId treeId);
@@ -114,4 +119,5 @@ public interface ObjectDatabase {
     public Ref getTreeChild(RevTree root, List<String> path);
 
     public boolean delete(ObjectId objectId);
+
 }

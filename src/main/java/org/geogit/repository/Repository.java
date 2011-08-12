@@ -7,11 +7,13 @@ package org.geogit.repository;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
+import org.geogit.api.RevObject;
 import org.geogit.api.RevTree;
 import org.geogit.storage.CommitReader;
 import org.geogit.storage.FeatureReader;
@@ -91,16 +93,56 @@ public class Repository {
     /**
      * @param revstr
      *            an object reference expression
-     * @return the {@code ObjectId} the resolved reference points to, or null if {@code revstr} 
-     *         can't be resolved to any ObjectId
+     * @return the object the resolved reference points to.
+     * @throws NoSuchElementException
+     *             if {@code revstr} dosn't resolve to any object
+     * @throws IllegalArgumentException
+     *             if {@code revstr} resolves to more than one object.
      */
-    public ObjectId resolve(final String revstr) {
+    public RevObject resolve(final String revstr) {
         Ref ref = getRef(revstr);
-        ObjectId oid = null;
         if (ref != null) {
-            oid = ref.getObjectId();
+            return parse(ref);
         }
-        return oid;
+
+        // not a ref name, may be a partial object id?
+        List<ObjectId> lookUp = getObjectDatabase().lookUp(revstr);
+        if (lookUp.size() == 1) {
+            final ObjectId objectId = lookUp.get(0);
+            try {
+                return getCommit(objectId);
+            } catch (Exception e) {
+                try {
+                    return getTree(objectId);
+                } catch (Exception e2) {
+                    return getBlob(objectId);
+                }
+            }
+        }
+        if (lookUp.size() > 1) {
+            throw new IllegalArgumentException("revstr '" + revstr
+                    + "' resolves to more than one object: " + lookUp);
+        }
+        throw new NoSuchElementException();
+    }
+
+    public RevObject getBlob(ObjectId objectId) {
+        return getObjectDatabase().getBlob(objectId);
+    }
+
+    private RevObject parse(final Ref ref) {
+        final ObjectDatabase objectDatabase = getObjectDatabase();
+        switch (ref.getType()) {
+        case BLOB:
+            return getBlob(ref.getObjectId());
+        case COMMIT:
+        case TAG:
+            return objectDatabase.getCommit(ref.getObjectId());
+        case TREE:
+            return objectDatabase.getTree(ref.getObjectId());
+        default:
+            throw new IllegalArgumentException("Unknown ref type: " + ref);
+        }
     }
 
     public Ref getRef(final String revStr) {

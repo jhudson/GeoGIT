@@ -4,7 +4,6 @@
  */
 package org.geogit.api;
 
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
@@ -79,6 +78,24 @@ public class ObjectId implements Comparable<ObjectId> {
             raw[i] = (byte) Integer.parseInt(hash.substring(2 * i, 2 * i + 2), radix);
         }
         return new ObjectId(raw);
+    }
+
+    public static byte[] toRaw(final String hash) {
+        Preconditions.checkNotNull(hash);
+        for (int i = 0; i < hash.length(); i++) {
+            char c = hash.charAt(i);
+            if (-1 == Character.digit(c, 16)) {
+                throw new IllegalArgumentException("At index " + i
+                        + ": partialId is not a valid hash subsequence '" + hash + "'");
+            }
+        }
+
+        final byte[] raw = new byte[hash.length() / 2];
+        final int radix = 16;
+        for (int i = 0; i < raw.length; i++) {
+            raw[i] = (byte) Integer.parseInt(hash.substring(2 * i, 2 * i + 2), radix);
+        }
+        return raw;
     }
 
     public static String toString(final byte[] hash) {

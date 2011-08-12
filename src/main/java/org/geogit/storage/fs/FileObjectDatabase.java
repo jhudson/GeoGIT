@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import org.geogit.api.ObjectId;
 import org.geogit.storage.AbstractObjectDatabase;
@@ -103,6 +104,11 @@ public class FileObjectDatabase extends AbstractObjectDatabase implements Object
                 .append(File.separatorChar).append(idName);
         String filePath = sb.toString();
         return new File(filePath);
+    }
+
+    @Override
+    protected List<ObjectId> lookUpInternal(byte[] raw) {
+        throw new UnsupportedOperationException("This method is not yet implemented");
     }
 
 }

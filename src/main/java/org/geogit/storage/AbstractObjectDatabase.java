@@ -17,6 +17,7 @@ import org.apache.commons.collections.map.LRUMap;
 import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
+import org.geogit.api.RevBlob;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.api.RevTree;
@@ -46,6 +47,20 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
         }
         cache = new LRUMap(maxSize);
     }
+
+    /**
+     * @see org.geogit.storage.ObjectDatabase#lookUp(java.lang.String)
+     */
+    @Override
+    public final List<ObjectId> lookUp(final String partialId) {
+        Preconditions.checkNotNull(partialId);
+
+        byte[] raw = ObjectId.toRaw(partialId);
+
+        return lookUpInternal(raw);
+    }
+
+    protected abstract List<ObjectId> lookUpInternal(byte[] raw);
 
     /**
      * @see org.geogit.storage.ObjectDatabase#get(org.geogit.api.ObjectId,
@@ -173,6 +188,15 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     @Override
     public ObjectInserter newObjectInserter() {
         return new ObjectInserter(this);
+    }
+
+    @Override
+    public RevBlob getBlob(ObjectId objectId) {
+        try {
+            return get(objectId, new BlobReader());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
