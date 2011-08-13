@@ -93,11 +93,11 @@ public class JEObjectDatabase extends AbstractObjectDatabase implements ObjectDa
         Cursor cursor = objectDb.openCursor(txn.getTransaction(), cursorConfig);
         try {
             // position cursor at the first closest key to the one looked up
-            final OperationStatus status = cursor.getSearchKeyRange(key, data, LockMode.DEFAULT);
+            OperationStatus status = cursor.getSearchKeyRange(key, data, LockMode.DEFAULT);
             if (SUCCESS.equals(status)) {
                 matches = new ArrayList<ObjectId>(2);
                 final byte[] compKey = new byte[partialId.length];
-                while (true) {
+                while (SUCCESS.equals(status)) {
                     byte[] keyData = key.getData();
                     System.arraycopy(keyData, 0, compKey, 0, compKey.length);
                     if (Arrays.equals(partialId, compKey)) {
@@ -105,7 +105,7 @@ public class JEObjectDatabase extends AbstractObjectDatabase implements ObjectDa
                     } else {
                         break;
                     }
-                    cursor.getNext(key, data, LockMode.DEFAULT);
+                    status = cursor.getNext(key, data, LockMode.DEFAULT);
                 }
             } else {
                 matches = Collections.emptyList();
