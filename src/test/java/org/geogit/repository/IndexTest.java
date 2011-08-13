@@ -153,7 +153,7 @@ public class IndexTest extends RepositoryTestCase {
         assertNotNull(treeChild = indexDb.getTreeChild(staged2, pointsNs, pointsName, idP3));
         assertEquals(oId1_3, treeChild.getObjectId());
 
-        assertNotNull(treeChild = indexDb.getTreeChild(staged2, linesNs, linesName, idL3));
+        assertNotNull(treeChild = indexDb.getTreeChild(staged2, linesNs, linesName, idL1));
         assertEquals(oId2_1, treeChild.getObjectId());
 
         // as well as feature1_1 from the previous commit
@@ -174,7 +174,7 @@ public class IndexTest extends RepositoryTestCase {
         // and check only feature1_2 and feature2_2 remain
         assertNull(indexDb.getTreeChild(staged3, pointsNs, pointsName, idP1));
         assertNull(indexDb.getTreeChild(staged3, pointsNs, pointsName, idP3));
-        assertNull(indexDb.getTreeChild(staged3, linesNs, linesName, idL3));
+        assertNull(indexDb.getTreeChild(staged3, linesNs, linesName, idL1));
 
         assertEquals(oId1_2, indexDb.getTreeChild(staged3, pointsNs, pointsName, idP2)
                 .getObjectId());
@@ -236,7 +236,7 @@ public class IndexTest extends RepositoryTestCase {
             assertNotNull(treeChild = repoDb.getTreeChild(newRepoTree, pointsNs, pointsName, idP3));
             assertEquals(oId1_3, treeChild.getObjectId());
 
-            assertNotNull(treeChild = repoDb.getTreeChild(newRepoTree, linesNs, linesName, idL3));
+            assertNotNull(treeChild = repoDb.getTreeChild(newRepoTree, linesNs, linesName, idL1));
             assertEquals(oId2_1, treeChild.getObjectId());
 
             // as well as feature1_1 from the previous commit

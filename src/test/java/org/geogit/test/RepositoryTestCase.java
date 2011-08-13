@@ -46,17 +46,17 @@ import com.vividsolutions.jts.io.ParseException;
 
 public abstract class RepositoryTestCase extends TestCase {
 
-    protected static final String idL1 = "Lines.3";
+    protected static final String idL1 = "Lines.1";
 
     protected static final String idL2 = "Lines.2";
 
-    protected static final String idL3 = "Lines.1";
+    protected static final String idL3 = "Lines.3";
 
-    protected static final String idP3 = "Points.3";
+    protected static final String idP1 = "Points.1";
 
     protected static final String idP2 = "Points.2";
 
-    protected static final String idP1 = "Points.1";
+    protected static final String idP3 = "Points.3";
 
     protected String pointsNs = "http://geogit.points";
 
@@ -134,11 +134,11 @@ public abstract class RepositoryTestCase extends TestCase {
 
         linesType = DataUtilities.createType(linesNs, linesName, linesTypeSpec);
 
-        lines1 = feature(linesType, idL3, "StringProp2_1", new Integer(1000),
+        lines1 = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
                 "LINESTRING(1 1, 2 2)");
         lines2 = feature(linesType, idL2, "StringProp2_2", new Integer(2000),
                 "LINESTRING(3 3, 4 4)");
-        lines3 = feature(linesType, idL1, "StringProp2_3", new Integer(3000),
+        lines3 = feature(linesType, idL3, "StringProp2_3", new Integer(3000),
                 "LINESTRING(5 5, 6 6)");
 
         setUpInternal();

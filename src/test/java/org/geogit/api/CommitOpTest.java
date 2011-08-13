@@ -105,7 +105,7 @@ public class CommitOpTest extends RepositoryTestCase {
             // check points2, points3 and lines1
             assertEquals(oId1_2, repo.getRootTreeChild(pointsNs, pointsName, idP2).getObjectId());
             assertEquals(oId1_3, repo.getRootTreeChild(pointsNs, pointsName, idP3).getObjectId());
-            assertEquals(oId2_1, repo.getRootTreeChild(linesNs, linesName, idL3).getObjectId());
+            assertEquals(oId2_1, repo.getRootTreeChild(linesNs, linesName, idL1).getObjectId());
             // and check the objects were actually copied
             assertNotNull(repo.getObjectDatabase().getRaw(oId1_2));
             assertNotNull(repo.getObjectDatabase().getRaw(oId1_3));
