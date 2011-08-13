@@ -145,7 +145,7 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
 
         final Index index = repository.getIndex();
 
-        Tuple<ObjectId, BoundingBox, ?> result = index.writeTree(currHead, subProgress(49f));
+        Tuple<ObjectId, BoundingBox> result = index.writeTree(currHead, subProgress(49f));
         if (getProgressListener().isCanceled()) {
             return null;
         }

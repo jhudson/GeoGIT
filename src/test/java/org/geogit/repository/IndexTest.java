@@ -86,7 +86,7 @@ public class IndexTest extends RepositoryTestCase {
 
         insertAndAdd(points1, lines1);
 
-        Tuple<ObjectId, BoundingBox, ?> result = index.writeTree(repo.getHead());
+        Tuple<ObjectId, BoundingBox> result = index.writeTree(repo.getHead());
 
         // this new root tree must exist on the repo db, but is not set as the current head. In
         // fact, it is headless, as there's no commit pointing to it. CommitOp does that.
@@ -191,7 +191,7 @@ public class IndexTest extends RepositoryTestCase {
 
         final ObjectId newRepoTreeId1;
         {
-            Tuple<ObjectId, BoundingBox, ?> writeResult;
+            Tuple<ObjectId, BoundingBox> writeResult;
             writeResult = index.writeTree(repo.getHead());
 
             newRepoTreeId1 = writeResult.getFirst();
@@ -214,7 +214,7 @@ public class IndexTest extends RepositoryTestCase {
 
         final ObjectId newRepoTreeId2;
         {
-            Tuple<ObjectId, BoundingBox, ?> writeResult;
+            Tuple<ObjectId, BoundingBox> writeResult;
             // write comparing the the previously generated tree instead of the repository HEAD, as
             // it was not updated (no commit op was performed)
             Ref repoRootRef = new Ref("", newRepoTreeId1, TYPE.TREE);
@@ -253,7 +253,7 @@ public class IndexTest extends RepositoryTestCase {
 
         final ObjectId newRepoTreeId3;
         {
-            Tuple<ObjectId, BoundingBox, ?> writeResult;
+            Tuple<ObjectId, BoundingBox> writeResult;
             // write comparing the the previously generated tree instead of the repository HEAD, as
             // it was not updated (no commit op was performed)
             Ref repoRootRef = new Ref("", newRepoTreeId2, TYPE.TREE);

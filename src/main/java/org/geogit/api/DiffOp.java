@@ -15,33 +15,35 @@ import org.geogit.repository.Repository;
  */
 public class DiffOp extends AbstractGeoGitOp<Iterator<DiffEntry>> {
 
-    private ObjectId oldVersion;
+    private ObjectId oldCommit;
 
-    private ObjectId newVersion;
+    private ObjectId newCommit;
 
     private String[] pathFilter;
+
+    private ObjectId idFilter;
 
     public DiffOp(Repository repository) {
         super(repository);
     }
 
     /**
-     * @param oldTreeId
+     * @param commitId
      *            the oldVersion to set
      * @return
      */
-    public DiffOp setOldVersion(ObjectId oldTreeId) {
-        this.oldVersion = oldTreeId;
+    public DiffOp setOldVersion(ObjectId commitId) {
+        this.oldCommit = commitId;
         return this;
     }
 
     /**
-     * @param newTreeId
+     * @param commitId
      *            the newVersion to set
      * @return
      */
-    public DiffOp setNewVersion(ObjectId newTreeId) {
-        this.newVersion = newTreeId;
+    public DiffOp setNewVersion(ObjectId commitId) {
+        this.newCommit = commitId;
         return this;
     }
 
@@ -55,31 +57,47 @@ public class DiffOp extends AbstractGeoGitOp<Iterator<DiffEntry>> {
         return this;
     }
 
+    /**
+     * Filter on diffs that affect the given blob id
+     * 
+     * @param blobId
+     * @return
+     */
+    public DiffOp setFilter(final ObjectId blobId) {
+        this.idFilter = blobId;
+        return this;
+    }
+
     @Override
     public Iterator<DiffEntry> call() throws Exception {
-        if (oldVersion == null) {
+        if (oldCommit == null) {
             throw new IllegalStateException("Old version not specified");
         }
         final Repository repo = getRepository();
-        if (newVersion == null) {
+        if (newCommit == null) {
             /*
              * new version not specified, assume head
              */
             Ref head = repo.getRef(Ref.HEAD);
-            newVersion = head.getObjectId();
+            newCommit = head.getObjectId();
         }
-        if (!oldVersion.isNull() && !repo.commitExists(oldVersion)) {
+        if (!oldCommit.isNull() && !repo.commitExists(oldCommit)) {
             throw new IllegalArgumentException("oldVersion commit set to diff op does not exist: "
-                    + oldVersion.toString());
+                    + oldCommit.toString());
         }
-        if (!newVersion.isNull() && !repo.commitExists(newVersion)) {
+        if (!newCommit.isNull() && !repo.commitExists(newCommit)) {
             throw new IllegalArgumentException("newVersion commit set to diff op does not exist: "
-                    + newVersion.toString());
+                    + newCommit.toString());
         }
 
-        DiffTreeWalk diffReader = new DiffTreeWalk(repo.getObjectDatabase(), oldVersion, newVersion);
+        DiffTreeWalk diffReader = new DiffTreeWalk(repo.getObjectDatabase(), oldCommit, newCommit);
 
-        diffReader.setFilter(this.pathFilter);
+        if (pathFilter != null) {
+            diffReader.setFilter(pathFilter);
+        }
+        if (idFilter != null) {
+            diffReader.setFilter(idFilter);
+        }
 
         Iterator<DiffEntry> iterator = diffReader.get();
 

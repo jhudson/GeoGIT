@@ -6,7 +6,6 @@ package org.geogit.repository;
 
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
-import org.geogit.api.RevBlob;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevObject;
 import org.geogit.api.RevTree;

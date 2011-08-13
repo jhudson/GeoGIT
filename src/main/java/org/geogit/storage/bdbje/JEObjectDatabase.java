@@ -86,8 +86,13 @@ public class JEObjectDatabase extends AbstractObjectDatabase implements ObjectDa
 
         List<ObjectId> matches;
 
-        Cursor cursor = objectDb.openCursor(txn.getTransaction(), CursorConfig.DEFAULT);
+        CursorConfig cursorConfig = new CursorConfig();
+        cursorConfig.setReadCommitted(true);
+        cursorConfig.setReadUncommitted(false);
+
+        Cursor cursor = objectDb.openCursor(txn.getTransaction(), cursorConfig);
         try {
+            // position cursor at the first closest key to the one looked up
             final OperationStatus status = cursor.getSearchKeyRange(key, data, LockMode.DEFAULT);
             if (SUCCESS.equals(status)) {
                 matches = new ArrayList<ObjectId>(2);

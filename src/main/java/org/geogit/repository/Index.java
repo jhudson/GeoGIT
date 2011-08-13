@@ -198,8 +198,8 @@ public class Index {
         Preconditions.checkNotNull(blob);
         Preconditions.checkNotNull(path);
 
-        Tuple<ObjectWriter<?>, BoundingBox, List<String>> tuple;
-        tuple = new Tuple<ObjectWriter<?>, BoundingBox, List<String>>(blob, bounds,
+        Triplet<ObjectWriter<?>, BoundingBox, List<String>> tuple;
+        tuple = new Triplet<ObjectWriter<?>, BoundingBox, List<String>>(blob, bounds,
                 Arrays.asList(path));
 
         inserted(Collections.singleton(tuple).iterator(), new NullProgressListener(), null);
@@ -214,7 +214,7 @@ public class Index {
      * @throws Exception
      */
     public synchronized void inserted(
-            final Iterator<Tuple<ObjectWriter<?>, BoundingBox, List<String>>> objects,
+            final Iterator<Triplet<ObjectWriter<?>, BoundingBox, List<String>>> objects,
             final ProgressListener progress, final Integer size) throws Exception {
 
         Preconditions.checkNotNull(objects);
@@ -224,7 +224,7 @@ public class Index {
         final MutableTree currentUnstagedRoot = indexDatabase.getUnstagedRoot();
         final ObjectInserter objectInserter = indexDatabase.newObjectInserter();
 
-        Tuple<ObjectWriter<?>, BoundingBox, List<String>> next;
+        Triplet<ObjectWriter<?>, BoundingBox, List<String>> next;
         ObjectWriter<?> object;
         BoundingBox bounds;
         List<String> path;
@@ -491,7 +491,7 @@ public class Index {
         indexDatabase.reset();
     }
 
-    public Tuple<ObjectId, BoundingBox, ?> writeTree(final Ref targetRef) throws Exception {
+    public Tuple<ObjectId, BoundingBox> writeTree(final Ref targetRef) throws Exception {
         return writeTree(targetRef, new NullProgressListener());
     }
 
@@ -507,7 +507,7 @@ public class Index {
      *         aggregated bounds of the changes, if any.
      * @throws Exception
      */
-    public Tuple<ObjectId, BoundingBox, ?> writeTree(final Ref targetRef,
+    public Tuple<ObjectId, BoundingBox> writeTree(final Ref targetRef,
             final ProgressListener progress) throws Exception {
         Preconditions.checkNotNull(targetRef);
 
@@ -543,7 +543,7 @@ public class Index {
         indexDatabase.setStagedRoot(newRepoTreeId);
 
         BoundingBox bounds = null;
-        return new Tuple<ObjectId, BoundingBox, Object>(newRepoTreeId, bounds);
+        return new Tuple<ObjectId, BoundingBox>(newRepoTreeId, bounds);
     }
 
     /**

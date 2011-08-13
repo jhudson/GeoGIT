@@ -116,11 +116,11 @@ public class WorkingTree {
 
         Iterator<Feature> featureIterator = features.iterator();
         try {
-            Iterator<Tuple<ObjectWriter<?>, BoundingBox, List<String>>> objects;
+            Iterator<Triplet<ObjectWriter<?>, BoundingBox, List<String>>> objects;
             objects = Iterators.transform(featureIterator,
-                    new Function<Feature, Tuple<ObjectWriter<?>, BoundingBox, List<String>>>() {
+                    new Function<Feature, Triplet<ObjectWriter<?>, BoundingBox, List<String>>>() {
                         @Override
-                        public Tuple<ObjectWriter<?>, BoundingBox, List<String>> apply(
+                        public Triplet<ObjectWriter<?>, BoundingBox, List<String>> apply(
                                 final Feature input) {
 
                             ObjectWriter<?> featureWriter = new FeatureWriter(input);
@@ -130,7 +130,7 @@ public class WorkingTree {
                             final List<String> path = Arrays.asList(typeName.getNamespaceURI(),
                                     typeName.getLocalPart(), id);
 
-                            return new Tuple<ObjectWriter<?>, BoundingBox, List<String>>(
+                            return new Triplet<ObjectWriter<?>, BoundingBox, List<String>>(
                                     featureWriter, bounds, path);
                         }
                     });

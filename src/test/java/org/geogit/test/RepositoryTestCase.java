@@ -20,7 +20,7 @@ import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
 import org.geogit.repository.Index;
 import org.geogit.repository.Repository;
-import org.geogit.repository.Tuple;
+import org.geogit.repository.Triplet;
 import org.geogit.storage.FeatureWriter;
 import org.geogit.storage.ObjectWriter;
 import org.geogit.storage.RepositoryDatabase;
@@ -247,21 +247,22 @@ public abstract class RepositoryTestCase extends TestCase {
 
         final Index index = getRepository().getIndex();
 
-        Iterator<Tuple<ObjectWriter<?>, BoundingBox, List<String>>> iterator;
-        Function<Feature, Tuple<ObjectWriter<?>, BoundingBox, List<String>>> function = new Function<Feature, Tuple<ObjectWriter<?>, BoundingBox, List<String>>>() {
+        Iterator<Triplet<ObjectWriter<?>, BoundingBox, List<String>>> iterator;
+        Function<Feature, Triplet<ObjectWriter<?>, BoundingBox, List<String>>> function = new Function<Feature, Triplet<ObjectWriter<?>, BoundingBox, List<String>>>() {
 
             @Override
-            public Tuple<ObjectWriter<?>, BoundingBox, List<String>> apply(final Feature f) {
+            public Triplet<ObjectWriter<?>, BoundingBox, List<String>> apply(final Feature f) {
                 Name name = f.getType().getName();
                 String namespaceURI = name.getNamespaceURI();
                 String localPart = name.getLocalPart();
                 String id = f.getIdentifier().getID();
 
-                Tuple<ObjectWriter<?>, BoundingBox, List<String>> tuple;
+                Triplet<ObjectWriter<?>, BoundingBox, List<String>> tuple;
                 ObjectWriter<?> writer = new FeatureWriter(f);
                 BoundingBox bounds = f.getBounds();
                 List<String> path = Arrays.asList(namespaceURI, localPart, id);
-                tuple = new Tuple<ObjectWriter<?>, BoundingBox, List<String>>(writer, bounds, path);
+                tuple = new Triplet<ObjectWriter<?>, BoundingBox, List<String>>(writer, bounds,
+                        path);
                 return tuple;
             }
         };

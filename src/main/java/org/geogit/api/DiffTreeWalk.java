@@ -14,6 +14,7 @@ import java.util.List;
 import org.geogit.api.DiffEntry.ChangeType;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.repository.DepthSearch;
+import org.geogit.repository.Tuple;
 import org.geogit.storage.ObjectDatabase;
 
 import com.google.common.base.Preconditions;
@@ -34,6 +35,8 @@ public class DiffTreeWalk {
     private Ref oldObject;
 
     private Ref newObject;
+
+    private ObjectId idFilter;
 
     public DiffTreeWalk(final ObjectDatabase db, final ObjectId fromCommit, final ObjectId toCommit) {
         Preconditions.checkNotNull(db);
@@ -65,6 +68,10 @@ public class DiffTreeWalk {
         } else {
             this.basePath = Arrays.asList(path);
         }
+    }
+
+    public void setFilter(ObjectId idFilter) {
+        this.idFilter = idFilter;
     }
 
     public Iterator<DiffEntry> get() {
@@ -117,12 +124,24 @@ public class DiffTreeWalk {
         }
         final RevCommit commit = objectDb.getCommit(commitId);
         final ObjectId treeId = commit.getTreeId();
-        if (basePath.isEmpty()) {
-            return new Ref("", treeId, TYPE.TREE);
-        }
+
+        Ref ref;
 
         final DepthSearch search = new DepthSearch(objectDb);
-        Ref ref = search.find(treeId, basePath);
+        if (!basePath.isEmpty()) {
+            ref = search.find(treeId, basePath);
+        } else if (idFilter != null) {
+            RevTree tree = objectDb.getTree(treeId);
+            Tuple<List<String>, Ref> found = search.find(tree, idFilter);
+            if (found != null) {
+                this.basePath = found.getFirst();
+                ref = found.getMiddle();
+            } else {
+                ref = null;
+            }
+        } else {
+            ref = new Ref("", treeId, TYPE.TREE);
+        }
         return ref;
     }
 
@@ -415,4 +434,5 @@ public class DiffTreeWalk {
         }
 
     }
+
 }
