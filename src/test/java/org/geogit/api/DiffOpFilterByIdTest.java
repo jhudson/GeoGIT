@@ -6,12 +6,14 @@ package org.geogit.api;
 
 import static org.geogit.api.DiffEntry.ChangeType.ADD;
 import static org.geogit.api.DiffEntry.ChangeType.DELETE;
+import static org.geogit.api.DiffEntry.ChangeType.MODIFY;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.geogit.api.DiffEntry.ChangeType;
 import org.geogit.test.RepositoryTestCase;
+import org.opengis.feature.simple.SimpleFeature;
 
 /**
  * Unit test suite for {@link DiffOp}, must cover {@link DiffTreeWalk} too.
@@ -36,7 +38,7 @@ public class DiffOpFilterByIdTest extends RepositoryTestCase {
     private RevCommit commit2;
 
     /**
-     * records the delete of #points1
+     * records the delete of #points1 and the modification of #lines1
      */
     private RevCommit commit3;
 
@@ -54,6 +56,8 @@ public class DiffOpFilterByIdTest extends RepositoryTestCase {
 
     private ObjectId lines1Id;
 
+    private ObjectId modifiedL1Id;
+
     private List<String> P1Path, P2Path, L1Path, L2Path;
 
     @Override
@@ -70,6 +74,9 @@ public class DiffOpFilterByIdTest extends RepositoryTestCase {
         commit2 = ggit.commit().setAll(true).call();
 
         deleteAndAdd(points1);
+        ((SimpleFeature) lines1).setAttribute(0, "CHANGED");
+        modifiedL1Id = insertAndAdd(lines1);// modifying a feature and inserting it has the same
+                                            // effect
         commit3 = ggit.commit().setAll(true).call();
 
         commit1Id = commit1.getId();
@@ -105,6 +112,12 @@ public class DiffOpFilterByIdTest extends RepositoryTestCase {
         assertEquals(1, diffs.size());
 
         assertDiff(diffs.get(0), DELETE, commit1Id, commit3Id, points1Id, ObjectId.NULL, P1Path);
+
+        diffOp.setFilter(modifiedL1Id);
+        diffs = toList(diffOp.call());
+        assertEquals(1, diffs.size());
+
+        assertDiff(diffs.get(0), MODIFY, commit1Id, commit3Id, lines1Id, modifiedL1Id, L1Path);
     }
 
     public void testFilterByObjectId_InverseOrder() throws Exception {

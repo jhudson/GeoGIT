@@ -83,6 +83,17 @@ public class DiffTreeWalk {
             this.oldObject = getFilteredObject(fromCommit);
             this.newObject = getFilteredObject(toCommit);
 
+            if (this.idFilter != null && (oldObject == null && newObject != null)
+                    || (oldObject != null && newObject == null)) {
+                // if uding idFilter then the id might have been found in a single tree, but might
+                // be present in the other tree with a different id (accounting for a modification)
+                if (this.basePath != null && this.basePath.size() > 0) {
+                    // only if the id was found in any of the two trees, re-search based on path
+                    this.oldObject = getFilteredObject(fromCommit);
+                    this.newObject = getFilteredObject(toCommit);
+                }
+            }
+
             if (oldObject == null && newObject == null) {
                 // filter didn't match anything
                 return Iterators.emptyIterator();
