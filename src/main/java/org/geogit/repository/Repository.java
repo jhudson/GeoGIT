@@ -64,17 +64,13 @@ public class Repository {
         repoDb.create();
     }
 
-    RefDatabase getRefDatabase() {
+    public RefDatabase getRefDatabase() {
         return repoDb.getReferenceDatabase();
     }
 
     public ObjectDatabase getObjectDatabase() {
         return repoDb.getObjectDatabase();
     }
-
-    // TreeDatabase getTreeDatabase() {
-    // return repoDb.getTreeDatabase();
-    // }
 
     public Index getIndex() {
         return index;

@@ -28,6 +28,7 @@ import org.geogit.storage.bdbje.EntityStoreConfig;
 import org.geogit.storage.bdbje.EnvironmentBuilder;
 import org.geogit.storage.bdbje.JERepositoryDatabase;
 import org.geotools.data.DataUtilities;
+import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.WKTReader2;
 import org.geotools.util.NullProgressListener;
@@ -58,11 +59,13 @@ public abstract class RepositoryTestCase extends TestCase {
 
     protected static final String idP3 = "Points.3";
 
-    protected String pointsNs = "http://geogit.points";
+    protected static final String pointsNs = "http://geogit.points";
 
-    protected String pointsName = "Points";
+    protected static final String pointsName = "Points";
 
-    protected String pointsTypeSpec = "sp:String,ip:Integer,pp:Point:srid=4326";
+    protected static final String pointsTypeSpec = "sp:String,ip:Integer,pp:Point:srid=4326";
+
+    protected static final Name pointsTypeName = new NameImpl(pointsNs, pointsName);
 
     protected SimpleFeatureType pointsType;
 
@@ -72,11 +75,13 @@ public abstract class RepositoryTestCase extends TestCase {
 
     protected Feature points3;
 
-    protected String linesNs = "http://geogit.lines";
+    protected static final String linesNs = "http://geogit.lines";
 
-    protected String linesName = "Lines";
+    protected static final String linesName = "Lines";
 
-    protected String linesTypeSpec = "sp:String,ip:Integer,pp:LineString:srid=4326";
+    protected static final String linesTypeSpec = "sp:String,ip:Integer,pp:LineString:srid=4326";
+
+    protected static final Name linesTypeName = new NameImpl(linesNs, linesName);
 
     protected SimpleFeatureType linesType;
 
