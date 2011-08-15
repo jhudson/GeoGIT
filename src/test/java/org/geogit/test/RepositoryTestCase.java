@@ -30,7 +30,9 @@ import org.geogit.storage.bdbje.JERepositoryDatabase;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.WKTReader2;
+import org.geotools.referencing.CRS;
 import org.geotools.util.NullProgressListener;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.Feature;
@@ -38,6 +40,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.geometry.BoundingBox;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
@@ -134,7 +137,7 @@ public abstract class RepositoryTestCase extends TestCase {
         pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);
 
         points1 = feature(pointsType, idP1, "StringProp1_1", new Integer(1000), "POINT(1 1)");
-        points2 = feature(pointsType, idP2, "StringProp1_2", new Integer(1000), "POINT(2 2)");
+        points2 = feature(pointsType, idP2, "StringProp1_2", new Integer(2000), "POINT(2 2)");
         points3 = feature(pointsType, idP3, "StringProp1_3", new Integer(3000), "POINT(3 3)");
 
         linesType = DataUtilities.createType(linesNs, linesName, linesTypeSpec);
@@ -314,5 +317,39 @@ public abstract class RepositoryTestCase extends TestCase {
         List<E> logged = new ArrayList<E>();
         Iterables.addAll(logged, logs);
         return logged;
+    }
+
+    /**
+     * Computes the aggregated bounds of {@code features}, assuming all of them are in the same CRS
+     */
+    protected ReferencedEnvelope boundsOf(Feature... features) {
+        ReferencedEnvelope bounds = null;
+        for (int i = 0; i < features.length; i++) {
+            Feature f = features[i];
+            if (bounds == null) {
+                bounds = (ReferencedEnvelope) f.getBounds();
+            } else {
+                bounds.include(f.getBounds());
+            }
+        }
+        return bounds;
+    }
+
+    /**
+     * Computes the aggregated bounds of {@code features} in the {@code targetCrs}
+     */
+    protected ReferencedEnvelope boundsOf(CoordinateReferenceSystem targetCrs, Feature... features)
+            throws Exception {
+        ReferencedEnvelope bounds = new ReferencedEnvelope(targetCrs);
+
+        for (int i = 0; i < features.length; i++) {
+            Feature f = features[i];
+            BoundingBox fbounds = f.getBounds();
+            if (!CRS.equalsIgnoreMetadata(targetCrs, fbounds)) {
+                fbounds = fbounds.toBounds(targetCrs);
+            }
+            bounds.include(fbounds);
+        }
+        return bounds;
     }
 }
