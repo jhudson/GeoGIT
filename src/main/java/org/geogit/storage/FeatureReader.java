@@ -39,11 +39,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.namespace.QName;
 
 import org.geogit.api.ObjectId;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.referencing.CRS;
 import org.geotools.util.Converters;
 import org.gvsig.bxml.stream.BxmlInputFactory;
@@ -53,6 +56,8 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
+import org.opengis.filter.FilterFactory2;
+import org.opengis.filter.identity.FeatureId;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Throwables;
@@ -63,11 +68,17 @@ import com.vividsolutions.jts.io.WKBReader;
 
 public class FeatureReader implements ObjectReader<Feature> {
 
+    private static final FilterFactory2 FILTER_FAC = CommonFactoryFinder.getFilterFactory2(null);
+
     private final FeatureType featureType;
 
     private final String featureId;
 
     public FeatureReader(final FeatureType featureType, final String featureId) {
+        if (!(featureType instanceof SimpleFeatureType)) {
+            throw new UnsupportedOperationException(
+                    "Non simple feature types are not yet supported");
+        }
         this.featureType = featureType;
         this.featureId = featureId;
     }
@@ -82,7 +93,12 @@ public class FeatureReader implements ObjectReader<Feature> {
         EventType tag = reader.nextTag();
         reader.require(START_ELEMENT, FEATURE.getNamespaceURI(), FEATURE.getLocalPart());
 
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder((SimpleFeatureType) featureType);
+        List<Object> values;
+        {
+            int numatts = featureType instanceof SimpleFeatureType ? ((SimpleFeatureType) featureType)
+                    .getAttributeCount() : featureType.getDescriptors().size();
+            values = new ArrayList<Object>(numatts);
+        }
         int index = 0;
         while (!END_DOCUMENT.equals(tag)) {
             tag = reader.nextTag();
@@ -90,11 +106,16 @@ public class FeatureReader implements ObjectReader<Feature> {
                 break;
             }
             Object attValue = readValue(reader);
-            builder.set(index, attValue);
+            // builder.set(index, attValue);
+            values.add(attValue);
             index++;
         }
 
-        SimpleFeature feature = builder.buildFeature(featureId);
+        // SimpleFeature feature = builder.buildFeature(featureId);
+        FeatureId resourceId = FILTER_FAC.resourceId(featureId, id.toString());
+        SimpleFeature feature = new SimpleFeatureImpl(values, (SimpleFeatureType) featureType,
+                resourceId);
+
         return feature;
     }
 
