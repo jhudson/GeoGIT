@@ -14,6 +14,7 @@ import org.geogit.api.Ref;
 import org.geogit.api.RevTree;
 import org.geogit.storage.FeatureWriter;
 import org.geogit.storage.ObjectWriter;
+import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.NameImpl;
@@ -21,13 +22,17 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
+import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.expression.PropertyName;
+import org.opengis.filter.identity.FeatureId;
+import org.opengis.filter.identity.ResourceId;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.util.ProgressListener;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
 /**
  * A working tree is the collection of Features for a single FeatureType in GeoServer that has a
@@ -58,6 +63,17 @@ public class WorkingTree {
     private final Index index;
 
     private final Repository repository;
+
+    private static final FilterFactory2 filterFactory = CommonFactoryFinder.getFilterFactory2(null);
+
+    private static class RefToResourceId implements Function<Ref, FeatureId> {
+
+        @Override
+        public ResourceId apply(Ref input) {
+            return filterFactory.resourceId(input.getName(), input.getObjectId().toString());
+        }
+
+    }
 
     public WorkingTree(final Repository repository) {
         Preconditions.checkNotNull(repository);
@@ -106,14 +122,16 @@ public class WorkingTree {
      * @param typeName
      * @param features
      * @param listener
+     * @return
      * @throws Exception
      */
     @SuppressWarnings("deprecation")
-    public void insert(final FeatureCollection features, final ProgressListener listener)
+    public List<FeatureId> insert(final FeatureCollection features, final ProgressListener listener)
             throws Exception {
 
         final int size = features.size();
 
+        List<Ref> refs;
         Iterator<Feature> featureIterator = features.iterator();
         try {
             Iterator<Triplet<ObjectWriter<?>, BoundingBox, List<String>>> objects;
@@ -135,11 +153,12 @@ public class WorkingTree {
                         }
                     });
 
-            index.inserted(objects, listener, size <= 0 ? null : size);
+            refs = index.inserted(objects, listener, size <= 0 ? null : size);
         } finally {
             features.close(featureIterator);
         }
-
+        List<FeatureId> inserted = Lists.transform(refs, new RefToResourceId());
+        return inserted;
     }
 
     @Deprecated
@@ -163,8 +182,9 @@ public class WorkingTree {
         return typeNameTreeRef != null;
     }
 
-    public void delete(Name typeName, Filter filter, FeatureCollection affectedFeatures)
-            throws Exception {
+    public void delete(final Name typeName, final Filter filter,
+            final FeatureCollection affectedFeatures) throws Exception {
+
         final Index index = repository.getIndex();
         String namespaceURI = typeName.getNamespaceURI();
         String localPart = typeName.getLocalPart();

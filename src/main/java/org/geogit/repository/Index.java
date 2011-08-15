@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -210,10 +211,11 @@ public class Index {
      * 
      * @param objects
      *            list of blobs to be batch inserted as unstaged, as [Object writer, bounds, path]
-     * @return list of inserted blob references
+     * @return list of inserted blob references,or the empty list of the process was cancelled by
+     *         the listener
      * @throws Exception
      */
-    public synchronized void inserted(
+    public synchronized List<Ref> inserted(
             final Iterator<Triplet<ObjectWriter<?>, BoundingBox, List<String>>> objects,
             final ProgressListener progress, final Integer size) throws Exception {
 
@@ -229,6 +231,8 @@ public class Index {
         BoundingBox bounds;
         List<String> path;
 
+        List<Ref> inserted = new LinkedList<Ref>();
+
         Map<List<String>, MutableTree> changedTrees = new HashMap<List<String>, MutableTree>();
         progress.started();
         int count = 0;
@@ -236,7 +240,7 @@ public class Index {
         while (objects.hasNext()) {
             count++;
             if (progress.isCanceled()) {
-                return;
+                return Collections.emptyList();
             }
             if (size != null) {
                 progress.progress((float) (count * 100) / size.intValue());
@@ -256,6 +260,7 @@ public class Index {
             } else {
                 blobRef = new SpatialRef(nodeId, blobId, TYPE.BLOB, bounds);
             }
+            inserted.add(blobRef);
 
             final List<String> blobParentPath = path.subList(0, path.size() - 1);
             MutableTree parentTree = changedTrees.get(blobParentPath);
@@ -268,7 +273,7 @@ public class Index {
         }
 
         if (progress.isCanceled()) {
-            return;
+            return Collections.emptyList();
         }
         // now write back all changed trees
         final ObjectId currUnstagedRootId = indexDatabase.getUnstagedRootRef().getObjectId();
@@ -280,9 +285,10 @@ public class Index {
         if (progress.isCanceled()) {
             // revert
             indexDatabase.setUnstagedRoot(currUnstagedRootId);
-            return;
+            return Collections.emptyList();
         }
         progress.complete();
+        return inserted;
     }
 
     private void checkValidInsert(ObjectWriter<?> object, List<String> path) {
