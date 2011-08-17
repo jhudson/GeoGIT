@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
@@ -15,6 +16,7 @@ import org.geogit.api.RevTree;
 import org.geogit.storage.FeatureWriter;
 import org.geogit.storage.ObjectWriter;
 import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.factory.Hints;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.NameImpl;
@@ -23,7 +25,6 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.expression.PropertyName;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.identity.ResourceId;
 import org.opengis.geometry.BoundingBox;
@@ -125,54 +126,75 @@ public class WorkingTree {
      * @return
      * @throws Exception
      */
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({ "deprecation", "unchecked" })
     public List<FeatureId> insert(final FeatureCollection features, final ProgressListener listener)
             throws Exception {
 
         final int size = features.size();
 
         List<Ref> refs;
-        Iterator<Feature> featureIterator = features.iterator();
+        Iterator<Feature> iterator = features.iterator();
         try {
             Iterator<Triplet<ObjectWriter<?>, BoundingBox, List<String>>> objects;
-            objects = Iterators.transform(featureIterator,
-                    new Function<Feature, Triplet<ObjectWriter<?>, BoundingBox, List<String>>>() {
-                        @Override
-                        public Triplet<ObjectWriter<?>, BoundingBox, List<String>> apply(
-                                final Feature input) {
-
-                            ObjectWriter<?> featureWriter = new FeatureWriter(input);
-                            final BoundingBox bounds = input.getBounds();
-                            final Name typeName = input.getType().getName();
-                            final String id = input.getIdentifier().getID();
-                            final List<String> path = Arrays.asList(typeName.getNamespaceURI(),
-                                    typeName.getLocalPart(), id);
-
-                            return new Triplet<ObjectWriter<?>, BoundingBox, List<String>>(
-                                    featureWriter, bounds, path);
-                        }
-                    });
+            final boolean forceUseProvidedFID = false;
+            objects = Iterators.transform(iterator, new FeatureInserter(forceUseProvidedFID));
 
             refs = index.inserted(objects, listener, size <= 0 ? null : size);
         } finally {
-            features.close(featureIterator);
+            features.close(iterator);
         }
         List<FeatureId> inserted = Lists.transform(refs, new RefToResourceId());
         return inserted;
     }
 
-    @Deprecated
-    public void update(final Filter filter, final List<PropertyName> updatedProperties,
-            List<Object> newValues2, final FeatureCollection newValues,
-            final ProgressListener listener) throws Exception {
+    private static class FeatureInserter implements
+            Function<Feature, Triplet<ObjectWriter<?>, BoundingBox, List<String>>> {
 
-        insert(newValues, listener);
+        private final boolean forceUseProvidedFID;
+
+        public FeatureInserter(final boolean forceUseProvidedFID) {
+            this.forceUseProvidedFID = forceUseProvidedFID;
+        }
+
+        @Override
+        public Triplet<ObjectWriter<?>, BoundingBox, List<String>> apply(Feature input) {
+
+            ObjectWriter<?> featureWriter = new FeatureWriter(input);
+            final BoundingBox bounds = input.getBounds();
+            final Name typeName = input.getType().getName();
+            final String id;
+            {
+                final Object useProvidedFid = input.getUserData().get(Hints.USE_PROVIDED_FID);
+                if (forceUseProvidedFID || Boolean.TRUE.equals(useProvidedFid)) {
+                    id = input.getIdentifier().getID();
+                } else {
+                    id = UUID.randomUUID().toString();
+                }
+            }
+            final List<String> path = Arrays.asList(typeName.getNamespaceURI(),
+                    typeName.getLocalPart(), id);
+
+            return new Triplet<ObjectWriter<?>, BoundingBox, List<String>>(featureWriter, bounds,
+                    path);
+        }
     }
 
+    @SuppressWarnings({ "deprecation", "unchecked" })
     public void update(final FeatureCollection newValues, final ProgressListener listener)
             throws Exception {
 
-        insert(newValues, listener);
+        final int size = newValues.size();
+
+        Iterator<Feature> features = newValues.iterator();
+        try {
+            Iterator<Triplet<ObjectWriter<?>, BoundingBox, List<String>>> objects;
+            final boolean forceUseProvidedFID = true;
+            objects = Iterators.transform(features, new FeatureInserter(forceUseProvidedFID));
+
+            index.inserted(objects, listener, size <= 0 ? null : size);
+        } finally {
+            newValues.close(features);
+        }
     }
 
     public boolean hasRoot(final Name typeName) {
