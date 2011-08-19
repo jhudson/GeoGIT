@@ -131,6 +131,8 @@ public class Index {
         Preconditions.checkNotNull(path);
         Preconditions.checkArgument(path.length > 0);
 
+        System.err.println("----- Index.writeTree " + path);
+        
         MutableTree unstagedRoot = indexDatabase.getUnstagedRoot();
 
         final String leafName = path[path.length - 1];
@@ -223,6 +225,7 @@ public class Index {
         Preconditions.checkNotNull(progress);
         Preconditions.checkArgument(size == null || size.intValue() > 0);
 
+        System.err.println("----- Index.inserted");
         final MutableTree currentUnstagedRoot = indexDatabase.getUnstagedRoot();
         final ObjectInserter objectInserter = indexDatabase.newObjectInserter();
 
@@ -328,6 +331,7 @@ public class Index {
      */
     public synchronized void stage(ProgressListener progress, final String... path)
             throws Exception {
+        System.err.println("----- Index.stage");
         if (progress == null) {
             progress = new NullProgressListener();
         }
@@ -393,7 +397,12 @@ public class Index {
         final RevTree targetRoot = targetDb.getTree(toTreeId);
 
         DiffTreeWalk diffTreeWalk = new DiffTreeWalk(fromDb, oldTreeRef, newTreeRef);
-
+        {
+            Iterator<DiffEntry> iterator = diffTreeWalk.get();
+            while (iterator.hasNext()) {
+                System.out.println(iterator.next());
+            }
+        }
         final double numChanges;
         final ProgressListener progress;
         if (listener instanceof NullProgressListener) {
@@ -513,7 +522,7 @@ public class Index {
      *         aggregated bounds of the changes, if any.
      * @throws Exception
      */
-    public Tuple<ObjectId, BoundingBox> writeTree(final Ref targetRef,
+    public synchronized Tuple<ObjectId, BoundingBox> writeTree(final Ref targetRef,
             final ProgressListener progress) throws Exception {
         Preconditions.checkNotNull(targetRef);
 
@@ -534,6 +543,7 @@ public class Index {
         } else {
             throw new IllegalStateException("target ref is not a commit nor a tree");
         }
+        System.err.println("----- Index.writeTree " + targetRootTreeRef);
 
         final ObjectId fromTreeId = indexDatabase.getStagedRootRef().getObjectId();
         final ObjectDatabase fromDb = indexDatabase;

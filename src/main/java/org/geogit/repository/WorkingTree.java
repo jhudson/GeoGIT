@@ -120,15 +120,22 @@ public class WorkingTree {
     }
 
     /**
-     * @param typeName
+     * Inserts the given features into the index.
+     * 
      * @param features
+     *            the features to insert
+     * @param forceUseProvidedFID
+     *            whether to force the use of the existing Feature IDs or not. If {@code true} the
+     *            existing provided feature ids will be used, if {@code false} new Feature IDS will
+     *            be created, at least a specific Feature has the {@link Hints#USE_PROVIDED_FID}
+     *            hint set to {@code Boolean.TRUE}.
      * @param listener
      * @return
      * @throws Exception
      */
     @SuppressWarnings({ "deprecation", "unchecked" })
-    public List<FeatureId> insert(final FeatureCollection features, final ProgressListener listener)
-            throws Exception {
+    public List<FeatureId> insert(final FeatureCollection features,
+            final boolean forceUseProvidedFID, final ProgressListener listener) throws Exception {
 
         final int size = features.size();
 
@@ -136,7 +143,6 @@ public class WorkingTree {
         Iterator<Feature> iterator = features.iterator();
         try {
             Iterator<Triplet<ObjectWriter<?>, BoundingBox, List<String>>> objects;
-            final boolean forceUseProvidedFID = false;
             objects = Iterators.transform(iterator, new FeatureInserter(forceUseProvidedFID));
 
             refs = index.inserted(objects, listener, size <= 0 ? null : size);
