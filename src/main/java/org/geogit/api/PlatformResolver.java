@@ -22,7 +22,7 @@ public class PlatformResolver implements CommitStateResolver {
     }
 
     @Override
-    public long getCurrentTimeMillis() {
+    public long getCommitTimeMillis() {
         return System.currentTimeMillis();
     }
 

@@ -189,7 +189,7 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
     }
 
     private long getTimeStamp() {
-        return timeStamp == null ? stateResolver.getCurrentTimeMillis() : timeStamp.longValue();
+        return timeStamp == null ? stateResolver.getCommitTimeMillis() : timeStamp.longValue();
     }
 
     private String getMessage() {

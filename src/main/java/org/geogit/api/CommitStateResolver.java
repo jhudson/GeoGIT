@@ -17,5 +17,5 @@ public interface CommitStateResolver {
 
     public String getCommitter();
 
-    public long getCurrentTimeMillis();
+    public long getCommitTimeMillis();
 }
