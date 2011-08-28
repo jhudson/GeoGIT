@@ -131,7 +131,7 @@ public class Index {
         Preconditions.checkNotNull(path);
         Preconditions.checkArgument(path.length > 0);
 
-        System.err.println("----- Index.writeTree " + path);
+        //System.err.println("----- Index.writeTree " + path);
         
         MutableTree unstagedRoot = indexDatabase.getUnstagedRoot();
 
@@ -225,7 +225,7 @@ public class Index {
         Preconditions.checkNotNull(progress);
         Preconditions.checkArgument(size == null || size.intValue() > 0);
 
-        System.err.println("----- Index.inserted");
+        //System.err.println("----- Index.inserted");
         final MutableTree currentUnstagedRoot = indexDatabase.getUnstagedRoot();
         final ObjectInserter objectInserter = indexDatabase.newObjectInserter();
 
@@ -331,7 +331,7 @@ public class Index {
      */
     public synchronized void stage(ProgressListener progress, final String... path)
             throws Exception {
-        System.err.println("----- Index.stage");
+        //System.err.println("----- Index.stage");
         if (progress == null) {
             progress = new NullProgressListener();
         }
@@ -398,10 +398,10 @@ public class Index {
 
         DiffTreeWalk diffTreeWalk = new DiffTreeWalk(fromDb, oldTreeRef, newTreeRef);
         {
-            Iterator<DiffEntry> iterator = diffTreeWalk.get();
-            while (iterator.hasNext()) {
-                System.out.println(iterator.next());
-            }
+//            Iterator<DiffEntry> iterator = diffTreeWalk.get();
+//            while (iterator.hasNext()) {
+//                System.out.println(iterator.next());
+//            }
         }
         final double numChanges;
         final ProgressListener progress;
@@ -543,7 +543,7 @@ public class Index {
         } else {
             throw new IllegalStateException("target ref is not a commit nor a tree");
         }
-        System.err.println("----- Index.writeTree " + targetRootTreeRef);
+        //System.err.println("----- Index.writeTree " + targetRootTreeRef);
 
         final ObjectId fromTreeId = indexDatabase.getStagedRootRef().getObjectId();
         final ObjectDatabase fromDb = indexDatabase;

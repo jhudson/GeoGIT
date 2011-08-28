@@ -62,6 +62,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.google.common.base.Throwables;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
 import com.vividsolutions.jts.io.InStream;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
@@ -74,6 +76,8 @@ public class FeatureReader implements ObjectReader<Feature> {
 
     private final String featureId;
 
+    private GeometryFactory geometryFactory;
+
     public FeatureReader(final FeatureType featureType, final String featureId) {
         if (!(featureType instanceof SimpleFeatureType)) {
             throw new UnsupportedOperationException(
@@ -81,6 +85,10 @@ public class FeatureReader implements ObjectReader<Feature> {
         }
         this.featureType = featureType;
         this.featureId = featureId;
+    }
+
+    public void setGeometryFactory(GeometryFactory geometryFactory) {
+        this.geometryFactory = geometryFactory;
     }
 
     /**
@@ -236,7 +244,10 @@ public class FeatureReader implements ObjectReader<Feature> {
             EventType event = reader.next();
             reader.require(EventType.VALUE_BYTE, null, null);
 
-            WKBReader geomReader = new WKBReader();
+            if (geometryFactory == null) {
+                geometryFactory = new GeometryFactory(new PackedCoordinateSequenceFactory());
+            }
+            WKBReader geomReader = new WKBReader(geometryFactory);
             Geometry geometry;
             try {
                 geometry = geomReader.read(new InStream() {
