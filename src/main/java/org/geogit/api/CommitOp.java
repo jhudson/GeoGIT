@@ -10,8 +10,8 @@ import java.util.List;
 
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.repository.CommitBuilder;
-import org.geogit.repository.Index;
 import org.geogit.repository.Repository;
+import org.geogit.repository.StagingArea;
 import org.geogit.repository.Tuple;
 import org.geogit.storage.CommitWriter;
 import org.geogit.storage.ObjectInserter;
@@ -143,7 +143,7 @@ public class CommitOp extends AbstractGeoGitOp<RevCommit> {
         final ObjectId currHeadCommitId = currHead.getObjectId();
         parents.add(currHeadCommitId);
 
-        final Index index = repository.getIndex();
+        final StagingArea index = repository.getIndex();
 
         Tuple<ObjectId, BoundingBox> result = index.writeTree(currHead, subProgress(49f));
         if (getProgressListener().isCanceled()) {

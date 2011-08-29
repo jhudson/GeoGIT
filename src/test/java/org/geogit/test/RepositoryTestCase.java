@@ -18,8 +18,8 @@ import org.geogit.api.GeoGIT;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
-import org.geogit.repository.Index;
 import org.geogit.repository.Repository;
+import org.geogit.repository.StagingArea;
 import org.geogit.repository.Triplet;
 import org.geogit.storage.FeatureWriter;
 import org.geogit.storage.ObjectWriter;
@@ -234,14 +234,13 @@ public abstract class RepositoryTestCase extends TestCase {
      * Inserts the feature to the index but does not stages it to be committed
      */
     protected ObjectId insert(Feature f) throws Exception {
-        final Index index = getRepository().getIndex();
+        final StagingArea index = getRepository().getIndex();
         Name name = f.getType().getName();
         String namespaceURI = name.getNamespaceURI();
         String localPart = name.getLocalPart();
         String id = f.getIdentifier().getID();
-        index.inserted(new FeatureWriter(f), f.getBounds(), namespaceURI, localPart, id);
-        Ref ref = index.getDatabase()
-                .getTreeChild(index.getUnstaged(), namespaceURI, localPart, id);
+
+        Ref ref = index.inserted(new FeatureWriter(f), f.getBounds(), namespaceURI, localPart, id);
         ObjectId objectId = ref.getObjectId();
         return objectId;
     }
@@ -253,7 +252,7 @@ public abstract class RepositoryTestCase extends TestCase {
 
     protected void insert(Feature... features) throws Exception {
 
-        final Index index = getRepository().getIndex();
+        final StagingArea index = getRepository().getIndex();
 
         Iterator<Triplet<ObjectWriter<?>, BoundingBox, List<String>>> iterator;
         Function<Feature, Triplet<ObjectWriter<?>, BoundingBox, List<String>>> function = new Function<Feature, Triplet<ObjectWriter<?>, BoundingBox, List<String>>>() {
@@ -298,7 +297,7 @@ public abstract class RepositoryTestCase extends TestCase {
     }
 
     protected boolean delete(Feature f) throws Exception {
-        final Index index = getRepository().getIndex();
+        final StagingArea index = getRepository().getIndex();
         Name name = f.getType().getName();
         String namespaceURI = name.getNamespaceURI();
         String localPart = name.getLocalPart();

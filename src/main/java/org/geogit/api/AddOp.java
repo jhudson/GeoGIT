@@ -7,8 +7,8 @@ package org.geogit.api;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.geogit.repository.Index;
 import org.geogit.repository.Repository;
+import org.geogit.repository.StagingArea;
 
 /**
  * Manipulates the index (staging area) by setting the unstaged changes that match this operation
@@ -17,7 +17,7 @@ import org.geogit.repository.Repository;
  * @author groldan
  * 
  */
-public class AddOp extends AbstractGeoGitOp<Index> {
+public class AddOp extends AbstractGeoGitOp<StagingArea> {
 
     private Set<String> patterns;
 
@@ -31,8 +31,8 @@ public class AddOp extends AbstractGeoGitOp<Index> {
     /**
      * @see java.util.concurrent.Callable#call()
      */
-    public Index call() throws Exception {
-        final Index index = getRepository().getIndex();
+    public StagingArea call() throws Exception {
+        final StagingArea index = getRepository().getIndex();
         // this is add all, TODO: implement partial adds
         index.stage(getProgressListener(), null);
         return index;

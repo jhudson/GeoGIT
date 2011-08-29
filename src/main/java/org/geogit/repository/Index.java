@@ -1,7 +1,3 @@
-/* Copyright (c) 2011 TOPP - www.openplans.org. All rights reserved.
- * This code is licensed under the GPL 2.0 license, available at the root
- * application directory.
- */
 package org.geogit.repository;
 
 import java.io.InputStream;
@@ -15,7 +11,6 @@ import java.util.Map;
 
 import org.geogit.api.DiffEntry;
 import org.geogit.api.DiffEntry.ChangeType;
-import org.geogit.api.DiffTreeWalk;
 import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
@@ -25,13 +20,11 @@ import org.geogit.api.RevTree;
 import org.geogit.api.SpatialRef;
 import org.geogit.api.TreeVisitor;
 import org.geogit.storage.ObjectDatabase;
-import org.geogit.storage.ObjectInserter;
 import org.geogit.storage.ObjectWriter;
 import org.geogit.storage.RawObjectWriter;
+import org.geogit.storage.RevTreeWriter;
 import org.geogit.storage.StagingDatabase;
 import org.geotools.util.NullProgressListener;
-import org.geotools.util.SimpleInternationalString;
-import org.geotools.util.SubProgressListener;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.util.ProgressListener;
 
@@ -70,133 +63,113 @@ import com.google.common.collect.Iterators;
  * @author Gabriel Roldan
  * 
  */
-public class Index {
+public class Index implements StagingArea {
 
-    private StagingDatabase indexDatabase;
+    private final Repository repository;
 
-    public Index(final StagingDatabase indexDatabase) {
+    private final StagingDatabase indexDatabase;
+
+    public Index(Repository repository, StagingDatabase indexDatabase) {
+        this.repository = repository;
         this.indexDatabase = indexDatabase;
     }
 
+    @Override
     public StagingDatabase getDatabase() {
         return indexDatabase;
     }
 
-    public RevTree getUnstaged() {
-        return indexDatabase.getUnstagedRoot();
-    }
-
-    public RevTree getStaged() {
-        return indexDatabase.getStagedRoot();
-    }
-
-    /**
-     * @see #created(List)
-     */
-    public synchronized void created(final String... newTreePath) throws Exception {
+    @Override
+    public void created(String... newTreePath) throws Exception {
         Preconditions.checkNotNull(newTreePath);
         created(Arrays.asList(newTreePath));
     }
 
-    /**
-     * Creates an empty unstaged tree at the given path
-     * 
-     * @param newTreePath
-     * @throws Exception
-     *             if an error happens writing the new tree
-     * @throws IllegalArgumentException
-     *             if a tree or blob already exists at the given path
-     */
-    public synchronized void created(final List<String> newTreePath) throws Exception {
+    @Override
+    public void created(final List<String> newTreePath) throws Exception {
         checkValidPath(newTreePath);
 
-        Ref treeChildId = indexDatabase.getTreeChild(indexDatabase.getUnstagedRoot(), newTreePath);
-
-        if (null != treeChildId) {
-            throw new IllegalArgumentException("Tree exists at " + newTreePath);
-        }
-
-        MutableTree newTree = indexDatabase.newTree();
-        writeBack(newTree, newTreePath, false);
-    }
-
-    /**
-     * Marks the object (tree or feature) addressed by {@code path} as an unstaged delete.
-     * 
-     * @param path
-     * @return
-     * @throws Exception
-     */
-    public synchronized boolean deleted(final String... path) throws Exception {
-        Preconditions.checkNotNull(path);
-        Preconditions.checkArgument(path.length > 0);
-
-        //System.err.println("----- Index.writeTree " + path);
-        
-        MutableTree unstagedRoot = indexDatabase.getUnstagedRoot();
-
-        final String leafName = path[path.length - 1];
-        final List<String> parentPath;
-        RevTree parent = null;
-        if (path.length == 1) {
-            parent = unstagedRoot;
-            parentPath = Collections.emptyList();
-        } else {
-            parentPath = Arrays.asList(path).subList(0, path.length - 1);
-            Ref parentRef = indexDatabase.getTreeChild(unstagedRoot, parentPath);
-            if (parentRef != null) {
-                parent = indexDatabase.getTree(parentRef.getObjectId());
+        {
+            DiffEntry staged = indexDatabase.findStaged(newTreePath);
+            if (staged != null) {
+                if (!ChangeType.DELETE.equals(staged.getType())) {
+                    throw new IllegalArgumentException("Tree exists at " + newTreePath);
+                }
+            } else {
+                if (repository.getRootTreeChild(newTreePath) != null) {
+                    throw new IllegalArgumentException("Tree exists at " + newTreePath);
+                }
             }
         }
 
-        Ref removed = null;
-        if (parent != null) {
-            parent = parent.mutable();
-            removed = ((MutableTree) parent).remove(leafName);
-            writeBack(parent, parentPath, false);
-        }
-        return removed != null;
+        final String nodeId = newTreePath.get(newTreePath.size() - 1);
+        MutableTree emptyTree = indexDatabase.getObjectDatabase().newTree();
+        ObjectId emptyTreeId = indexDatabase.getObjectDatabase().put(new RevTreeWriter(emptyTree));
+        Ref newTreeRef = new Ref(nodeId, emptyTreeId, TYPE.TREE);
+
+        DiffEntry entry = DiffEntry.newInstance(null, newTreeRef, newTreePath);
+        indexDatabase.putUnstaged(entry);
     }
 
-    /**
-     * @param tree
-     * @param path
-     * @param staged
-     *            whether to save the tree and its ancestors to the staged root (true) or the
-     *            unstaged one (false)
-     * @return new root id, either for the staged tree or the unstaged one, depending on the
-     *         {@code staged} param
-     * @throws Exception
-     */
-    private ObjectId writeBack(final RevTree tree, final List<String> path, final boolean staged)
-            throws Exception {
-        MutableTree root;
-        if (staged) {
-            root = indexDatabase.getStagedRoot();
-        } else {
-            root = indexDatabase.getUnstagedRoot();
+    @Override
+    public boolean deleted(String... path) throws Exception {
+        Preconditions.checkNotNull(path);
+        final List<String> searchPath = Arrays.asList(path);
+        checkValidPath(searchPath);
+
+        DiffEntry unstagedEntry;
+        DiffEntry stagedEntry;
+
+        unstagedEntry = indexDatabase.findUnstaged(searchPath);
+        if (unstagedEntry != null) {
+            Ref oldObject = null;
+            switch (unstagedEntry.getType()) {
+            case DELETE:
+                // delete already unstaged
+                return true;
+            case ADD:
+                oldObject = unstagedEntry.getNewObject();
+                break;
+            case MODIFY:
+                oldObject = unstagedEntry.getOldObject();
+                break;
+            default:
+                throw new IllegalStateException();
+            }
+            DiffEntry diffEntry = DiffEntry.newInstance(oldObject, null, searchPath);
+            indexDatabase.putUnstaged(diffEntry);
+            return true;
+        } else if (null != (stagedEntry = indexDatabase.findStaged(searchPath))) {
+            Ref oldObject;
+            switch (stagedEntry.getType()) {
+            case DELETE:
+                return false;
+            case ADD:
+                oldObject = stagedEntry.getNewObject();
+                break;
+            case MODIFY:
+                oldObject = stagedEntry.getOldObject();
+            default:
+                throw new IllegalStateException();
+            }
+            DiffEntry diffEntry = DiffEntry.newInstance(oldObject, null, searchPath);
+            indexDatabase.putUnstaged(diffEntry);
+            return true;
         }
-        ObjectId newRootId = indexDatabase.writeBack(root, tree, path);
-        if (staged) {
-            indexDatabase.setStagedRoot(newRootId);
-        } else {
-            indexDatabase.setUnstagedRoot(newRootId);
+
+        Ref existingOrStaged = repository.getRootTreeChild(path);
+        if (existingOrStaged != null) {
+            final Ref oldObject = existingOrStaged;
+            final Ref newObject = null;
+            DiffEntry deleteEntry = DiffEntry.newInstance(oldObject, newObject, searchPath);
+            indexDatabase.putUnstaged(deleteEntry);
+            return true;
         }
-        return newRootId;
+        return false;
     }
 
-    /**
-     * Inserts an object into de index database and marks it as unstaged.
-     * 
-     * @param blob
-     *            the writer for the object to be inserted.
-     * @param path
-     *            the path from the repository root to the name of the object to be inserted.
-     * @return the reference to the newly inserted object.
-     * @throws Exception
-     */
-    public void inserted(final ObjectWriter<?> blob, final BoundingBox bounds, final String... path)
-            throws Exception {
+    @Override
+    public Ref inserted(ObjectWriter<?> blob, BoundingBox bounds, String... path) throws Exception {
 
         Preconditions.checkNotNull(blob);
         Preconditions.checkNotNull(path);
@@ -205,41 +178,25 @@ public class Index {
         tuple = new Triplet<ObjectWriter<?>, BoundingBox, List<String>>(blob, bounds,
                 Arrays.asList(path));
 
-        inserted(Collections.singleton(tuple).iterator(), new NullProgressListener(), null);
+        List<Ref> inserted = inserted(Iterators.singletonIterator(tuple),
+                new NullProgressListener(), null);
+        return inserted.get(0);
     }
 
-    /**
-     * Inserts the given objects into the index database and marks them as unstaged.
-     * 
-     * @param objects
-     *            list of blobs to be batch inserted as unstaged, as [Object writer, bounds, path]
-     * @return list of inserted blob references,or the empty list of the process was cancelled by
-     *         the listener
-     * @throws Exception
-     */
-    public synchronized List<Ref> inserted(
-            final Iterator<Triplet<ObjectWriter<?>, BoundingBox, List<String>>> objects,
-            final ProgressListener progress, final Integer size) throws Exception {
+    @Override
+    public List<Ref> inserted(
+            final Iterator<Triplet<ObjectWriter<?>, BoundingBox, List<String>>> objects,//
+            final ProgressListener progress,//
+            final Integer size) throws Exception {
 
         Preconditions.checkNotNull(objects);
         Preconditions.checkNotNull(progress);
         Preconditions.checkArgument(size == null || size.intValue() > 0);
 
-        //System.err.println("----- Index.inserted");
-        final MutableTree currentUnstagedRoot = indexDatabase.getUnstagedRoot();
-        final ObjectInserter objectInserter = indexDatabase.newObjectInserter();
-
-        Triplet<ObjectWriter<?>, BoundingBox, List<String>> next;
-        ObjectWriter<?> object;
-        BoundingBox bounds;
-        List<String> path;
-
         List<Ref> inserted = new LinkedList<Ref>();
-
-        Map<List<String>, MutableTree> changedTrees = new HashMap<List<String>, MutableTree>();
-        progress.started();
+        Triplet<ObjectWriter<?>, BoundingBox, List<String>> triplet;
         int count = 0;
-        // first insert all the objects and hold the modified leaf trees
+
         while (objects.hasNext()) {
             count++;
             if (progress.isCanceled()) {
@@ -249,284 +206,70 @@ public class Index {
                 progress.progress((float) (count * 100) / size.intValue());
             }
 
-            next = objects.next();
-            object = next.getFirst();
-            bounds = next.getMiddle();
-            path = next.getLast();
-            checkValidInsert(object, path);
+            triplet = objects.next();
+            ObjectWriter<?> object = triplet.getFirst();
+            BoundingBox bounds = triplet.getMiddle();
+            List<String> path = triplet.getLast();
 
             final String nodeId = path.get(path.size() - 1);
-            final ObjectId blobId = objectInserter.insert(object);
-            Ref blobRef;
-            if (bounds == null || bounds.isEmpty()) {
-                blobRef = new Ref(nodeId, blobId, TYPE.BLOB);
+
+            ObjectId objectId = indexDatabase.getObjectDatabase().put(object);
+            Ref objectRef;
+            if (bounds == null) {
+                objectRef = new Ref(nodeId, objectId, TYPE.BLOB);
             } else {
-                blobRef = new SpatialRef(nodeId, blobId, TYPE.BLOB, bounds);
+                objectRef = new SpatialRef(nodeId, objectId, TYPE.BLOB, bounds);
             }
-            inserted.add(blobRef);
-
-            final List<String> blobParentPath = path.subList(0, path.size() - 1);
-            MutableTree parentTree = changedTrees.get(blobParentPath);
-            if (parentTree == null) {
-                parentTree = indexDatabase.getOrCreateSubTree(currentUnstagedRoot, blobParentPath);
-                changedTrees.put(blobParentPath, parentTree);
-            }
-
-            parentTree.put(blobRef);
-        }
-
-        if (progress.isCanceled()) {
-            return Collections.emptyList();
-        }
-        // now write back all changed trees
-        final ObjectId currUnstagedRootId = indexDatabase.getUnstagedRootRef().getObjectId();
-        for (Map.Entry<List<String>, MutableTree> e : changedTrees.entrySet()) {
-            List<String> treePath = e.getKey();
-            MutableTree tree = e.getValue();
-            writeBack(tree, treePath, false);
-        }
-        if (progress.isCanceled()) {
-            // revert
-            indexDatabase.setUnstagedRoot(currUnstagedRootId);
-            return Collections.emptyList();
+            inserted.add(objectRef);
+            DiffEntry diffEntry = DiffEntry.newInstance(null, null, null, objectRef, path);
+            indexDatabase.putUnstaged(diffEntry);
         }
         progress.complete();
         return inserted;
     }
 
-    private void checkValidInsert(ObjectWriter<?> object, List<String> path) {
-        checkValidPath(path);
-        if (object == null) {
-            throw new IllegalArgumentException("Object is null for path: " + path);
-        }
-    }
-
-    private void checkValidPath(List<String> path) {
-        if (path == null || path.size() == 0) {
-            throw new IllegalArgumentException("null path");
-        }
-        if (path == null || path.size() == 0) {
-            throw new IllegalArgumentException("empty path");
-        }
-        for (int i = 0; i < path.size(); i++) {
-            if (path.get(i) == null) {
-                throw new IllegalArgumentException("null path element at index " + i + ": " + path);
-            }
-        }
-    }
-
-    /**
-     * Stages the object addressed by path to be added, if it's marked as an unstaged change. Does
-     * nothing otherwise.
-     * <p>
-     * To stage changes not yet staged, a diff tree walk is performed using the current staged
-     * {@link RevTree} as the old object and the current unstaged {@link RevTree} as the new object.
-     * Then all the differences are traversed and the staged tree is updated with the changes
-     * reported by the diff walk (neat).
-     * </p>
-     * 
-     * @param path
-     * @param progressListener
-     * @throws Exception
-     */
-    public synchronized void stage(ProgressListener progress, final String... path)
-            throws Exception {
-        //System.err.println("----- Index.stage");
-        if (progress == null) {
-            progress = new NullProgressListener();
-        }
+    @Override
+    public void stage(final ProgressListener progress, final String... path) throws Exception {
+        List<String> path2 = path == null ? null : Arrays.asList(path);
+        final int numChanges = indexDatabase.countUnstaged(path2);
+        int i = 0;
         progress.started();
-        if (path == null || path.length == 0) {
-            // add all
-            final ObjectId newStagedRootId = stageAll(progress);
-            // this is the add all operation, so set the unstaged root too
-            if (!progress.isCanceled()) {
-                indexDatabase.setUnstagedRoot(newStagedRootId);
-                progress.complete();
-            }
-        } else {
-            checkValidPath(Arrays.asList(path));
-            throw new UnsupportedOperationException("partial staging not yet implemented");
+        Iterator<DiffEntry> unstaged = indexDatabase.getUnstaged(path2);
+        while (unstaged.hasNext()) {
+            i++;
+            progress.progress((float) (i * 100) / numChanges);
+
+            DiffEntry entry = unstaged.next();
+            indexDatabase.stage(entry);
         }
+        progress.complete();
     }
 
-    private ObjectId stageAll(final ProgressListener progress) throws Exception {
-        final Ref stagedRoot = indexDatabase.getStagedRootRef();
-        final Ref unstagedRoot = indexDatabase.getUnstagedRootRef();
-
-        final ObjectId fromTreeId = unstagedRoot.getObjectId();
-        final StagingDatabase fromDb = indexDatabase;
-        final ObjectId toTreeId = stagedRoot.getObjectId();
-        final StagingDatabase targetDb = indexDatabase;
-        final boolean copyContents = false;
-        final ObjectId newRootTreeId = copyTreeDiffs(fromTreeId, fromDb, toTreeId, targetDb,
-                copyContents, progress);
-
-        if (!progress.isCanceled()) {
-            indexDatabase.setStagedRoot(newRootTreeId);
-        }
-
-        return newRootTreeId;
-
+    @Override
+    public void renamed(final List<String> fromPath, final List<String> toPath) {
+        throw new UnsupportedOperationException("not implemented");
     }
 
-    /**
-     * @param fromTreeId
-     * @param fromDb
-     * @param toTreeId
-     * @param targetDb
-     * @param moveContents
-     * @param listener
-     * @return the object id of the newly created root tree, or {@code null} iif
-     *         {@code listener.isCanceled()}
-     * @throws Exception
-     */
-    private ObjectId copyTreeDiffs(final ObjectId fromTreeId, final ObjectDatabase fromDb,
-            final ObjectId toTreeId, final ObjectDatabase targetDb, final boolean moveContents,
-            final ProgressListener listener) throws Exception {
-
-        if (fromTreeId.equals(toTreeId)) {
-            return fromTreeId;
-        }
-
-        Map<List<String>, MutableTree> changedTrees = new HashMap<List<String>, MutableTree>();
-
-        final Ref newTreeRef = new Ref("", fromTreeId, TYPE.TREE);
-        final Ref oldTreeRef = new Ref("", toTreeId, TYPE.TREE);
-
-        final RevTree targetRoot = targetDb.getTree(toTreeId);
-
-        DiffTreeWalk diffTreeWalk = new DiffTreeWalk(fromDb, oldTreeRef, newTreeRef);
-        {
-//            Iterator<DiffEntry> iterator = diffTreeWalk.get();
-//            while (iterator.hasNext()) {
-//                System.out.println(iterator.next());
-//            }
-        }
-        final double numChanges;
-        final ProgressListener progress;
-        if (listener instanceof NullProgressListener) {
-            numChanges = -1;
-            progress = listener;
-        } else {
-            if (listener.isCanceled()) {
-                return null;
-            }
-            listener.setTask(new SimpleInternationalString("Counting changes..."));
-            numChanges = Iterators.size(diffTreeWalk.get());
-            if (listener.isCanceled()) {
-                return null;
-            }
-            listener.progress(50f);
-            progress = new SubProgressListener(listener, 50f);
-        }
-
-        Iterator<DiffEntry> diffs = diffTreeWalk.get();
-        DiffEntry diff;
-        int count = 0;
-        while (diffs.hasNext()) {
-            if (listener.isCanceled()) {
-                return null;
-            }
-            diff = diffs.next();
-            if (numChanges > 0) {
-                count++;
-                progress.progress((float) ((count * 100) / numChanges));
-            }
-
-            List<String> path = diff.getPath();
-
-            final List<String> blobParentPath = path.subList(0, path.size() - 1);
-            MutableTree parentTree = changedTrees.get(blobParentPath);
-            if (parentTree == null) {
-                parentTree = targetDb.getOrCreateSubTree(targetRoot, blobParentPath);
-                changedTrees.put(blobParentPath, parentTree);
-            }
-
-            final ChangeType type = diff.getType();
-            final Ref oldObject = diff.getOldObject();
-            final Ref newObject = diff.getNewObject();
-            switch (type) {
-            case ADD:
-            case MODIFY:
-                parentTree.put(newObject);
-                if (moveContents) {
-                    deepMove(newObject, fromDb, targetDb);
-                }
-                break;
-            case DELETE:
-                parentTree.remove(oldObject.getName());
-                break;
-            default:
-                throw new IllegalStateException("Unknown change type " + type + " for diff " + diff);
-            }
-        }
-
-        if (listener.isCanceled()) {
-            return null;
-        }
-        // now write back all changed trees
-        ObjectId newTargetRootId = toTreeId;
-        for (Map.Entry<List<String>, MutableTree> e : changedTrees.entrySet()) {
-            List<String> treePath = e.getKey();
-            MutableTree tree = e.getValue();
-            RevTree newRoot = targetDb.getTree(newTargetRootId);
-            newTargetRootId = targetDb.writeBack(newRoot.mutable(), tree, treePath);
-        }
-        return newTargetRootId;
-    }
-
-    /**
-     * Marks an object rename (in practice, it's used to change the feature id of a Feature once it
-     * was committed and the DataStore generated FID is obtained)
-     * 
-     * @param from
-     *            old path to featureId
-     * @param to
-     *            new path to featureId
-     */
-    public void renamed(final List<String> from, final List<String> to) {
-        // TreeMap<String, Entry> oldMap = getFidMap(from.get(0), from.get(1));
-        // TreeMap<String, Entry> newMap = getFidMap(to.get(0), to.get(1));
-        // final String oldFid = from.get(2);
-        // final String newFid = to.get(2);
-        //
-        // Entry entry = oldMap.remove(oldFid);
-        // newMap.put(newFid, entry);
-    }
-
-    /**
-     * Discards any staged change.
-     * 
-     * @REVISIT: should this be implemented through ResetOp (GeoGIT.reset()) instead?
-     * @TODO: When we implement transaction management will be the time to discard any needed object
-     *        inserted to the database too
-     */
+    @Override
     public void reset() {
-        indexDatabase.reset();
+        int unstagedClearedCount = indexDatabase.removeUnStaged(null);
+        int stagedClearedCount = indexDatabase.removeStaged(null);
     }
 
-    public Tuple<ObjectId, BoundingBox> writeTree(final Ref targetRef) throws Exception {
+    @Override
+    public Tuple<ObjectId, BoundingBox> writeTree(Ref targetRef) throws Exception {
         return writeTree(targetRef, new NullProgressListener());
     }
 
-    /**
-     * Updates the repository target HEAD tree given by {@code targetRootRef} with the staged
-     * changes in this index.
-     * 
-     * @param targetRef
-     *            reference to either a commit or a tree that's the root of the head to be updated
-     * @param objectInserter
-     * @return non-null tuple, but possibly with null elements, containing the id of the new top
-     *         level tree created on the repository after applying the staged changes, and the
-     *         aggregated bounds of the changes, if any.
-     * @throws Exception
-     */
-    public synchronized Tuple<ObjectId, BoundingBox> writeTree(final Ref targetRef,
+    @Override
+    public Tuple<ObjectId, BoundingBox> writeTree(final Ref targetRef,
             final ProgressListener progress) throws Exception {
-        Preconditions.checkNotNull(targetRef);
 
-        final ObjectDatabase repositoryDatabase = indexDatabase.getRepositoryDatabase();
+        Preconditions.checkNotNull(targetRef, "null targetRef");
+        Preconditions.checkNotNull(progress,
+                "null ProgressListener. Use new NullProgressListener() instead");
+
+        final ObjectDatabase repositoryDatabase = repository.getObjectDatabase();
 
         // resolve target ref to the target root tree id
         final Ref targetRootTreeRef;
@@ -543,23 +286,77 @@ public class Index {
         } else {
             throw new IllegalStateException("target ref is not a commit nor a tree");
         }
-        //System.err.println("----- Index.writeTree " + targetRootTreeRef);
 
-        final ObjectId fromTreeId = indexDatabase.getStagedRootRef().getObjectId();
-        final ObjectDatabase fromDb = indexDatabase;
         final ObjectId toTreeId = targetRootTreeRef.getObjectId();
-        final ObjectDatabase targetDb = repositoryDatabase;
-        final boolean copyContents = true;
+        final RevTree oldRoot = repositoryDatabase.getTree(toTreeId);
 
-        final ObjectId newRepoTreeId = copyTreeDiffs(fromTreeId, fromDb, toTreeId, targetDb,
-                copyContents, progress);
+        List<String> pathFilter = null;
+        final int numChanges = indexDatabase.countStaged(pathFilter);
+        if (numChanges == 0) {
+            return new Tuple<ObjectId, BoundingBox>(toTreeId, null);
+        }
         if (progress.isCanceled()) {
             return null;
         }
-        indexDatabase.setStagedRoot(newRepoTreeId);
 
+        Iterator<DiffEntry> staged = indexDatabase.getStaged(pathFilter);
+
+        Map<List<String>, MutableTree> changedTrees = new HashMap<List<String>, MutableTree>();
+
+        DiffEntry diffEntry;
+        int i = 0;
+        while (staged.hasNext()) {
+            progress.progress((float) (++i * 100) / numChanges);
+            if (progress.isCanceled()) {
+                return null;
+            }
+
+            diffEntry = staged.next();
+
+            final List<String> entryPath = diffEntry.getPath();
+
+            final List<String> entryParentPath = entryPath.subList(0, entryPath.size() - 1);
+            MutableTree parentTree = changedTrees.get(entryParentPath);
+            if (parentTree == null) {
+                parentTree = repositoryDatabase.getOrCreateSubTree(oldRoot, entryParentPath);
+                changedTrees.put(entryParentPath, parentTree);
+            }
+
+            final Ref oldObject = diffEntry.getOldObject();
+            final Ref newObject = diffEntry.getNewObject();
+            final ChangeType type = diffEntry.getType();
+            switch (type) {
+            case ADD:
+            case MODIFY:
+                parentTree.put(newObject);
+                deepMove(newObject, indexDatabase, repositoryDatabase);
+                break;
+            case DELETE:
+                parentTree.remove(oldObject.getName());
+                break;
+            default:
+                throw new IllegalStateException("Unknown change type " + type + " for diff "
+                        + diffEntry);
+            }
+        }
+
+        if (progress.isCanceled()) {
+            return null;
+        }
+        // now write back all changed trees
+        ObjectId newTargetRootId = toTreeId;
+        for (Map.Entry<List<String>, MutableTree> e : changedTrees.entrySet()) {
+            List<String> treePath = e.getKey();
+            MutableTree tree = e.getValue();
+            RevTree newRoot = repositoryDatabase.getTree(newTargetRootId);
+            newTargetRootId = repositoryDatabase.writeBack(newRoot.mutable(), tree, treePath);
+        }
+
+        indexDatabase.removeStaged(pathFilter);
+
+        progress.complete();
         BoundingBox bounds = null;
-        return new Tuple<ObjectId, BoundingBox>(newRepoTreeId, bounds);
+        return new Tuple<ObjectId, BoundingBox>(newTargetRootId, bounds);
     }
 
     /**
@@ -607,4 +404,19 @@ public class Index {
             });
         }
     }
+
+    private void checkValidPath(List<String> path) {
+        if (path == null || path.size() == 0) {
+            throw new IllegalArgumentException("null path");
+        }
+        if (path == null || path.size() == 0) {
+            throw new IllegalArgumentException("empty path");
+        }
+        for (int i = 0; i < path.size(); i++) {
+            if (path.get(i) == null) {
+                throw new IllegalArgumentException("null path element at index " + i + ": " + path);
+            }
+        }
+    }
+
 }

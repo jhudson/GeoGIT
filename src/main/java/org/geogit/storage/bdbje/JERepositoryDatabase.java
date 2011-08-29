@@ -31,7 +31,8 @@ public class JERepositoryDatabase implements RepositoryDatabase {
         this.referenceDatabase = new RefDatabase(repositoryObjectDb);
 
         JEObjectDatabase stagingObjectDb = new JEObjectDatabase(stagingEnvironment);
-        this.stagingDatabase = new StagingDatabase(repositoryObjectDb, stagingObjectDb);
+        this.stagingDatabase = new StagingDatabase(repositoryObjectDb, stagingObjectDb,
+                stagingEnvironment);
     }
 
     /**

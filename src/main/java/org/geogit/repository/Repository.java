@@ -49,14 +49,15 @@ public class Repository {
 
     private final RepositoryDatabase repoDb;
 
-    private final Index index;
+    private final StagingArea index;
 
     private final WorkingTree workingTree;
 
     public Repository(final RepositoryDatabase repoDb) {
         Preconditions.checkNotNull(repoDb);
         this.repoDb = repoDb;
-        index = new Index(repoDb.getStagingDatabase());
+        // index = new Index(repoDb.getStagingDatabase());
+        index = new Index(this, repoDb.getStagingDatabase());
         workingTree = new WorkingTree(this);
     }
 
@@ -72,7 +73,7 @@ public class Repository {
         return repoDb.getObjectDatabase();
     }
 
-    public Index getIndex() {
+    public StagingArea getIndex() {
         return index;
     }
 
@@ -201,6 +202,7 @@ public class Repository {
     }
 
     public RevCommit getCommit(final ObjectId commitId) {
+        Preconditions.checkNotNull(commitId, "commitId");
         return getObjectDatabase().getCommit(commitId);
     }
 

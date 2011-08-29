@@ -4,13 +4,13 @@
  */
 package org.geogit.api;
 
-import org.geogit.repository.Index;
+import org.geogit.repository.StagingArea;
 import org.geogit.test.RepositoryTestCase;
 
 public class CommitOpTest extends RepositoryTestCase {
 
     // used to prepare stuff to be committed
-    private Index index;
+    private StagingArea index;
 
     // used to get a CommitOp command
     private GeoGIT ggit;
@@ -30,7 +30,7 @@ public class CommitOpTest extends RepositoryTestCase {
             assertTrue(true);
         }
 
-        Index index = repo.getIndex();
+        StagingArea index = repo.getIndex();
 
         ObjectId oid1 = insertAndAdd(points1);
         // BLOBS.print(repo.getRawObject(insertedId1), System.err);

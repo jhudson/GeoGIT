@@ -14,7 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.geogit.repository.Index;
+import org.geogit.repository.StagingArea;
 import org.geogit.test.RepositoryTestCase;
 import org.geotools.util.Range;
 import org.opengis.feature.Feature;
@@ -27,7 +27,7 @@ public class LogOpTest extends RepositoryTestCase {
 
     private LogOp logOp;
 
-    private Index index;
+    private StagingArea index;
 
     @Override
     protected void setUpInternal() throws Exception {

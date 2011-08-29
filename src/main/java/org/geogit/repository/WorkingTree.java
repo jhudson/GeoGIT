@@ -4,17 +4,26 @@
  */
 package org.geogit.repository;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
+import org.geogit.api.DiffEntry;
+import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevTree;
+import org.geogit.api.TreeVisitor;
 import org.geogit.storage.FeatureWriter;
 import org.geogit.storage.ObjectWriter;
+import org.geogit.storage.StagingDatabase;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.Hints;
 import org.geotools.feature.FeatureCollection;
@@ -32,6 +41,7 @@ import org.opengis.util.ProgressListener;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
@@ -61,7 +71,7 @@ import com.google.common.collect.Lists;
 @SuppressWarnings("rawtypes")
 public class WorkingTree {
 
-    private final Index index;
+    private final StagingArea index;
 
     private final Repository repository;
 
@@ -104,18 +114,21 @@ public class WorkingTree {
 
         final String id = feature.getIdentifier().getID();
 
-        String[] path = path(typeName, id);
-        index.inserted(featureWriter, bounds, path);
+        List<String> path = path(typeName, id);
+        index.inserted(featureWriter, bounds, path.toArray(new String[path.size()]));
         return id;
     }
 
-    private String[] path(final Name typeName, final String id) {
-        String path[];
-        if (typeName.getNamespaceURI() == null) {
-            path = new String[] { typeName.getLocalPart(), id };
-        } else {
-            path = new String[] { typeName.getNamespaceURI(), typeName.getLocalPart(), id };
+    private List<String> path(final Name typeName, final String id) {
+        List<String> path = new ArrayList<String>(3);
+        if (typeName.getNamespaceURI() != null) {
+            path.add(typeName.getNamespaceURI());
         }
+        path.add(typeName.getLocalPart());
+        if (id != null) {
+            path.add(id);
+        }
+
         return path;
     }
 
@@ -213,7 +226,7 @@ public class WorkingTree {
     public void delete(final Name typeName, final Filter filter,
             final FeatureCollection affectedFeatures) throws Exception {
 
-        final Index index = repository.getIndex();
+        final StagingArea index = repository.getIndex();
         String namespaceURI = typeName.getNamespaceURI();
         String localPart = typeName.getLocalPart();
         FeatureIterator iterator = affectedFeatures.features();
@@ -249,4 +262,144 @@ public class WorkingTree {
         }
         return names;
     }
+
+    public RevTree getHeadVersion(final Name typeName) {
+        List<String> path = path(typeName, null);
+        Ref typeTreeRef = repository.getRootTreeChild(path);
+        RevTree typeTree;
+        if (typeTreeRef == null) {
+            typeTree = repository.newTree();
+        } else {
+            typeTree = repository.getTree(typeTreeRef.getObjectId());
+        }
+        return typeTree;
+    }
+
+    public RevTree getStagedVersion(final Name typeName) {
+
+        RevTree typeTree = getHeadVersion(typeName);
+
+        List<String> path = path(typeName, null);
+        StagingDatabase database = index.getDatabase();
+        final int stagedCount = database.countStaged(path);
+        if (stagedCount == 0) {
+            return typeTree;
+        }
+        return new DiffTree(typeTree, path, index);
+    }
+
+    private static class DiffTree implements RevTree {
+
+        private final RevTree typeTree;
+
+        private final Map<String, Ref> inserts = new HashMap<String, Ref>();
+
+        private final Map<String, Ref> updates = new HashMap<String, Ref>();
+
+        private final Set<String> deletes = new HashSet<String>();
+
+        public DiffTree(final RevTree typeTree, final List<String> basePath, final StagingArea index) {
+            this.typeTree = typeTree;
+
+            Iterator<DiffEntry> staged = index.getDatabase().getStaged(basePath);
+            while (staged.hasNext()) {
+                DiffEntry entry = staged.next();
+                List<String> entryPath = entry.getPath();
+                String fid = entryPath.get(entryPath.size() - 1);
+                switch (entry.getType()) {
+                case ADD:
+                    inserts.put(fid, entry.getNewObject());
+                    break;
+                case DELETE:
+                    deletes.add(fid);
+                    break;
+                case MODIFY:
+                    updates.put(fid, entry.getNewObject());
+                    break;
+                default:
+                    throw new IllegalStateException();
+                }
+            }
+        }
+
+        @Override
+        public TYPE getType() {
+            return TYPE.TREE;
+        }
+
+        @Override
+        public ObjectId getId() {
+            return null;
+        }
+
+        @Override
+        public boolean isNormalized() {
+            return false;
+        }
+
+        @Override
+        public MutableTree mutable() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Ref get(final String fid) {
+            Ref ref = inserts.get(fid);
+            if (ref == null) {
+                ref = updates.get(fid);
+            }
+            if (ref == null) {
+                ref = this.typeTree.get(fid);
+            }
+            return ref;
+        }
+
+        @Override
+        public void accept(TreeVisitor visitor) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public BigInteger size() {
+            BigInteger size = typeTree.size();
+            if (inserts.size() > 0) {
+                size = size.add(BigInteger.valueOf(inserts.size()));
+            }
+            if (deletes.size() > 0) {
+                size = size.subtract(BigInteger.valueOf(deletes.size()));
+            }
+            return size;
+        }
+
+        @Override
+        public Iterator<Ref> iterator(Predicate<Ref> filter) {
+            Iterator<Ref> current = typeTree.iterator(null);
+
+            current = Iterators.filter(current, new Predicate<Ref>() {
+                @Override
+                public boolean apply(Ref input) {
+                    boolean returnIt = !deletes.contains(input.getName());
+                    return returnIt;
+                }
+            });
+            current = Iterators.transform(current, new Function<Ref, Ref>() {
+                @Override
+                public Ref apply(Ref input) {
+                    Ref update = updates.get(input.getName());
+                    return update == null ? input : update;
+                }
+            });
+
+            Iterator<Ref> inserted = inserts.values().iterator();
+            if (filter != null) {
+                inserted = Iterators.filter(inserted, filter);
+                current = Iterators.filter(current, filter);
+            }
+
+            Iterator<Ref> diffed = Iterators.concat(inserted, current);
+            return diffed;
+        }
+
+    }
+
 }

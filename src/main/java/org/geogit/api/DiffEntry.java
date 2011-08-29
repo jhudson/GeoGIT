@@ -125,6 +125,11 @@ public class DiffEntry {
         return new StringBuilder(getType().toString()).append(' ').append(getPath()).toString();
     }
 
+    public static DiffEntry newInstance(final Ref oldObject, final Ref newObject,
+            final List<String> path) {
+        return newInstance(null, null, oldObject, newObject, path);
+    }
+
     public static DiffEntry newInstance(final ObjectId fromCommit, final ObjectId toCommit,
             final Ref oldObject, final Ref newObject, final List<String> path) {
 

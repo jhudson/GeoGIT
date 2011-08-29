@@ -13,10 +13,6 @@ import org.geogit.storage.StagingDatabase;
 
 public class FileSystemRepositoryDatabase implements RepositoryDatabase {
 
-    private final File repositoryEnvironment;
-
-    private final File stagingEnvironment;
-
     private RefDatabase referenceDatabase;
 
     private FileObjectDatabase repositoryObjectDb;
@@ -26,13 +22,12 @@ public class FileSystemRepositoryDatabase implements RepositoryDatabase {
     public FileSystemRepositoryDatabase(final File repositoryEnvironment,
             final File stagingEnvironment) {
 
-        this.repositoryEnvironment = repositoryEnvironment;
-        this.stagingEnvironment = stagingEnvironment;
         this.repositoryObjectDb = new FileObjectDatabase(repositoryEnvironment);
         this.referenceDatabase = new RefDatabase(repositoryObjectDb);
 
         FileObjectDatabase stagingObjectDb = new FileObjectDatabase(stagingEnvironment);
-        this.stagingDatabase = new StagingDatabase(repositoryObjectDb, stagingObjectDb);
+        throw new UnsupportedOperationException("need to revisit here");
+        //this.stagingDatabase = new StagingDatabase(repositoryObjectDb, stagingObjectDb);
     }
 
     @Override
