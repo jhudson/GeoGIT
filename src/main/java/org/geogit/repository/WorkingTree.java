@@ -96,7 +96,8 @@ public class WorkingTree {
     public void init(final FeatureType featureType) throws Exception {
 
         final Name typeName = featureType.getName();
-        // index.created(Arrays.asList(typeName.getNamespaceURI(), typeName.getLocalPart()));
+        List<String> path = Arrays.asList(typeName.getNamespaceURI(), typeName.getLocalPart());
+        index.created(path);
     }
 
     public void delete(final Name typeName) throws Exception {
