@@ -42,6 +42,11 @@
         <enabled>true</enabled>
       </snapshots>
     </repository>
+    <repository>
+      <id>oracle</id>
+      <name>Oracles Maven Repository</name>
+      <url>http://download.oracle.com/maven/</url>
+    </repository>
   </repositories>
 
   <!--pluginRepositories> <pluginRepository> <id>codehaus-snapshot-plugins</id> <name>codehaus-shapshot-plugins</name> <url>http://snapshots.repository.codehaus.org/</url> 
