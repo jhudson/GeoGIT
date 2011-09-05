@@ -2,28 +2,28 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-package org.geogit.storage;
+package org.geogit.storage.bxml;
 
-import static org.geogit.storage.BLOBS.BIGDECIMAL;
-import static org.geogit.storage.BLOBS.BIGINT;
-import static org.geogit.storage.BLOBS.BOOLEAN;
-import static org.geogit.storage.BLOBS.BOOLEAN_ARRAY;
-import static org.geogit.storage.BLOBS.BYTE;
-import static org.geogit.storage.BLOBS.BYTE_ARRAY;
-import static org.geogit.storage.BLOBS.CHAR_ARRAY;
-import static org.geogit.storage.BLOBS.CONVERTED_TO_STRING;
-import static org.geogit.storage.BLOBS.DOUBLE;
-import static org.geogit.storage.BLOBS.DOUBLE_ARRAY;
-import static org.geogit.storage.BLOBS.FEATURE;
-import static org.geogit.storage.BLOBS.FLOAT;
-import static org.geogit.storage.BLOBS.FLOAT_ARRAY;
-import static org.geogit.storage.BLOBS.GEOMETRY_WKB;
-import static org.geogit.storage.BLOBS.INT;
-import static org.geogit.storage.BLOBS.INT_ARRAY;
-import static org.geogit.storage.BLOBS.LONG;
-import static org.geogit.storage.BLOBS.LONG_ARRAY;
-import static org.geogit.storage.BLOBS.NULL;
-import static org.geogit.storage.BLOBS.STRING;
+import static org.geogit.storage.bxml.BLOBS.BIGDECIMAL;
+import static org.geogit.storage.bxml.BLOBS.BIGINT;
+import static org.geogit.storage.bxml.BLOBS.BOOLEAN;
+import static org.geogit.storage.bxml.BLOBS.BOOLEAN_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.BYTE;
+import static org.geogit.storage.bxml.BLOBS.BYTE_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.CHAR_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.CONVERTED_TO_STRING;
+import static org.geogit.storage.bxml.BLOBS.DOUBLE;
+import static org.geogit.storage.bxml.BLOBS.DOUBLE_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.FEATURE;
+import static org.geogit.storage.bxml.BLOBS.FLOAT;
+import static org.geogit.storage.bxml.BLOBS.FLOAT_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.GEOMETRY_WKB;
+import static org.geogit.storage.bxml.BLOBS.INT;
+import static org.geogit.storage.bxml.BLOBS.INT_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.LONG;
+import static org.geogit.storage.bxml.BLOBS.LONG_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.NULL;
+import static org.geogit.storage.bxml.BLOBS.STRING;
 import static org.gvsig.bxml.stream.EventType.END_DOCUMENT;
 import static org.gvsig.bxml.stream.EventType.END_ELEMENT;
 import static org.gvsig.bxml.stream.EventType.START_ELEMENT;
@@ -45,6 +45,7 @@ import java.util.List;
 import javax.xml.namespace.QName;
 
 import org.geogit.api.ObjectId;
+import org.geogit.storage.ObjectReader;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.geotools.referencing.CRS;
@@ -68,7 +69,7 @@ import com.vividsolutions.jts.io.InStream;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 
-public class FeatureReader implements ObjectReader<Feature> {
+public class BxmlFeatureReader implements ObjectReader<Feature> {
 
     private static final FilterFactory2 FILTER_FAC = CommonFactoryFinder.getFilterFactory2(null);
 
@@ -78,7 +79,7 @@ public class FeatureReader implements ObjectReader<Feature> {
 
     private GeometryFactory geometryFactory;
 
-    public FeatureReader(final FeatureType featureType, final String featureId) {
+    public BxmlFeatureReader(final FeatureType featureType, final String featureId) {
         if (!(featureType instanceof SimpleFeatureType)) {
             throw new UnsupportedOperationException(
                     "Non simple feature types are not yet supported");

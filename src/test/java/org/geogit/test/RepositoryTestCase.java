@@ -21,12 +21,12 @@ import org.geogit.api.RevCommit;
 import org.geogit.repository.Repository;
 import org.geogit.repository.StagingArea;
 import org.geogit.repository.Triplet;
-import org.geogit.storage.FeatureWriter;
 import org.geogit.storage.ObjectWriter;
 import org.geogit.storage.RepositoryDatabase;
 import org.geogit.storage.bdbje.EntityStoreConfig;
 import org.geogit.storage.bdbje.EnvironmentBuilder;
 import org.geogit.storage.bdbje.JERepositoryDatabase;
+import org.geogit.storage.bxml.BxmlFeatureWriter;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -240,7 +240,7 @@ public abstract class RepositoryTestCase extends TestCase {
         String localPart = name.getLocalPart();
         String id = f.getIdentifier().getID();
 
-        Ref ref = index.inserted(new FeatureWriter(f), f.getBounds(), namespaceURI, localPart, id);
+        Ref ref = index.inserted(new BxmlFeatureWriter(f), f.getBounds(), namespaceURI, localPart, id);
         ObjectId objectId = ref.getObjectId();
         return objectId;
     }
@@ -265,7 +265,7 @@ public abstract class RepositoryTestCase extends TestCase {
                 String id = f.getIdentifier().getID();
 
                 Triplet<ObjectWriter<?>, BoundingBox, List<String>> tuple;
-                ObjectWriter<?> writer = new FeatureWriter(f);
+                ObjectWriter<?> writer = new BxmlFeatureWriter(f);
                 BoundingBox bounds = f.getBounds();
                 List<String> path = Arrays.asList(namespaceURI, localPart, id);
                 tuple = new Triplet<ObjectWriter<?>, BoundingBox, List<String>>(writer, bounds,

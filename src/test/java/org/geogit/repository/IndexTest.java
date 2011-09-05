@@ -13,10 +13,10 @@ import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.api.RevTree;
-import org.geogit.storage.CommitWriter;
 import org.geogit.storage.ObjectDatabase;
 import org.geogit.storage.ObjectInserter;
 import org.geogit.storage.StagingDatabase;
+import org.geogit.storage.bxml.BxmlCommitWriter;
 import org.geogit.test.RepositoryTestCase;
 import org.geotools.util.NullProgressListener;
 import org.opengis.feature.Feature;
@@ -109,7 +109,7 @@ public class IndexTest extends RepositoryTestCase {
         ObjectInserter objectInserter = repo.newObjectInserter();
         RevCommit commit = new RevCommit(ObjectId.NULL);
         commit.setTreeId(newRootTreeId);
-        ObjectId commitId = objectInserter.insert(new CommitWriter(commit));
+        ObjectId commitId = objectInserter.insert(new BxmlCommitWriter(commit));
         final Ref newHead = repo.updateRef(new Ref(Ref.HEAD, commitId, TYPE.COMMIT));
 
         index.deleted(linesNs, linesName, lines1.getIdentifier().getID());
@@ -218,7 +218,7 @@ public class IndexTest extends RepositoryTestCase {
             ObjectInserter objectInserter = repo.newObjectInserter();
             RevCommit commit = new RevCommit(ObjectId.NULL);
             commit.setTreeId(newRepoTreeId1);
-            ObjectId commitId = objectInserter.insert(new CommitWriter(commit));
+            ObjectId commitId = objectInserter.insert(new BxmlCommitWriter(commit));
             final Ref newHead = repo.updateRef(new Ref(Ref.HEAD, commitId, TYPE.COMMIT));
         }
 
@@ -258,7 +258,7 @@ public class IndexTest extends RepositoryTestCase {
             ObjectInserter objectInserter = repo.newObjectInserter();
             RevCommit commit = new RevCommit(ObjectId.NULL);
             commit.setTreeId(newRepoTreeId2);
-            ObjectId commitId = objectInserter.insert(new CommitWriter(commit));
+            ObjectId commitId = objectInserter.insert(new BxmlCommitWriter(commit));
             final Ref newHead = repo.updateRef(new Ref(Ref.HEAD, commitId, TYPE.COMMIT));
         }
 

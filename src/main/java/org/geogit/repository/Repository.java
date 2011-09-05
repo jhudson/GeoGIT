@@ -17,13 +17,13 @@ import org.geogit.api.RevCommit;
 import org.geogit.api.RevObject;
 import org.geogit.api.RevTag;
 import org.geogit.api.RevTree;
-import org.geogit.storage.CommitReader;
-import org.geogit.storage.FeatureReader;
 import org.geogit.storage.ObjectDatabase;
 import org.geogit.storage.ObjectInserter;
 import org.geogit.storage.RefDatabase;
 import org.geogit.storage.RepositoryDatabase;
-import org.geogit.storage.RevTreeReader;
+import org.geogit.storage.bxml.BxmlCommitReader;
+import org.geogit.storage.bxml.BxmlFeatureReader;
+import org.geogit.storage.bxml.BxmlRevTreeReader;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
@@ -192,7 +192,7 @@ public class Repository {
 
     public boolean commitExists(final ObjectId id) {
         try {
-            getObjectDatabase().getCached(id, new CommitReader());
+            getObjectDatabase().getCached(id, new BxmlCommitReader());
         } catch (IllegalArgumentException e) {
             return false;
         } catch (IOException e) {
@@ -212,7 +212,7 @@ public class Repository {
         }
         RevTree tree;
         try {
-            tree = getObjectDatabase().getCached(treeId, new RevTreeReader(getObjectDatabase()));
+            tree = getObjectDatabase().getCached(treeId, new BxmlRevTreeReader(getObjectDatabase()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -246,7 +246,7 @@ public class Repository {
             if (rootTreeId.isNull()) {
                 return newTree();
             }
-            root = getObjectDatabase().get(rootTreeId, new RevTreeReader(getObjectDatabase()));
+            root = getObjectDatabase().get(rootTreeId, new BxmlRevTreeReader(getObjectDatabase()));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -262,7 +262,7 @@ public class Repository {
 
     public Feature getFeature(final FeatureType featureType, final String featureId,
             final ObjectId contentId) {
-        FeatureReader reader = new FeatureReader(featureType, featureId);
+        BxmlFeatureReader reader = new BxmlFeatureReader(featureType, featureId);
         Feature feature;
         try {
             feature = getObjectDatabase().get(contentId, reader);

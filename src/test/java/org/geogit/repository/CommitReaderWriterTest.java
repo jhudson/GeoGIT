@@ -18,9 +18,9 @@ import junit.framework.TestCase;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.geogit.api.ObjectId;
 import org.geogit.api.RevCommit;
-import org.geogit.storage.BLOBS;
-import org.geogit.storage.CommitReader;
-import org.geogit.storage.CommitWriter;
+import org.geogit.storage.bxml.BLOBS;
+import org.geogit.storage.bxml.BxmlCommitReader;
+import org.geogit.storage.bxml.BxmlCommitWriter;
 import org.w3c.dom.Document;
 
 import com.vividsolutions.jts.util.Stopwatch;
@@ -60,7 +60,7 @@ public class CommitReaderWriterTest extends TestCase {
         commit = b.build(ObjectId.NULL);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        new CommitWriter(commit).write(out);
+        new BxmlCommitWriter(commit).write(out);
 
         byte[] built = out.toByteArray();
         BLOBS.print(built, System.err);
@@ -81,7 +81,7 @@ public class CommitReaderWriterTest extends TestCase {
 
     public void testBuildFull() throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        new CommitWriter(commit).write(out);
+        new BxmlCommitWriter(commit).write(out);
         byte[] built = out.toByteArray();
         BLOBS.print(built, System.err);
         // transform to text xml for XPath evaluation
@@ -103,14 +103,14 @@ public class CommitReaderWriterTest extends TestCase {
 
     public void testBackAndForth() throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        new CommitWriter(commit).write(out);
+        new BxmlCommitWriter(commit).write(out);
         byte[] built = out.toByteArray();
         BLOBS.print(built, System.err);
         // transform to text xml for XPath evaluation
         out = new ByteArrayOutputStream();
         BLOBS.print(built, new PrintStream(out));
 
-        RevCommit read = new CommitReader().read(ObjectId.NULL, new ByteArrayInputStream(built));
+        RevCommit read = new BxmlCommitReader().read(ObjectId.NULL, new ByteArrayInputStream(built));
         assertNotNull(read);
 
         assertEquals(commit.getAuthor(), read.getAuthor());
@@ -129,7 +129,7 @@ public class CommitReaderWriterTest extends TestCase {
         sw.start();
         for (int i = 0; i < k; i++) {
             out.reset();
-            new CommitWriter(commit).write(out);
+            new BxmlCommitWriter(commit).write(out);
         }
         sw.stop();
         // it's at ~1200/s
@@ -142,7 +142,7 @@ public class CommitReaderWriterTest extends TestCase {
         // it's at ~700/s
         for (int i = 0; i < k; i++) {
             built.reset();
-            new CommitReader().read(ObjectId.NULL, built);
+            new BxmlCommitReader().read(ObjectId.NULL, built);
         }
         sw.stop();
         System.err.printf("\nParsed %d commits in %s, (%d/s)\n", k, sw.getTimeString(), k * 1000

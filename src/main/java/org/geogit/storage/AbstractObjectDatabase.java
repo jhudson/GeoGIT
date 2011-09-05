@@ -22,6 +22,9 @@ import org.geogit.api.RevCommit;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.api.RevTree;
 import org.geogit.repository.DepthSearch;
+import org.geogit.storage.bxml.BxmlCommitReader;
+import org.geogit.storage.bxml.BxmlRevTreeReader;
+import org.geogit.storage.bxml.BxmlRevTreeWriter;
 
 import com.google.common.base.Preconditions;
 import com.ning.compress.lzf.LZFInputStream;
@@ -206,7 +209,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     public RevCommit getCommit(final ObjectId commitId) {
         RevCommit commit;
         try {
-            commit = this.getCached(commitId, new CommitReader());
+            commit = this.getCached(commitId, new BxmlCommitReader());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -231,7 +234,7 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
         }
         RevTree tree;
         try {
-            tree = this.getCached(treeId, new RevTreeReader(this));
+            tree = this.getCached(treeId, new BxmlRevTreeReader(this));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -270,12 +273,12 @@ public abstract class AbstractObjectDatabase implements ObjectDatabase {
     public ObjectId writeBack(MutableTree root, final RevTree tree, final List<String> pathToTree)
             throws Exception {
 
-        final ObjectId treeId = put(new RevTreeWriter(tree));
+        final ObjectId treeId = put(new BxmlRevTreeWriter(tree));
         final String treeName = pathToTree.get(pathToTree.size() - 1);
 
         if (pathToTree.size() == 1) {
             root.put(new Ref(treeName, treeId, TYPE.TREE));
-            ObjectId newRootId = put(new RevTreeWriter(root));
+            ObjectId newRootId = put(new BxmlRevTreeWriter(root));
             return newRootId;
         }
         final List<String> parentPath = pathToTree.subList(0, pathToTree.size() - 1);

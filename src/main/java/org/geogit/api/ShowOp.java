@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 
 import org.geogit.repository.Repository;
-import org.geogit.storage.BLOBS;
+import org.geogit.storage.bxml.BLOBS;
 
 public class ShowOp extends AbstractGeoGitOp<Void> {
 
