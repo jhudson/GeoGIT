@@ -1,7 +1,8 @@
-package org.geogit.storage;
+package org.geogit.api;
 
-import org.geogit.api.RevCommit;
-import org.geogit.api.RevTree;
+import org.geogit.storage.ObjectDatabase;
+import org.geogit.storage.ObjectReader;
+import org.geogit.storage.ObjectWriter;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 
@@ -13,5 +14,6 @@ public interface ObjectSerialisingFactory {
 	public ObjectReader<Feature> createFeatureReader(final FeatureType featureType, final String featureId);
 	public ObjectReader<RevTree> createRevTreeReader(ObjectDatabase objectDb);
 	public ObjectReader<RevTree> createRevTreeReader(ObjectDatabase objectDb, int order);
+	public BlobPrinter createBlobPrinter();
 
 }

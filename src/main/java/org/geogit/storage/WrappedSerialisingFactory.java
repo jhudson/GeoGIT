@@ -1,12 +1,19 @@
 package org.geogit.storage;
 
+import org.geogit.api.BlobPrinter;
+import org.geogit.api.ObjectSerialisingFactory;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
+import org.geogit.storage.bxml.BxmlFactory;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 
 public class WrappedSerialisingFactory implements ObjectSerialisingFactory {
 	private static WrappedSerialisingFactory instance;
+	
+	static {
+		new WrappedSerialisingFactory(new BxmlFactory());
+	}
 	
 	private ObjectSerialisingFactory wrappedFactory;
 	
@@ -38,6 +45,10 @@ public class WrappedSerialisingFactory implements ObjectSerialisingFactory {
 	public ObjectReader<RevTree> createRevTreeReader(ObjectDatabase objectDb,
 			int order) {
 		return wrappedFactory.createRevTreeReader(objectDb, order);
+	}
+
+	public BlobPrinter createBlobPrinter() {
+		return wrappedFactory.createBlobPrinter();
 	}
 
 	WrappedSerialisingFactory(ObjectSerialisingFactory wf) {

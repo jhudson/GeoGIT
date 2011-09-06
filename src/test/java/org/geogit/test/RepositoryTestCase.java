@@ -23,6 +23,7 @@ import org.geogit.repository.StagingArea;
 import org.geogit.repository.Triplet;
 import org.geogit.storage.ObjectWriter;
 import org.geogit.storage.RepositoryDatabase;
+import org.geogit.storage.WrappedSerialisingFactory;
 import org.geogit.storage.bdbje.EntityStoreConfig;
 import org.geogit.storage.bdbje.EnvironmentBuilder;
 import org.geogit.storage.bdbje.JERepositoryDatabase;
@@ -240,7 +241,8 @@ public abstract class RepositoryTestCase extends TestCase {
         String localPart = name.getLocalPart();
         String id = f.getIdentifier().getID();
 
-        Ref ref = index.inserted(new BxmlFeatureWriter(f), f.getBounds(), namespaceURI, localPart, id);
+        Ref ref = index.inserted(
+        		WrappedSerialisingFactory.getInstance().createFeatureWriter(f), f.getBounds(), namespaceURI, localPart, id);
         ObjectId objectId = ref.getObjectId();
         return objectId;
     }

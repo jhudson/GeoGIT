@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 
 import org.geogit.repository.Repository;
+import org.geogit.storage.WrappedSerialisingFactory;
 import org.geogit.storage.bxml.BLOBS;
 
 public class ShowOp extends AbstractGeoGitOp<Void> {
@@ -37,7 +38,7 @@ public class ShowOp extends AbstractGeoGitOp<Void> {
         final InputStream raw = repo.getRawObject(oid);
         final PrintStream out = this.out;
         try {
-            BLOBS.print(raw, out);
+            WrappedSerialisingFactory.getInstance().createBlobPrinter().print(raw, out);
         } finally {
             raw.close();
         }

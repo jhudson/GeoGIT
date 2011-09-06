@@ -18,6 +18,7 @@ import junit.framework.TestCase;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.geogit.api.ObjectId;
 import org.geogit.api.RevCommit;
+import org.geogit.storage.WrappedSerialisingFactory;
 import org.geogit.storage.bxml.BLOBS;
 import org.geogit.storage.bxml.BxmlCommitReader;
 import org.geogit.storage.bxml.BxmlCommitWriter;
@@ -63,10 +64,10 @@ public class CommitReaderWriterTest extends TestCase {
         new BxmlCommitWriter(commit).write(out);
 
         byte[] built = out.toByteArray();
-        BLOBS.print(built, System.err);
+        WrappedSerialisingFactory.getInstance().createBlobPrinter().print(built, System.err);
         // transform to text xml for XPath evaluation
         out = new ByteArrayOutputStream();
-        BLOBS.print(built, new PrintStream(out));
+        WrappedSerialisingFactory.getInstance().createBlobPrinter().print(built, new PrintStream(out));
 
         Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder()
                 .parse(new ByteArrayInputStream(out.toByteArray()));
@@ -83,10 +84,10 @@ public class CommitReaderWriterTest extends TestCase {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         new BxmlCommitWriter(commit).write(out);
         byte[] built = out.toByteArray();
-        BLOBS.print(built, System.err);
+        WrappedSerialisingFactory.getInstance().createBlobPrinter().print(built, System.err);
         // transform to text xml for XPath evaluation
         out = new ByteArrayOutputStream();
-        BLOBS.print(built, new PrintStream(out));
+        WrappedSerialisingFactory.getInstance().createBlobPrinter().print(built, new PrintStream(out));
 
         Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder()
                 .parse(new ByteArrayInputStream(out.toByteArray()));
@@ -105,10 +106,10 @@ public class CommitReaderWriterTest extends TestCase {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         new BxmlCommitWriter(commit).write(out);
         byte[] built = out.toByteArray();
-        BLOBS.print(built, System.err);
+        WrappedSerialisingFactory.getInstance().createBlobPrinter().print(built, System.err);
         // transform to text xml for XPath evaluation
         out = new ByteArrayOutputStream();
-        BLOBS.print(built, new PrintStream(out));
+        WrappedSerialisingFactory.getInstance().createBlobPrinter().print(built, new PrintStream(out));
 
         RevCommit read = new BxmlCommitReader().read(ObjectId.NULL, new ByteArrayInputStream(built));
         assertNotNull(read);

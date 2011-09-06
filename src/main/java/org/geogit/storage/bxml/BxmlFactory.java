@@ -1,15 +1,17 @@
 package org.geogit.storage.bxml;
 
+import org.geogit.api.BlobPrinter;
+import org.geogit.api.ObjectSerialisingFactory;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
 import org.geogit.storage.ObjectDatabase;
 import org.geogit.storage.ObjectReader;
-import org.geogit.storage.ObjectSerialisingFactory;
 import org.geogit.storage.ObjectWriter;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 
 public class BxmlFactory implements ObjectSerialisingFactory {
+	private BxmlBlobPrinter printer;
 
 	@Override
 	public ObjectReader<RevCommit> createCommitReader() {
@@ -45,6 +47,14 @@ public class BxmlFactory implements ObjectSerialisingFactory {
 	@Override
 	public ObjectWriter<RevTree> createRevTreeWriter(RevTree tree) {
 		return new BxmlRevTreeWriter(tree);
+	}
+
+	@Override
+	public BlobPrinter createBlobPrinter() {
+		if(printer == null) {
+			printer = new BxmlBlobPrinter();
+		}
+		return printer;
 	}
 
 }
