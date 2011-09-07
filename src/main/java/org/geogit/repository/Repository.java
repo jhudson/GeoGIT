@@ -4,6 +4,7 @@
  */
 package org.geogit.repository;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -51,13 +52,19 @@ public class Repository {
     private final StagingArea index;
 
     private final WorkingTree workingTree;
-
-    public Repository(final RepositoryDatabase repoDb) {
+    
+    /**
+     * This is stored here for the convenience of knowing where to load the configuration file from
+     */
+    private final File repositoryHome;
+    
+    public Repository(final RepositoryDatabase repoDb, File envHome) {
         Preconditions.checkNotNull(repoDb);
         this.repoDb = repoDb;
         // index = new Index(repoDb.getStagingDatabase());
         index = new Index(this, repoDb.getStagingDatabase());
         workingTree = new WorkingTree(this);
+        this.repositoryHome = envHome;
     }
 
     public void create() {
@@ -305,5 +312,21 @@ public class Repository {
     public Ref getRootTreeChild(String... path) {
         RevTree root = getHeadTree();
         return getObjectDatabase().getTreeChild(root, path);
+    }
+    
+    /**
+     * Add a new REF to the reference database, this is used mostly by a fetch to create new references to remote branches
+     * @param ref
+     */
+    public void addRef(Ref ref) {
+        this.repoDb.getReferenceDatabase().addRef(ref);
+    }
+
+    /**
+     * Get this repositories home directory on disk
+     * @return
+     */
+    public File getRepositoryHome() {
+        return repositoryHome;
     }
 }

@@ -41,7 +41,7 @@ public class BLOBS {
         //
     }
 
-    public static final String NAMESPACE = XMLConstants.NULL_NS_URI;
+    public static final String NAMESPACE = XMLConstants.DEFAULT_NS_PREFIX;
 
     public static final QName CONVERTED_FROM_ATT = new QName(NAMESPACE, "from");
 
