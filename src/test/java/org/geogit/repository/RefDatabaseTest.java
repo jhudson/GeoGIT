@@ -6,6 +6,7 @@ package org.geogit.repository;
 
 import java.util.Arrays;
 
+import org.geogit.api.GeoGIT;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevObject.TYPE;
@@ -15,15 +16,23 @@ import org.geogit.test.RepositoryTestCase;
 public class RefDatabaseTest extends RepositoryTestCase {
 
     private RefDatabase refDb;
+    private GeoGIT ggit;
 
     @Override
     protected void setUpInternal() throws Exception {
         refDb = repo.getRefDatabase();
+        ggit = new GeoGIT(repo);
     }
 
     public void testEmpty() {
         assertEquals(ObjectId.NULL, refDb.getRef(Ref.MASTER).getObjectId());
         assertEquals(ObjectId.NULL, refDb.getRef(Ref.HEAD).getObjectId());
+    }
+    
+    public void testNewRef(){        
+        ggit.remoteAddOp().setName(Ref.REMOTES_PREFIX+"origin").setFetch("refs/heads/*:refs/remotes/origin").setUrl(getRepository().getRepositoryHome().getAbsolutePath()).call();
+        assertEquals(ObjectId.NULL, refDb.getRef(Ref.REMOTES_PREFIX+"origin").getObjectId());
+        assertEquals(1, refDb.getRefs(Ref.REMOTES_PREFIX).size());
     }
 
     public void testPutGetRef() {

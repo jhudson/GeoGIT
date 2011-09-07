@@ -130,7 +130,7 @@ public abstract class RepositoryTestCase extends TestCase {
 
         // repositoryDatabase = new FileSystemRepositoryDatabase(envHome);
 
-        repo = new Repository(repositoryDatabase);
+        repo = new Repository(repositoryDatabase, envHome);
 
         repo.create();
 
