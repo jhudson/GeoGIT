@@ -47,6 +47,11 @@
       <name>Oracles Maven Repository</name>
       <url>http://download.oracle.com/maven/</url>
     </repository>
+	<repository>
+		<id>caucho</id>
+		<name>caucho</name>
+		<url>http://caucho.com/m2</url>
+	</repository>
   </repositories>
 
   <!--pluginRepositories> <pluginRepository> <id>codehaus-snapshot-plugins</id> <name>codehaus-shapshot-plugins</name> <url>http://snapshots.repository.codehaus.org/</url> 
@@ -149,6 +154,7 @@
         <artifactId>bxml-utils</artifactId>
         <version>${bxml.version}</version>
       </dependency>
+
 
       <!-- Test scope dependencies -->
       <dependency>
@@ -257,6 +263,21 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+    	<groupId>com.caucho</groupId>
+    	<artifactId>resin-hessian</artifactId>
+    	<version>4.0.20</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.springframework</groupId>
+    	<artifactId>spring-core</artifactId>
+    	<version>3.0.5.RELEASE</version>
+    </dependency>
+    <dependency>
+    	<groupId>org.springframework</groupId>
+    	<artifactId>spring-context</artifactId>
+    	<version>3.0.5.RELEASE</version>
     </dependency>
   </dependencies>
 

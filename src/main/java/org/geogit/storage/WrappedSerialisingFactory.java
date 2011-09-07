@@ -4,16 +4,14 @@ import org.geogit.api.BlobPrinter;
 import org.geogit.api.ObjectSerialisingFactory;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
+import org.geogit.repository.ConfigurationContext;
 import org.geogit.storage.bxml.BxmlFactory;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class WrappedSerialisingFactory implements ObjectSerialisingFactory {
 	private static WrappedSerialisingFactory instance;
-	
-	static {
-		new WrappedSerialisingFactory(new BxmlFactory());
-	}
 	
 	private ObjectSerialisingFactory wrappedFactory;
 	
@@ -51,15 +49,19 @@ public class WrappedSerialisingFactory implements ObjectSerialisingFactory {
 		return wrappedFactory.createBlobPrinter();
 	}
 
-	WrappedSerialisingFactory(ObjectSerialisingFactory wf) {
-		this.wrappedFactory = wf;
-		WrappedSerialisingFactory.instance = this;
+	public WrappedSerialisingFactory() {
+		this.wrappedFactory = (ObjectSerialisingFactory)ConfigurationContext
+				.getInstance().getBean("serialisingFactory");
 	}
 	
-	public static WrappedSerialisingFactory getInstance() {
+	public static synchronized WrappedSerialisingFactory getInstance() {
 		if(instance == null) {
-			throw new IllegalStateException("SerialisingFactory has not been initialised.");
+			instance = new WrappedSerialisingFactory();
 		}
 		return instance;
+	}
+	
+	public static boolean isInitialised() {
+		return (instance != null);
 	}
 }
