@@ -35,23 +35,23 @@ public class FetchTest extends MultipleRepositoryTestCase {
     public void testFetchOrigin() throws Exception {
         insertAddCommit(this.server, points1);
         insertAddCommit(this.server, points2);
-        insertAddCommit(this.client, points1);
 
         // fetch the remotes
         client.fetch().call();
     }
 
-    public void testFullCommits() throws Exception {
-        // add some inserts
-        insertAddCommit(this.server, points1);
-        insertAddCommit(this.server, points2);
-
-        // setup the client to have a remote ref to the server
-        this.client.remoteAddOp().setName(Ref.REMOTES_PREFIX + "project0")
-                .setFetch(RemoteAddOp.REFS_HEADS_REFS_REMOTES + "projec0")
-                .setUrl(this.client.getRepository().getRepositoryHome().getAbsolutePath()).call();
-
-        // fetch the remotes
-        client.fetch().call();
-    }
+//    public void testFullCommits() throws Exception {
+//        // add some inserts
+//        insertAddCommit(this.server, points1);
+//        insertAddCommit(this.server, points2);
+//        insertAddCommit(this.client, points1);
+    
+//        // setup the client to have a remote ref to the server
+//        this.client.remoteAddOp().setName("project0")
+//                .setFetch("projec0")
+//                .setUrl(this.client.getRepository().getRepositoryHome().getAbsolutePath()).call();
+//
+//        // fetch the remotes
+//        client.fetch().call();
+//    }
 }

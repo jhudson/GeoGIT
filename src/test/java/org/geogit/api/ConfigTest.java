@@ -10,7 +10,7 @@ public class ConfigTest extends RepositoryTestCase {
     @Override
     protected void setUpInternal() throws Exception {
         ggit = new GeoGIT(repo);
-        RemoteConfigObject origin = new RemoteConfigObject("origin", "refs/heads/*:refs/remotes/origin", getRepository().getRepositoryHome().getAbsolutePath());
+        RemoteConfigObject origin = new RemoteConfigObject("origin", "origin", getRepository().getRepositoryHome().getAbsolutePath());
         ggit.getConfig().addRemoteConfigObject(origin);
     }
 

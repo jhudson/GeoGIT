@@ -41,7 +41,7 @@ public class GeoGIT {
     public GeoGIT(final Repository repository) {
         Preconditions.checkNotNull(repository, "repository can't be null");
         this.repository = repository;
-        this.config = new Config(getRepository().getRepositoryHome());
+        this.config = new Config(getRepository());
     }
 
     public static CommitStateResolver getCommitStateResolver() {

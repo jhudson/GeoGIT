@@ -19,7 +19,7 @@ public class RemoteAddTest extends RepositoryTestCase {
     protected void setUpInternal() throws Exception {
         ggit = new GeoGIT(repo);
         refDb = repo.getRefDatabase();
-        remote = new RemoteConfigObject("john", "refs/heads/*:refs/remotes/john", "http://localhost/projectA.geogit");
+        remote = new RemoteConfigObject("john", "john", "http://localhost/projectA.geogit");
         branch = new BranchConfigObject("johns_changes", "john", "refs/head/master");
     }
 
@@ -36,9 +36,9 @@ public class RemoteAddTest extends RepositoryTestCase {
     }
 
     public void testNewRemote() {
-        ggit.remoteAddOp().setName(Ref.REMOTES_PREFIX+"origin").setFetch("refs/heads/*:refs/remotes/origin").setUrl(getRepository().getRepositoryHome().getAbsolutePath()).call();
+        ggit.remoteAddOp().setName(remote.getName()).setFetch(remote.getFetch()).setUrl(remote.getUrl()).call();
         assertEquals(ObjectId.NULL, refDb.getRef(Ref.REMOTES_PREFIX+"origin").getObjectId());
-        assertEquals(1, refDb.getRefs(Ref.REMOTES_PREFIX).size());
+        assertEquals(2, refDb.getRefs(Ref.REMOTES_PREFIX).size());
     }
 
     public void testPutGetRef() {

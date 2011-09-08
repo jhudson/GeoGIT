@@ -88,9 +88,6 @@ public class RefDatabase {
         Preconditions.checkNotNull(name, "Ref name can't be null");
         RevTree refsTree = getRefsTree();
         Ref child = refsTree.get(name);
-        if (child == null) {
-            return null;
-        }
         return child;
     }
 
@@ -101,6 +98,7 @@ public class RefDatabase {
 
         Iterator<Ref> iterator = refsTree.iterator(new Predicate<Ref>() {
             public boolean apply(Ref input) {
+                System.out.println(input);
                 return input.getName().startsWith(prefix);
             }
         });
