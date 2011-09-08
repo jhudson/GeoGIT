@@ -20,7 +20,6 @@ import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevTree;
 import org.geogit.api.TreeVisitor;
-import org.geogit.storage.bxml.BxmlRevTreeReader;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;

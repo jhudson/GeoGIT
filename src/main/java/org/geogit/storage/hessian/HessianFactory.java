@@ -14,8 +14,7 @@ public class HessianFactory implements ObjectSerialisingFactory {
 
 	@Override
 	public ObjectWriter<RevCommit> createCommitWriter(RevCommit commit) {
-		// TODO Auto-generated method stub
-		return null;
+		return new HessianCommitWriter(commit);
 	}
 
 	@Override
@@ -25,14 +24,12 @@ public class HessianFactory implements ObjectSerialisingFactory {
 
 	@Override
 	public ObjectWriter<RevTree> createRevTreeWriter(RevTree tree) {
-		// TODO Auto-generated method stub
-		return null;
+		return new HessianRevTreeWriter(tree);
 	}
 
 	@Override
 	public ObjectReader<RevCommit> createCommitReader() {
-		// TODO Auto-generated method stub
-		return null;
+		return new HessianCommitReader();
 	}
 
 	@Override
@@ -43,21 +40,18 @@ public class HessianFactory implements ObjectSerialisingFactory {
 
 	@Override
 	public ObjectReader<RevTree> createRevTreeReader(ObjectDatabase objectDb) {
-		// TODO Auto-generated method stub
-		return null;
+		return new HessianRevTreeReader(objectDb);
 	}
 
 	@Override
 	public ObjectReader<RevTree> createRevTreeReader(ObjectDatabase objectDb,
 			int order) {
-		// TODO Auto-generated method stub
-		return null;
+		return new HessianRevTreeReader(objectDb, order);
 	}
 
 	@Override
 	public BlobPrinter createBlobPrinter() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException("HessianFactory.createBlobPrinter");
 	}
 
 }

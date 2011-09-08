@@ -13,8 +13,6 @@ import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.api.RevTree;
-import org.geogit.storage.bxml.BxmlRevTreeReader;
-import org.geogit.storage.bxml.BxmlRevTreeWriter;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -60,10 +58,12 @@ public class RefDatabase {
         RevTree refsTree;
         try {
             if (db.exists(REFS_TREE_ID)) {
-                refsTree = db.get(REFS_TREE_ID, new BxmlRevTreeReader(db));
+                refsTree = db.get(REFS_TREE_ID, WrappedSerialisingFactory.getInstance().createRevTreeReader(db));
+//                refsTree = db.get(REFS_TREE_ID, new BxmlRevTreeReader(db));
             } else {
                 refsTree = new RevSHA1Tree(db);
-                db.put(REFS_TREE_ID, new BxmlRevTreeWriter(refsTree));
+                db.put(REFS_TREE_ID, WrappedSerialisingFactory.getInstance().createRevTreeWriter(refsTree));
+//                db.put(REFS_TREE_ID, new BxmlRevTreeWriter(refsTree));
             }
         } catch (RuntimeException e) {
             throw e;
@@ -130,7 +130,8 @@ public class RefDatabase {
         refsTree = refsTree.mutable();
         ((MutableTree) refsTree).put(ref);
         try {
-            db.put(REFS_TREE_ID, new BxmlRevTreeWriter(refsTree));
+            db.put(REFS_TREE_ID, WrappedSerialisingFactory.getInstance().createRevTreeWriter(refsTree));
+//            db.put(REFS_TREE_ID, new BxmlRevTreeWriter(refsTree));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.geogit.storage.ObjectDatabase;
-import org.geogit.storage.bxml.BxmlRevTreeReader;
+import org.geogit.storage.WrappedSerialisingFactory;
 
 public class PrintTreeVisitor implements TreeVisitor {
     private final ObjectDatabase odb;
@@ -67,7 +67,7 @@ public class PrintTreeVisitor implements TreeVisitor {
             indent();
             print("order/bucket: " + depth + "/" + bucket);
             printlimit = 0;
-            RevTree tree = odb.get(treeId, new BxmlRevTreeReader(odb, depth));
+            RevTree tree = odb.get(treeId, WrappedSerialisingFactory.getInstance().createRevTreeReader(odb, depth));
             tree.accept(this);
             depth--;
         } catch (IOException e) {

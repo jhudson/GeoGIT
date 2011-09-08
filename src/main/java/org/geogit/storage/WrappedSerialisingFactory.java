@@ -5,10 +5,8 @@ import org.geogit.api.ObjectSerialisingFactory;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
 import org.geogit.repository.ConfigurationContext;
-import org.geogit.storage.bxml.BxmlFactory;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class WrappedSerialisingFactory implements ObjectSerialisingFactory {
 	private static WrappedSerialisingFactory instance;

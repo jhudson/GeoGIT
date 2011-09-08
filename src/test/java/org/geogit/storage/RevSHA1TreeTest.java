@@ -16,8 +16,6 @@ import org.geogit.api.Ref;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.api.RevTree;
 import org.geogit.api.TreeVisitor;
-import org.geogit.storage.bxml.BxmlRevTreeReader;
-import org.geogit.storage.bxml.BxmlRevTreeWriter;
 import org.geogit.test.RepositoryTestCase;
 
 import com.vividsolutions.jts.util.Stopwatch;
@@ -49,7 +47,8 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
         // + (numEntries / sw.getTotalTimeSeconds()) + "/s)");
 
         sw.start();
-        RevTree tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
+        RevTree tree = odb.get(treeId, WrappedSerialisingFactory.getInstance().createRevTreeReader(odb, 0));
+//        RevTree tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
         sw.stop();
         System.out.println("Retrieved tree in " + sw.getTime() + "ms");
 
@@ -64,7 +63,8 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
                 + (numEntries / ((double) sw.getTime() / 1000L)) + "/s)\n");
         assertEquals(numEntries, visitor.visitedEntries);
 
-        tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
+        tree = odb.get(treeId, WrappedSerialisingFactory.getInstance().createRevTreeReader(odb, 0));
+//        tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
         sw = new Stopwatch();
         sw.start();
         System.err.println("Reading " + numEntries + " entries....");
@@ -89,7 +89,8 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
     public void testRemove() throws Exception {
         final int numEntries = 1000;
         ObjectId treeId = createAndSaveTree(numEntries, true);
-        RevTree tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
+        RevTree tree = odb.get(treeId, WrappedSerialisingFactory.getInstance().createRevTreeReader(odb, 0));
+//        RevTree tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
 
         // collect some keys to remove
         final Set<String> removedKeys = new HashSet<String>();
@@ -117,8 +118,10 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
             assertNull(tree.get(key));
         }
 
-        final ObjectId newTreeId = odb.put(new BxmlRevTreeWriter(tree));
-        RevTree tree2 = odb.get(newTreeId, new BxmlRevTreeReader(odb, 0));
+        final ObjectId newTreeId = odb.put(WrappedSerialisingFactory.getInstance().createRevTreeWriter(tree));
+//        final ObjectId newTreeId = odb.put(new BxmlRevTreeWriter(tree));
+        RevTree tree2 = odb.get(newTreeId, WrappedSerialisingFactory.getInstance().createRevTreeReader(odb, 0));
+//        RevTree tree2 = odb.get(newTreeId, new BxmlRevTreeReader(odb, 0));
 
         for (String key : removedKeys) {
             assertNull(tree2.get(key));
@@ -128,7 +131,8 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
     public void testSize() throws Exception {
         final int numEntries = RevSHA1Tree.SPLIT_FACTOR + 1000;
         ObjectId treeId = createAndSaveTree(numEntries, true);
-        RevTree tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
+        RevTree tree = odb.get(treeId, WrappedSerialisingFactory.getInstance().createRevTreeReader(odb, 0));
+//        RevTree tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
 
         int size = tree.size().intValue();
         assertEquals(numEntries, size);
@@ -144,8 +148,10 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
         assertEquals(numEntries + added, size);
 
         // save and compute again
-        treeId = odb.put(new BxmlRevTreeWriter(tree));
-        tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
+        treeId = odb.put(WrappedSerialisingFactory.getInstance().createRevTreeWriter(tree));
+//        treeId = odb.put(new BxmlRevTreeWriter(tree));
+        tree = odb.get(treeId, WrappedSerialisingFactory.getInstance().createRevTreeReader(odb, 0));
+//        tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
 
         size = tree.size().intValue();
         assertEquals(numEntries + added, size);
@@ -161,8 +167,10 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
         size = tree.size().intValue();
         assertEquals(numEntries + added - removed, tree.size().intValue());
         // save and compute again
-        treeId = odb.put(new BxmlRevTreeWriter(tree));
-        tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
+        treeId = odb.put(WrappedSerialisingFactory.getInstance().createRevTreeWriter(tree));
+//        treeId = odb.put(new BxmlRevTreeWriter(tree));
+        tree = odb.get(treeId, WrappedSerialisingFactory.getInstance().createRevTreeReader(odb, 0));
+//        tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
         size = tree.size().intValue();
         assertEquals(numEntries + added - removed, tree.size().intValue());
 
@@ -177,8 +185,10 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
         size = tree.size().intValue();
         assertEquals(expected, tree.size().intValue());
         // save and compute again
-        treeId = odb.put(new BxmlRevTreeWriter(tree));
-        tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
+        treeId = odb.put(WrappedSerialisingFactory.getInstance().createRevTreeWriter(tree));
+//        treeId = odb.put(new BxmlRevTreeWriter(tree));
+        tree = odb.get(treeId, WrappedSerialisingFactory.getInstance().createRevTreeReader(odb, 0));
+//        tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
         size = tree.size().intValue();
         assertEquals(expected, tree.size().intValue());
     }
@@ -186,7 +196,8 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
     public void testIterator() throws Exception {
         final int numEntries = RevSHA1Tree.SPLIT_FACTOR + 1000;
         ObjectId treeId = createAndSaveTree(numEntries, true);
-        RevTree tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
+        RevTree tree = odb.get(treeId, WrappedSerialisingFactory.getInstance().createRevTreeReader(odb, 0));
+//        RevTree tree = odb.get(treeId, new BxmlRevTreeReader(odb, 0));
 
         Iterator<Ref> iterator = tree.iterator(null);
         assertNotNull(iterator);
@@ -223,7 +234,8 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
         final ObjectId treeId;
 
         RevTree tree = createTree(numEntries, insertInAscendingKeyOrder);
-        treeId = odb.put(new BxmlRevTreeWriter(tree));
+        treeId = odb.put(WrappedSerialisingFactory.getInstance().createRevTreeWriter(tree));
+//        treeId = odb.put(new BxmlRevTreeWriter(tree));
         return treeId;
     }
 

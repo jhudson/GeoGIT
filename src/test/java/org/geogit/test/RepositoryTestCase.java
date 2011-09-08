@@ -27,7 +27,6 @@ import org.geogit.storage.WrappedSerialisingFactory;
 import org.geogit.storage.bdbje.EntityStoreConfig;
 import org.geogit.storage.bdbje.EnvironmentBuilder;
 import org.geogit.storage.bdbje.JERepositoryDatabase;
-import org.geogit.storage.bxml.BxmlFeatureWriter;
 import org.geotools.data.DataUtilities;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -267,7 +266,7 @@ public abstract class RepositoryTestCase extends TestCase {
                 String id = f.getIdentifier().getID();
 
                 Triplet<ObjectWriter<?>, BoundingBox, List<String>> tuple;
-                ObjectWriter<?> writer = new BxmlFeatureWriter(f);
+                ObjectWriter<?> writer = WrappedSerialisingFactory.getInstance().createFeatureWriter(f);
                 BoundingBox bounds = f.getBounds();
                 List<String> path = Arrays.asList(namespaceURI, localPart, id);
                 tuple = new Triplet<ObjectWriter<?>, BoundingBox, List<String>>(writer, bounds,
