@@ -67,7 +67,7 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
                      */
                     Ref remoteRef = new Ref(Ref.REMOTES_PREFIX+remote.getName()+"/"+Ref.MASTER, ref.getObjectId(), TYPE.REMOTE);
                     
-                    LOGGER.info("  " + remoteRef.getObjectId().printSmallId() + " " +remoteRef.getName());
+                    LOGGER.info("  " + remoteRef.getObjectId().printSmallId() + " " + branchName + " -> " + remoteRef.getName());
                     getRepository().updateRef(remoteRef);
                     RefIO.writeRef(getRepository().getRepositoryHome(), remote.getName(), branchName, ref.getObjectId());
                 }
