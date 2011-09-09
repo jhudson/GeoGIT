@@ -9,7 +9,6 @@ import java.util.Arrays;
 import org.geogit.api.GeoGIT;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
-import org.geogit.api.RemoteAddOp;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.storage.RefDatabase;
 import org.geogit.test.RepositoryTestCase;
@@ -32,15 +31,14 @@ public class RefDatabaseTest extends RepositoryTestCase {
 
     public void testNewRef(){        
         ggit.remoteAddOp().setName("john").setFetch("john").setUrl("http://localhost:8080/projects/mygeogit").call();
-
         assertEquals(1, refDb.getRefs(Ref.REMOTES_PREFIX+"john").size());
-        assertEquals(ObjectId.NULL, refDb.getRef(Ref.REMOTES_PREFIX+"john").getObjectId());
-        assertEquals(2, refDb.getRefs(Ref.REMOTES_PREFIX).size());
+        assertEquals(ObjectId.NULL, refDb.getRef(Ref.REMOTES_PREFIX+"john"+"/"+Ref.MASTER).getObjectId());
+        assertEquals(1, refDb.getRefs(Ref.REMOTES_PREFIX).size());
     }
 
     public void testGetRef(){
         ggit.remoteAddOp().setName("john").setFetch("john").setUrl("http://localhost:8080/projects/mygeogit").call();
-        assertEquals(ObjectId.NULL, ggit.getRepository().getRef(Ref.REMOTES_PREFIX+"john").getObjectId());
+        assertEquals(ObjectId.NULL, ggit.getRepository().getRef(Ref.REMOTES_PREFIX+"john"+"/"+Ref.MASTER).getObjectId());
     }
 
     public void testPutGetRef() {

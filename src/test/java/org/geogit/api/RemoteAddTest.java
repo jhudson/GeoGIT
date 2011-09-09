@@ -37,8 +37,8 @@ public class RemoteAddTest extends RepositoryTestCase {
 
     public void testNewRemote() {
         ggit.remoteAddOp().setName(remote.getName()).setFetch(remote.getFetch()).setUrl(remote.getUrl()).call();
-        assertEquals(ObjectId.NULL, refDb.getRef(Ref.REMOTES_PREFIX+"origin").getObjectId());
-        assertEquals(2, refDb.getRefs(Ref.REMOTES_PREFIX).size());
+        assertEquals(ObjectId.NULL, refDb.getRef(Ref.REMOTES_PREFIX+"john"+"/"+Ref.MASTER).getObjectId());
+        assertEquals(1, refDb.getRefs(Ref.REMOTES_PREFIX).size());
     }
 
     public void testPutGetRef() {

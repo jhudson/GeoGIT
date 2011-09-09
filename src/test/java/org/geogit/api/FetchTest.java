@@ -1,7 +1,5 @@
 package org.geogit.api;
 
-import java.util.List;
-
 import org.geogit.test.MultipleRepositoryTestCase;
 
 public class FetchTest extends MultipleRepositoryTestCase {
@@ -21,37 +19,31 @@ public class FetchTest extends MultipleRepositoryTestCase {
 
         // setup repository 2 - acting as out client
         this.client = new GeoGIT(getRepository(1));
+        
+        printHeads();
     }
 
     @Override
     protected void tearDownInternal() throws Exception {
-        System.out.println("CLIENT REMOTE BRANCH : "
-                + this.client.getRepository().getRefDatabase().getRefs(Ref.REMOTES_PREFIX));
-        System.out.println("CLIENT HEAD          : " + this.client.getRepository().getHead());
-        System.out.println("SERVER HEAD          : " + this.server.getRepository().getHead());
+        printHeads();
         super.tearDownInternal();
     }
 
-    public void testFetchOrigin() throws Exception {
+    private void printHeads() {
+        LOGGER.info("CLIENT REMOTE BRANCH : " + this.client.getRepository().getRefDatabase().getRefs(Ref.REMOTES_PREFIX));
+        LOGGER.info("CLIENT HEAD          : " + this.client.getRepository().getHead());
+        LOGGER.info("SERVER HEAD          : " + this.server.getRepository().getHead());
+    }
+
+    public void testFetchRemoteMaster() throws Exception {  
         insertAddCommit(this.server, points1);
         insertAddCommit(this.server, points2);
+
+        // setup the client to have a remote ref to the server
+        this.client.remoteAddOp().setName("project0").setFetch("projec0")
+                .setUrl(this.server.getRepository().getRepositoryHome().getAbsolutePath()).call();
 
         // fetch the remotes
         client.fetch().call();
     }
-
-//    public void testFullCommits() throws Exception {
-//        // add some inserts
-//        insertAddCommit(this.server, points1);
-//        insertAddCommit(this.server, points2);
-//        insertAddCommit(this.client, points1);
-    
-//        // setup the client to have a remote ref to the server
-//        this.client.remoteAddOp().setName("project0")
-//                .setFetch("projec0")
-//                .setUrl(this.client.getRepository().getRepositoryHome().getAbsolutePath()).call();
-//
-//        // fetch the remotes
-//        client.fetch().call();
-//    }
 }

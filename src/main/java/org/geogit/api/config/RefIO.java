@@ -13,24 +13,25 @@ import java.util.Map;
 import org.geogit.api.ObjectId;
 
 /**
- * Class to read and write ref files when adding a remote or fetching 
+ * Class to read and write ref files when adding a remote or fetching
  * 
  * @author jhudson
  */
 public class RefIO {
 
-    private static final String REFS_REMOTES = "refs/remotes/";
+    private static final String REFS_REMOTES = "/refs/remotes/";
 
-    public static Map<String, String> readRef(final File repoLocation, final RemoteConfigObject ref) {
+    public static Map<String, String> readRef( final File repoLocation, final String remoteName ) {
 
         Map<String, String> retMap = new HashMap<String, String>();
-        File file = new File(repoLocation, REFS_REMOTES+ref.getName());
-        
-        if (file.exists()){
-            for (File refFile : file.listFiles()){
+        File file = new File(repoLocation + REFS_REMOTES + remoteName);
+
+        if (file.exists()) {
+            for( File refFile : file.listFiles() ) {
+
                 try {
                     String refHead = readFileAsString(refFile);
-                    retMap.put(file.getName(),refHead);
+                    retMap.put(file.getName(), refHead);
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -40,17 +41,18 @@ public class RefIO {
 
         return retMap;
     }
-    
-    public static void writeRef(final File repoLocation, final String refName, final ObjectId id){
-        Writer out = null;
-        File directory = new File(repoLocation+"/"+REFS_REMOTES);
-        File file = new File(directory, refName);
 
-        if (!directory.exists()){
+    public static void writeRef( final File repoLocation, final String remoteName,
+            final String branchName, final ObjectId id ) {
+        Writer out = null;
+        File directory = new File(repoLocation + REFS_REMOTES + remoteName);
+        File file = new File(directory, branchName);
+
+        if (!directory.exists()) {
             directory.mkdirs();
         }
 
-        if (!file.exists()){
+        if (!file.exists()) {
             try {
                 file.createNewFile();
             } catch (IOException e) {
@@ -77,15 +79,18 @@ public class RefIO {
             }
         }
     }
-    
-    private static String readFileAsString(File file) throws java.io.IOException{
+
+    private static String readFileAsString( File file ) throws java.io.IOException {
         byte[] buffer = new byte[(int) file.length()];
         BufferedInputStream f = null;
         try {
             f = new BufferedInputStream(new FileInputStream(file));
             f.read(buffer);
         } finally {
-            if (f != null) try { f.close(); } catch (IOException ignored) { }
+            if (f != null) try {
+                f.close();
+            } catch (IOException ignored) {
+            }
         }
         return new String(buffer);
     }

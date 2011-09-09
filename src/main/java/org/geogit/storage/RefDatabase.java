@@ -98,7 +98,6 @@ public class RefDatabase {
 
         Iterator<Ref> iterator = refsTree.iterator(new Predicate<Ref>() {
             public boolean apply(Ref input) {
-                System.out.println(input);
                 return input.getName().startsWith(prefix);
             }
         });

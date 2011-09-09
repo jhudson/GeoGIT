@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import junit.framework.TestCase;
 
@@ -86,6 +87,8 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
     protected Feature lines3;
 
     protected Collection<Repository> repos;
+    
+    protected final Logger LOGGER;
 
     // prevent recursion
     private boolean setup = false;
@@ -96,6 +99,7 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
     
     public MultipleRepositoryTestCase( int numberOfRepos ) {
         super();
+        LOGGER = Logging.getLogger(getClass());
         this.numberOfRepos = numberOfRepos;
     }
 
@@ -217,7 +221,7 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
     protected void insertAddCommit(GeoGIT gg, Feature f) throws Exception {
         insert(gg, f);
         gg.add().call();
-        gg.commit().setAll(true).call();
+        gg.commit().setMessage("commited a new feature").setAll(true).call();
     }
 
     /**

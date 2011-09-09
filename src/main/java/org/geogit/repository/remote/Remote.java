@@ -1,7 +1,12 @@
 package org.geogit.repository.remote;
 
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
+import org.geogit.api.Ref;
+import org.geogit.api.RevCommit;
 import org.geogit.repository.Repository;
 
  /**
@@ -43,4 +48,17 @@ public class Remote extends AbstractRemote {
         // TODO Auto-generated method stub
         
     }
+
+    @Override
+    public List<RevCommit> requestCommitFetch( Ref head ) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Map<String, Ref> requestBranchFetch() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

@@ -34,7 +34,7 @@ public class RemoteAddOp extends AbstractGeoGitOp<Void> {
         Preconditions.checkNotNull(this.fetch);
         RemoteConfigObject remote = new RemoteConfigObject(name, fetch, url);
         config.addRemoteConfigObject(remote);
-        Ref remoteRef = new Ref(Ref.REMOTES_PREFIX+this.name, ObjectId.forString(this.name), TYPE.REMOTE);
+        Ref remoteRef = new Ref(Ref.REMOTES_PREFIX+this.name+"/"+Ref.MASTER, ObjectId.forString(this.name), TYPE.REMOTE);
         getRepository().getRefDatabase().addRef(remoteRef);
         return null;
     }

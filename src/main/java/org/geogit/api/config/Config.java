@@ -62,6 +62,7 @@ public class Config {
         try {
             if (!this.configFile.exists()) {
                 this.configFile.createNewFile();
+                writeConfig();
             }
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -69,12 +70,6 @@ public class Config {
         }
 
         readConfig();
-
-        if (remotes.size() < 1) { /* yunh origin? */
-            new RemoteAddOp(repo, this).setName("origin").setFetch("origin")
-                    .setUrl(repo.getRepositoryHome().getAbsolutePath()).call();
-            addBranch(new BranchConfigObject("master", "origin", "refs/head/master"));
-        }
     }
     private void addBranch( BranchConfigObject branchConfigObject ) {
         this.branches.put(branchConfigObject.getName(), branchConfigObject);
@@ -197,6 +192,14 @@ public class Config {
                 out.write("[branch \"" + branch.getName() + "\"]" + NEW_LINE);
                 out.write(TAB + "fetch = " + branch.getRemote() + NEW_LINE);
                 out.write(TAB + "merge = " + branch.getMerge() + NEW_LINE);
+
+                /*
+                 * Now we must write out the local branches into the origin remote,
+                 * special case here where HEAD is the current head and all other 
+                 * local branches are placed here.
+                 */
+                Ref ref = repo.getRef(Ref.REMOTES_PREFIX + "origin");
+                RefIO.writeRef(repo.getRepositoryHome(), "origin", branch.getName(), ref == null ? ObjectId.NULL : ref.getObjectId());
             }
 
             // write remotes
@@ -204,15 +207,6 @@ public class Config {
                 out.write("[remote \"" + remote.getName() + "\"]" + NEW_LINE);
                 out.write(TAB + "fetch = " + remote.getFetch() + NEW_LINE);
                 out.write(TAB + "url = " + remote.getUrl() + NEW_LINE);
-
-                /*
-                 * Now we must write out all the remote heads - so we can keep track of them for
-                 * fetches
-                 */
-                Ref ref = repo.getRef(Ref.REMOTES_PREFIX + remote.getName());
-                RefIO.writeRef(repo.getRepositoryHome(), remote.getName(), ref == null
-                        ? ObjectId.NULL
-                        : ref.getObjectId());
             }
 
         } catch (IOException e) {
@@ -232,5 +226,8 @@ public class Config {
 
     public Map<String, RemoteConfigObject> getRemotes() {
         return this.remotes;
+    }
+    public Map<String, BranchConfigObject> getBranches() {
+        return this.branches;
     }
 }
