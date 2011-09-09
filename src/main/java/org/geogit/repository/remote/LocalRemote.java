@@ -40,9 +40,10 @@ public class LocalRemote extends AbstractRemote {
     }
 
     /**
-     * Send the client a set of changes it can apply to its local repository 1. Get the local
-     * repository local branches 2. Compare them to the ones the client has sent us 2. Create a set
-     * of changes since the clients id for each branch
+     * Create a set of changes it can be applied to a repository 
+     * 1. Get the local repository local branches 
+     * 2. Compare them to the ones the client has sent us 
+     * 2. Create a set of changes since the clients id for each branch
      */
     @Override
     public List<RevCommit> requestCommitFetch( Ref head ) {
@@ -51,7 +52,7 @@ public class LocalRemote extends AbstractRemote {
         LogOp logOp = new LogOp(getRepository());
 
         /**
-         * If the repositories are at the same ref, return
+         * If the repositories are at the same id, return
          */
 
         if (!getRepository().getHead().getObjectId().equals(head.getObjectId())) {

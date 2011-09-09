@@ -59,17 +59,20 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
 
                 LOGGER.info("Remote: counted " + objects + " objects, done.");
                 LOGGER.info("Added " + objects + " new objects added to repository");
-                
+
                 for (String branchName: remoteBranches.keySet()) {
                     Ref ref = remoteBranches.get(branchName);
                     /*
                      * Now we must write out all the remote heads - so we can keep track of them for fetches
                      */
                     Ref remoteRef = new Ref(Ref.REMOTES_PREFIX+remote.getName()+"/"+Ref.MASTER, ref.getObjectId(), TYPE.REMOTE);
+                    Ref oldRef = getRepository().getRef(remoteRef.getName());
                     
-                    LOGGER.info("  " + remoteRef.getObjectId().printSmallId() + " " + branchName + " -> " + remoteRef.getName());
-                    getRepository().updateRef(remoteRef);
-                    RefIO.writeRef(getRepository().getRepositoryHome(), remote.getName(), branchName, ref.getObjectId());
+                    if (oldRef!=null && !oldRef.equals(remoteRef)){
+                        LOGGER.info("  " + remoteRef.getObjectId().printSmallId() + " " + branchName + " -> " + remoteRef.getName());
+                        getRepository().updateRef(remoteRef);
+                        RefIO.writeRef(getRepository().getRepositoryHome(), remote.getName(), branchName, ref.getObjectId());
+                    }
                 }
 
                 // close the remote
