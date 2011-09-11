@@ -1,8 +1,9 @@
 package org.geogit.repository.remote;
 
+import java.util.Map;
+
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
-import org.geogit.api.Ref;
 import org.geogit.repository.Repository;
 import org.geogit.repository.remote.payload.IPayload;
 
@@ -46,14 +47,9 @@ public class Remote extends AbstractRemote {
         
     }
 
-	@Override
-	public IPayload requestFetchPayload(Ref head) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-
-
-
+    @Override
+    public IPayload requestFetchPayload( Map<String, String> branchHeads ) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

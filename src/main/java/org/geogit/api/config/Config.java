@@ -192,14 +192,6 @@ public class Config {
                 out.write("[branch \"" + branch.getName() + "\"]" + NEW_LINE);
                 out.write(TAB + "fetch = " + branch.getRemote() + NEW_LINE);
                 out.write(TAB + "merge = " + branch.getMerge() + NEW_LINE);
-
-                /*
-                 * Now we must write out the local branches into the origin remote,
-                 * special case here where HEAD is the current head and all other 
-                 * local branches are placed here.
-                 */
-                Ref ref = repo.getRef(Ref.REMOTES_PREFIX + "origin");
-                RefIO.writeRef(repo.getRepositoryHome(), "origin", branch.getName(), ref == null ? ObjectId.NULL : ref.getObjectId());
             }
 
             // write remotes

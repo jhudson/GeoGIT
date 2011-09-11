@@ -11,6 +11,7 @@ import org.geogit.repository.remote.RemoteRepositoryFactory;
 import org.geogit.repository.remote.payload.IPayload;
 import org.geogit.storage.BlobWriter;
 import org.geogit.storage.CommitWriter;
+import org.geogit.storage.ObjectInserter;
 import org.geogit.storage.RevTreeWriter;
 
 /**
@@ -43,56 +44,56 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
             if (remote != null) {
 
             	IRemote remoteRepo = RemoteRepositoryFactory.createRemoteRepositroy(remote.getUrl());
-            	IPayload payload = remoteRepo.requestFetchPayload(getRepository().getHead());
+            	IPayload payload = remoteRepo.requestFetchPayload(RefIO.getRemoteList(getRepository().getRepositoryHome(),remote.getName()));
                 
-                int objects = 0;
+                int commits = 0;
+                int deltas = 0;
 
+                final ObjectInserter objectInserter = getRepository().newObjectInserter();
+                
                 /**
                  * Update the local repos commits
                  */
                 for (RevCommit commit: payload.getCommitUpdates()) {
-                    objects++;
-
-                    // need to get the remote repos refs DB and add it to my own with the
-                    // remotes full name.
-                    ObjectId commitId = getRepository().getObjectDatabase().put(new CommitWriter(commit));
+                    commits++;
+                    ObjectId commitId = objectInserter.insert(new CommitWriter(commit));
                     Ref ref = new Ref(remote.getName(), commitId, TYPE.COMMIT);
                     getRepository().getRefDatabase().put(ref);
                 }
-                
+
                 /**
                  * Update the local repos trees
                  */
                 for (RevTree tree: payload.getTreeUpdates()) {
-                    objects++;
-                    ObjectId treeId = getRepository().getObjectDatabase().put(new RevTreeWriter(tree));
+                    deltas++;
+                    ObjectId treeId = objectInserter.insert(new RevTreeWriter(tree));
                     Ref ref = new Ref(remote.getName(), treeId, TYPE.TREE);
                     getRepository().getRefDatabase().put(ref);
                 }
-                
+
                 /**
                  * Update the local repos blobs
                  */
                 for (RevBlob blob: payload.getBlobUpdates()) {
-                    objects++;
-                   // ObjectId blobId = getRepository().getObjectDatabase().put(new BlobWriter(blob));
-                   // Ref ref = new Ref(remote.getName(), blobId, TYPE.BLOB);
-                   // getRepository().getRefDatabase().put(ref);
+                    deltas++;
+                    ObjectId blobId = objectInserter.insert(new BlobWriter((byte[])blob.getParsed()));
+                    Ref ref = new Ref(remote.getName(), blobId, TYPE.BLOB);
+                    getRepository().getRefDatabase().put(ref);
                 }
 
                 /**
-                 * Update the local repos tags
-                
+                 * Update the local repos tags, there are none...
                 for (RevTag tag: payload.getTagUpdates()) {
-                    objects++;
-                    ObjectId tagId = getRepository().getObjectDatabase().put(new RevTagWriter(tag));
+                    deltas++;
+                    ObjectId tagId = objectInserter.insert(new RevTagWriter(tag));
                     Ref ref = new Ref(remote.getName(), tagId, TYPE.TAG);
                     getRepository().getRefDatabase().put(ref);
                 }
                 */
 
-                LOGGER.info("Remote: counted " + objects + " objects, done.");
-                LOGGER.info("Added " + objects + " new objects added to repository");
+                LOGGER.info("Remote: counted " + commits + " commits (" + deltas + " deltas), done.");
+                LOGGER.info("Added " + commits + " new commits added to repository");
+                LOGGER.info("Added " + deltas + " new deltas added to repository");
 
                 /**
                  * Update the local repos branch refs for the remote
@@ -108,7 +109,7 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
                     if (oldRef!=null && !oldRef.equals(remoteRef)){
                         LOGGER.info("  " + remoteRef.getObjectId().printSmallId() + " " + branchName + " -> " + remoteRef.getName());
                         getRepository().updateRef(remoteRef);
-                        RefIO.writeRef(getRepository().getRepositoryHome(), remote.getName(), branchName, ref.getObjectId());
+                        RefIO.writeRemoteRefs(getRepository().getRepositoryHome(), remote.getName(), branchName, ref.getObjectId());
                     }
                 }
 
