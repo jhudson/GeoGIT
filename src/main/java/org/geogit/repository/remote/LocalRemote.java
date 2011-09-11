@@ -1,10 +1,7 @@
 package org.geogit.repository.remote;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -12,10 +9,13 @@ import org.geogit.api.GeoGIT;
 import org.geogit.api.LogOp;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
+import org.geogit.api.RevBlob;
 import org.geogit.api.RevCommit;
 import org.geogit.api.config.BranchConfigObject;
 import org.geogit.api.config.Config;
 import org.geogit.repository.Repository;
+import org.geogit.repository.remote.payload.IPayload;
+import org.geogit.repository.remote.payload.LocalPayload;
 import org.geogit.storage.RepositoryDatabase;
 import org.geogit.storage.bdbje.EntityStoreConfig;
 import org.geogit.storage.bdbje.EnvironmentBuilder;
@@ -46,60 +46,56 @@ public class LocalRemote extends AbstractRemote {
      * 2. Create a set of changes since the clients id for each branch
      */
     @Override
-    public List<RevCommit> requestCommitFetch( Ref head ) {
-        List<RevCommit> retList = new ArrayList<RevCommit>();
+    public IPayload requestFetchPayload( Ref head ) {
+    	LocalPayload payload = new LocalPayload();
 
-        LogOp logOp = new LogOp(getRepository());
+    		LogOp logOp = new LogOp(getRepository());
 
-        /**
-         * If the repositories are at the same id, return
-         */
+            if (!getRepository().getHead().getObjectId().equals(head)) {
 
-        if (!getRepository().getHead().getObjectId().equals(head.getObjectId())) {
-
-            /**
-             * If local has no commits don't set since, since we need all refs
-             */
-            if (!ObjectId.NULL/* THE HEAD */.equals(head.getObjectId())) {
-                logOp.setSince(head.getObjectId());
-            }
-
-            try {
-                Iterator<RevCommit> logs = logOp.call();
-                
-                while (logs.hasNext()){
-                    retList.add(logs.next());
+                /**
+                 * If local has no commits don't set since, since we need all refs
+                 */
+                if (!ObjectId.NULL/* THE HEAD */.equals(head.getObjectId())) {
+                    logOp.setSince(head.getObjectId());
                 }
-                
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
 
-        return retList;
+                try {
+                    Iterator<RevCommit> logs = logOp.call();
+                    while (logs.hasNext()){
+                    	RevCommit r = logs.next();
+                    	RevBlob b = (RevBlob)getRepository().getBlob(r.getId());
+                    	
+                    	payload.addBlobs(b);
+                    	payload.addCommits(r);
+                    }
+                    
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+            addBranches(payload);
+    	
+        return payload;
     }
     
-    @Override
-    public Map<String, Ref> requestBranchFetch() {
-        Map<String, Ref> brancheMap = new HashMap<String, Ref>();
+	public void addBranches(final LocalPayload payload) {
         GeoGIT ggit = new GeoGIT(repository);
         Config config = ggit.getConfig();
         Map<String, BranchConfigObject> branches = config.getBranches();
 
         for( BranchConfigObject branch : branches.values() ) {
-            brancheMap.put(branch.getName(), getRepository().getRef(branch.getName()));
+            payload.addBranches(branch.getName(), getRepository().getRef(branch.getName()));
         }
         
         /*
          * Add the master branch
          */
-        brancheMap.put("master", getRepository().getHead());
-
-        return brancheMap;
+        payload.addBranches("master", getRepository().getHead());
     }
 
-    @Override
     public Repository getRepository() {
         if (this.repository != null) {
             return repository;

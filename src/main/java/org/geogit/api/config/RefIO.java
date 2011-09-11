@@ -28,7 +28,6 @@ public class RefIO {
 
         if (file.exists()) {
             for( File refFile : file.listFiles() ) {
-
                 try {
                     String refHead = readFileAsString(refFile);
                     retMap.put(file.getName(), refHead);
@@ -94,4 +93,23 @@ public class RefIO {
         }
         return new String(buffer);
     }
+
+	public static Map<String, String> getRemoteList(File repoLocation, String remoteName) {
+        Map<String, String> retMap = new HashMap<String, String>();
+        File file = new File(repoLocation + REFS_REMOTES + remoteName);
+
+        if (file.exists()) {
+            for( File refFile : file.listFiles() ) {
+                try {
+                    String refHead = readFileAsString(refFile);
+                    retMap.put(file.getName(), refHead);
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return retMap;
+	}
 }

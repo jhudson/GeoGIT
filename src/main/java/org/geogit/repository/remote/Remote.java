@@ -1,13 +1,10 @@
 package org.geogit.repository.remote;
 
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
 import org.geogit.api.Ref;
-import org.geogit.api.RevCommit;
 import org.geogit.repository.Repository;
+import org.geogit.repository.remote.payload.IPayload;
 
  /**
   * A Remote is a single end point of a request/response geogit instance which response to git protocol  
@@ -49,16 +46,14 @@ public class Remote extends AbstractRemote {
         
     }
 
-    @Override
-    public List<RevCommit> requestCommitFetch( Ref head ) {
-        // TODO Auto-generated method stub
-        return null;
-    }
+	@Override
+	public IPayload requestFetchPayload(Ref head) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-    @Override
-    public Map<String, Ref> requestBranchFetch() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+
+
+
 
 }
