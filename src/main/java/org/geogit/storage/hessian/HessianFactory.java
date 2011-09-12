@@ -13,18 +13,8 @@ import org.opengis.feature.type.FeatureType;
 public class HessianFactory implements ObjectSerialisingFactory {
 
 	@Override
-	public ObjectWriter<RevCommit> createCommitWriter(RevCommit commit) {
-		return new HessianCommitWriter(commit);
-	}
-
-	@Override
-	public ObjectWriter<Feature> createFeatureWriter(Feature feature) {
-		return new HessianFeatureWriter(feature);
-	}
-
-	@Override
-	public ObjectWriter<RevTree> createRevTreeWriter(RevTree tree) {
-		return new HessianRevTreeWriter(tree);
+	public BlobPrinter createBlobPrinter() {
+		throw new UnsupportedOperationException("HessianFactory.createBlobPrinter");
 	}
 
 	@Override
@@ -33,9 +23,19 @@ public class HessianFactory implements ObjectSerialisingFactory {
 	}
 
 	@Override
+	public ObjectWriter<RevCommit> createCommitWriter(RevCommit commit) {
+		return new HessianCommitWriter(commit);
+	}
+
+	@Override
 	public ObjectReader<Feature> createFeatureReader(FeatureType featureType,
 			String featureId) {
 		return new HessianFeatureReader(featureType, featureId);
+	}
+
+	@Override
+	public ObjectWriter<Feature> createFeatureWriter(Feature feature) {
+		return new HessianFeatureWriter(feature);
 	}
 
 	@Override
@@ -50,8 +50,8 @@ public class HessianFactory implements ObjectSerialisingFactory {
 	}
 
 	@Override
-	public BlobPrinter createBlobPrinter() {
-		throw new UnsupportedOperationException("HessianFactory.createBlobPrinter");
+	public ObjectWriter<RevTree> createRevTreeWriter(RevTree tree) {
+		return new HessianRevTreeWriter(tree);
 	}
 
 }
