@@ -36,6 +36,7 @@ public class HessianRevTreeReader extends HessianRevReader implements ObjectRead
 			IllegalArgumentException {
 		Hessian2Input hin = new Hessian2Input(rawData);
 		hin.startMessage();
+		int typeValue = hin.readInt();
 		BigInteger size = new BigInteger(hin.readBytes());
 		
 		TreeMap<String, Ref> references = new TreeMap<String, Ref>();

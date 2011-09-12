@@ -21,8 +21,8 @@ public class HessianCommitReader extends HessianRevReader implements
 		Hessian2Input hin = new Hessian2Input(rawData);
 		CommitBuilder builder = new CommitBuilder();
 		
-		System.out.println("reading commit");
 		hin.startMessage();
+		int typeValue = hin.readInt();
 		
 		builder.setTreeId(readObjectId(hin));
 		int parentCount = hin.readInt();

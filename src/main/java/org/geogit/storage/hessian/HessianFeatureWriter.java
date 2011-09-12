@@ -30,6 +30,7 @@ public class HessianFeatureWriter implements ObjectWriter<Feature> {
 		Hessian2Output hout = new Hessian2Output(out);
 		try {
 			hout.startMessage();
+			hout.writeInt(BlobType.FEATURE.getValue());
 			Collection<Property> props = feat.getProperties();
 
 			hout.writeString(feat.getType().getName().getURI());

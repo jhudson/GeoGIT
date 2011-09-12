@@ -30,6 +30,7 @@ public class HessianRevTreeWriter extends HessianRevWriter implements ObjectWrit
 		Hessian2Output hout = new Hessian2Output(out);
 		try {
 			hout.startMessage();
+			hout.writeInt(BlobType.REVTREE.getValue());
 			
 			byte[] size = revTree.size().toByteArray();
 			hout.writeBytes(size);

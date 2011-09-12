@@ -23,8 +23,8 @@ public class HessianCommitWriter extends HessianRevWriter implements
 	public void write(OutputStream out) throws IOException {
 		Hessian2Output hout = new Hessian2Output(out);
 		
-		System.out.println("writing commit");
 		hout.startMessage();
+		hout.writeInt(BlobType.COMMIT.getValue());
 		
 		writeObjectId(hout, commit.getTreeId());
 		

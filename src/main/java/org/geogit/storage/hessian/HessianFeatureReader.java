@@ -33,19 +33,17 @@ public class HessianFeatureReader implements ObjectReader<Feature> {
 	
 	private FeatureType featureType;
 	private String featureId;
-	private GeometryFactory geometryFactory;
+	private static GeometryFactory geometryFactory = new GeometryFactory();
 	public HessianFeatureReader(final FeatureType featureType, final String featureId) {
 		this.featureType = featureType;
 		this.featureId = featureId;
 	}
 	
-	public void setGeometryFactory(GeometryFactory geometryFactory) {
-		this.geometryFactory = geometryFactory;
-	}
 	public Feature read(ObjectId id, InputStream rawData) throws IOException,
 			IllegalArgumentException {
 		Hessian2Input in = new Hessian2Input(rawData);
 		in.startMessage();
+		int typeValue = in.readInt();
 		List<Object>values = new ArrayList<Object>();
 		String typeString = in.readString();
 		int attrCount = in.readInt();
@@ -59,7 +57,7 @@ public class HessianFeatureReader implements ObjectReader<Feature> {
 		return feat;
 	}
 	
-	private Object readValue(final Hessian2Input in) throws IOException {
+	static Object readValue(final Hessian2Input in) throws IOException {
 		Object obj = in.readObject();
 		if(!(obj instanceof EntityType)) 
 			throw new IOException("Illegal format in data stream");

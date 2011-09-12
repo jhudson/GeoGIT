@@ -14,7 +14,7 @@ public class HessianFactory implements ObjectSerialisingFactory {
 
 	@Override
 	public BlobPrinter createBlobPrinter() {
-		throw new UnsupportedOperationException("HessianFactory.createBlobPrinter");
+		return new HessianBlobPrinter();
 	}
 
 	@Override
