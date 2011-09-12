@@ -57,18 +57,18 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
                 for (RevCommit commit: payload.getCommitUpdates()) {
                     commits++;
                     ObjectId commitId = objectInserter.insert(new CommitWriter(commit));
-                    Ref ref = new Ref(remote.getName(), commitId, TYPE.COMMIT);
-                    getRepository().getRefDatabase().put(ref);
+                    //getRepository().updateRef(new Ref(remote.getName(), commitId, TYPE.COMMIT));
+                    getRepository().getRefDatabase().put(new Ref(remote.getName(), commitId, TYPE.COMMIT));
                 }
 
                 /**
                  * Update the local repos trees
                  */
                 for (RevTree tree: payload.getTreeUpdates()) {
-                    deltas++;
+                    //LOGGER.info("Adding tree: " + tree.toString());
                     ObjectId treeId = objectInserter.insert(new RevTreeWriter(tree));
-                    Ref ref = new Ref(remote.getName(), treeId, TYPE.TREE);
-                    getRepository().getRefDatabase().put(ref);
+                    //getRepository().updateRef(new Ref(remote.getName(), treeId, TYPE.TREE));
+                    getRepository().getRefDatabase().put(new Ref(remote.getName(), treeId, TYPE.TREE));
                 }
 
                 /**
@@ -76,9 +76,10 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
                  */
                 for (RevBlob blob: payload.getBlobUpdates()) {
                     deltas++;
+                    //LOGGER.info("Adding blob: " + blob.toString());
                     ObjectId blobId = objectInserter.insert(new BlobWriter((byte[])blob.getParsed()));
-                    Ref ref = new Ref(remote.getName(), blobId, TYPE.BLOB);
-                    getRepository().getRefDatabase().put(ref);
+                    getRepository().getRefDatabase().put(new Ref(remote.getName(), blobId, TYPE.BLOB));
+                    //getRepository().updateRef(new Ref(remote.getName(), blobId, TYPE.BLOB));
                 }
 
                 /**

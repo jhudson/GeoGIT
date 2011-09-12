@@ -8,8 +8,13 @@ import java.util.Properties;
 import org.geogit.api.GeoGIT;
 import org.geogit.api.LogOp;
 import org.geogit.api.ObjectId;
+import org.geogit.api.PrintVisitor;
+import org.geogit.api.Ref;
 import org.geogit.api.RevBlob;
 import org.geogit.api.RevCommit;
+import org.geogit.api.RevObject;
+import org.geogit.api.RevTree;
+import org.geogit.api.TreeVisitor;
 import org.geogit.api.config.BranchConfigObject;
 import org.geogit.api.config.Config;
 import org.geogit.repository.Repository;
@@ -46,7 +51,7 @@ public class LocalRemote extends AbstractRemote {
      */
     @Override
     public IPayload requestFetchPayload( Map<String, String> branchHeads ) {
-        LocalPayload payload = new LocalPayload();
+        final LocalPayload payload = new LocalPayload();
 
         //for each branch
         //  grab the branch_name
@@ -79,26 +84,57 @@ public class LocalRemote extends AbstractRemote {
             try {
                 Iterator<RevCommit> logs = logOp.call();
                 while( logs.hasNext() ) {
-                    RevCommit r = logs.next();
-                    payload.addCommits(r);
+                    RevCommit commit = logs.next();
+                    payload.addCommits(commit);
 
                     /**
                      * ok we have the commit, this should be a reference to the tree,blob,tag objects
                      */
-                    
+                    ObjectId treeId = commit.getTreeId();
+                    RevTree tree = getRepository().getTree(treeId);
+
                     /**
                      * Add Trees to payload
                      */
-                    payload.addTrees(getRepository().getTree(r.getTreeId()));
+                    payload.addTrees(tree);
+                    
+                    tree.accept(new TreeVisitor(){
+                        
+                        @Override
+                        public boolean visitSubTree( int bucket, ObjectId treeId ) {
+                            /**
+                             * add any subtrees
+                             */
+                            RevTree tree = getRepository().getTree(treeId);
+                            /**
+                             * add the subtree to our tree store, then see if there are any blobs
+                             */
+                            payload.addTrees(tree);
+                            tree.accept(this);
+                            return true;
+                        }
 
-                    /**
-                     * Add BLOB to payload
-                     */
-                    RevBlob b = (RevBlob) getRepository().getBlob(r.getId());
-                    payload.addBlobs(b);
+                        @Override
+                        public boolean visitEntry( Ref ref ) {
+                            if (ref.getType().equals(RevObject.TYPE.TREE)) {
+                                RevTree tree = getRepository().getTree(ref.getObjectId());
+                                payload.addTrees(tree);
+                                tree.accept(this);
+                            } else {
+                                /**
+                                 * Add BLOB to store
+                                 */
+                                payload.addBlobs(getRepository().getObjectDatabase().getBlob(ref.getObjectId()));
+                            }
+                            return true;
+                            
+                        }
+                    });
                     
                     /**
-                     * Add Tags to payload, there are none for now...
+                     * Add Tags to payload, 
+                     * 
+                     * there are none for now...
                      */
                     
                 }

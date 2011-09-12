@@ -26,7 +26,7 @@ public class RemoteAddOp extends AbstractGeoGitOp<Void> {
         super(repository);
         this.config = config;
     }
-    
+
     @Override
     public Void call() {
         Preconditions.checkNotNull(this.name);
