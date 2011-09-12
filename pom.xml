@@ -25,6 +25,12 @@
   <!-- <ciManagement> <system>continuum</system> <notifiers> <notifier> <type>mail</type> <configuration> <address>geoserver-devel@lists.sourceforge.net</address> 
     </configuration> <sendOnError>true</sendOnError> <sendOnFailure>true</sendOnFailure> </notifier> </notifiers> </ciManagement> -->
   <repositories>
+      <repository>
+      <id>oracleReleases</id>
+      <name>Oracle Released Java Packages</name>
+      <url>http://download.oracle.com/maven</url>
+      <layout>default</layout>
+    </repository>
     <repository>
       <id>opengeo</id>
       <name>OpenGeo Maven Repository</name>
