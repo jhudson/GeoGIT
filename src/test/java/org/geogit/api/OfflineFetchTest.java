@@ -153,7 +153,7 @@ public class OfflineFetchTest extends MultipleRepositoryTestCase {
         List<Feature> features = new ArrayList<Feature>();
 
         for( int i = 0; i < 10; i++ ) {
-            Feature point = feature(pointsType, null, "StringProp1_" + i + "",
+            Feature point = feature(pointsType, "Points." + i, "StringProp1_" + i + "",
                     new Integer(1000 * i), "POINT(" + i + " " + i + ")");
             featureIds.add(insert(this.server, point));
             features.add(point);
