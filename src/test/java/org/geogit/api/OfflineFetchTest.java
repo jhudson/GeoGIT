@@ -6,13 +6,13 @@ import java.util.List;
 import org.geogit.test.MultipleRepositoryTestCase;
 import org.opengis.feature.Feature;
 
-public class FetchTest extends MultipleRepositoryTestCase {
+public class OfflineFetchTest extends MultipleRepositoryTestCase {
 
     private GeoGIT server;
     private GeoGIT server2;
     private GeoGIT client;
 
-    public FetchTest() {
+    public OfflineFetchTest() {
         super(3/* three repositories */);
     }
 
@@ -153,7 +153,7 @@ public class FetchTest extends MultipleRepositoryTestCase {
         List<Feature> features = new ArrayList<Feature>();
 
         for( int i = 0; i < 10; i++ ) {
-            Feature point = feature(pointsType, null, "StringProp1_" + i + "",
+            Feature point = feature(pointsType, "Points." + i, "StringProp1_" + i + "",
                     new Integer(1000 * i), "POINT(" + i + " " + i + ")");
             featureIds.add(insert(this.server, point));
             features.add(point);
