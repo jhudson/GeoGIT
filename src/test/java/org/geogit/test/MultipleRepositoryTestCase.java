@@ -187,18 +187,6 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
     public Repository getRepository(int index) {
         return repos.toArray(new Repository[repos.size()])[index];
     }
-    
-    protected void insterInto(GeoGIT ggit, String id) throws Exception{
-        RevCommit insert = new RevCommit(ObjectId.forString(id));
-        insert.setTreeId(ObjectId.forString("treetest"));
-        insert.setAuthor("jhudson");
-        insert.setMessage("insert");
-        insert.setParentIds(Arrays.asList(ggit.getRepository().getHead().getObjectId()));
-
-        ObjectId commitId = ggit.getRepository().getObjectDatabase().put(new CommitWriter(insert));
-        Ref ref = new Ref(Ref.HEAD, commitId, RevObject.TYPE.COMMIT);
-        ggit.getRepository().getRefDatabase().put(ref);
-    }
 
     protected Feature feature(SimpleFeatureType type, String id, Object... values)
             throws ParseException {
@@ -218,23 +206,23 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
     /**
      * Inserts the Feature to the index and stages it to be committed.
      */
-    protected void insertAddCommit(GeoGIT gg, Feature f) throws Exception {
+    protected RevCommit insertAddCommit(GeoGIT gg, Feature f) throws Exception {
         insert(gg, f);
         gg.add().call();
-        gg.commit().setMessage("commited a new feature").setAll(true).call();
+        return gg.commit().setMessage("commited a new feature").setAll(true).call();
     }
 
     /**
      * Inserts the feature to the index but does not stages it to be committed
      */
-    protected ObjectId insert(GeoGIT gg, Feature f) throws Exception {
+    protected ObjectId insert(GeoGIT gg, Feature feature) throws Exception {
         final StagingArea index = gg.getRepository().getIndex();
-        Name name = f.getType().getName();
+        Name name = feature.getType().getName();
         String namespaceURI = name.getNamespaceURI();
         String localPart = name.getLocalPart();
-        String id = f.getIdentifier().getID();
+        String id = feature.getIdentifier().getID();
 
-        Ref ref = index.inserted(new FeatureWriter(f), f.getBounds(), namespaceURI, localPart, id);
+        Ref ref = index.inserted(new FeatureWriter(feature), feature.getBounds(), namespaceURI, localPart, id);
         ObjectId objectId = ref.getObjectId();
         return objectId;
     }
