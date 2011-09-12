@@ -6,13 +6,13 @@ import java.util.List;
 import org.geogit.test.MultipleRepositoryTestCase;
 import org.opengis.feature.Feature;
 
-public class FetchTest extends MultipleRepositoryTestCase {
+public class OfflineFetchTest extends MultipleRepositoryTestCase {
 
     private GeoGIT server;
     private GeoGIT server2;
     private GeoGIT client;
 
-    public FetchTest() {
+    public OfflineFetchTest() {
         super(3/* three repositories */);
     }
 
