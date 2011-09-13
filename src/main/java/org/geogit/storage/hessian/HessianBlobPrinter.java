@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Stack;
 
 import org.geogit.api.BlobPrinter;
 import org.geogit.api.ObjectId;
+import org.geogit.api.Ref;
 
 import com.caucho.hessian.io.Hessian2Input;
 
@@ -20,10 +22,24 @@ public class HessianBlobPrinter
 		extends HessianRevReader 
 		implements BlobPrinter {
 	
+	/**
+	 * This keeps a reference to the tags that have been opened to prevent
+	 * me from making typos that break the well-formadness of the xml output.
+	 */
 	Stack<EntityState> entityStack;
+	
+	/**
+	 * This evil little guy tracks whether the previous entity was a closing
+	 * entity that didn't line wrap.  It's purely for readability in the 
+	 * output, not readability in the code.
+	 * 
+	 * It will only be true when a non-wrapping tag has just been closed.
+	 */
+	boolean startNew;
 	
 	public HessianBlobPrinter() {
 		entityStack = new Stack<EntityState>();	
+		startNew = false;
 	}
 
 	@Override
@@ -62,7 +78,30 @@ public class HessianBlobPrinter
 	}
 
 	private void printRevTree(Hessian2Input hin, PrintStream out) throws IOException {
-		
+		BigInteger size = new BigInteger(hin.readBytes());
+		Map<String, String> attr = new HashMap<String, String>();
+		attr.put("size", size.toString());
+		openTag("tree", attr, out, true, false);
+		while(true) {
+			Node type = null;
+			type = Node.fromValue(hin.readInt());
+			if(type.equals(Node.REF)){
+				Ref entryRef = readRef(hin);
+				printRef(entryRef, out);
+			} else if(type.equals(Node.TREE)) {
+				openTag("tree", out);
+				int bucket = hin.readInt();
+				ObjectId id = readObjectId(hin);
+				openTag("bucket", out, false);
+				out.print(Integer.toString(bucket));
+				closeTag(out);
+				printObjectId(id, out);
+				closeTag(out);
+			} else if(type.equals(Node.END)){
+				break;
+			}
+		}
+		closeTag(out);
 	}
 	
 	private class EntityState {
@@ -116,6 +155,7 @@ public class HessianBlobPrinter
 	}
 	
 	private void openTag(String entity, Map<String, String> attrs, PrintStream out, boolean wrap, boolean empty) throws IOException {
+		startNew = false;
 		if(entityStack.size() > 0) {
 			EntityState lastState = entityStack.peek();
 			if(lastState.wrap)
@@ -132,7 +172,6 @@ public class HessianBlobPrinter
 				out.print("=\"");
 				if(value != null)
 					out.print(value);
-				else
 				out.print("\"");
 			}
 		}
@@ -155,14 +194,22 @@ public class HessianBlobPrinter
 		out.print("</");
 		out.print(entity.entityName);
 		out.print(">");
-		if(entity.wrap)
-			out.print("\n");
+		out.print("\n");
 	}
 	
 	private void printIndent(PrintStream out) throws IOException {
 		for(int i = 0; i < entityStack.size(); i++) {
 			out.print(" ");
 		}
+	}
+	
+	private void printRef(Ref ref, PrintStream out) throws IOException {
+		Map<String, String> attr = new HashMap<String, String>();
+		attr.put("name", ref.getName());
+		attr.put("type", ref.getType().toString());
+		openTag("ref", attr, out, true, false);
+		printObjectId(ref.getObjectId(), out);
+		closeTag(out);
 	}
 	
 	private void printObjectId(ObjectId value, PrintStream out) throws IOException {

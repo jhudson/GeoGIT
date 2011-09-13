@@ -4,19 +4,27 @@
  */
 package org.geogit.storage;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.PrintTreeVisitor;
 import org.geogit.api.Ref;
+import org.geogit.api.RevBlob;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.api.RevTree;
 import org.geogit.api.TreeVisitor;
 import org.geogit.test.RepositoryTestCase;
+import org.w3c.dom.Document;
 
 import com.vividsolutions.jts.util.Stopwatch;
 
@@ -194,6 +202,20 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
             count++;
         }
         assertEquals(numEntries, count);
+    }
+    
+    public void testPrint() throws Exception {
+    	final int numEntries = RevSHA1Tree.SPLIT_FACTOR + 1000;
+    	ObjectId treeId = createAndSaveTree(numEntries, true);
+    	InputStream in = odb.getRaw(treeId);
+    	ByteArrayOutputStream out = new ByteArrayOutputStream();
+    	WrappedSerialisingFactory.getInstance().createBlobPrinter().print(in, System.out);
+    	
+    	in = odb.getRaw(treeId);
+    	WrappedSerialisingFactory.getInstance().createBlobPrinter().print(in, new PrintStream(out));
+    	
+    	Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+    			.parse(new ByteArrayInputStream(out.toByteArray()));
     }
 
     /**
