@@ -2,7 +2,7 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 
 <beans>
-<!--
+	<!--
 	<bean id="serialisingFactory" class="org.geogit.storage.bxml.BxmlFactory" />
 	-->
 	<bean id="serialisingFactory" class="org.geogit.storage.hessian.HessianFactory" />
