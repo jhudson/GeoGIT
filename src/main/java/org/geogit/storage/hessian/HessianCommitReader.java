@@ -22,7 +22,9 @@ public class HessianCommitReader extends HessianRevReader implements
 		CommitBuilder builder = new CommitBuilder();
 		
 		hin.startMessage();
-		int typeValue = hin.readInt();
+		BlobType type = BlobType.fromValue(hin.readInt());
+		if(type != BlobType.COMMIT)
+			throw new IllegalArgumentException("Could not parse blob of type " + type + " as a commit.");
 		
 		builder.setTreeId(readObjectId(hin));
 		int parentCount = hin.readInt();

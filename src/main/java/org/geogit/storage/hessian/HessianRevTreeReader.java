@@ -36,7 +36,10 @@ public class HessianRevTreeReader extends HessianRevReader implements ObjectRead
 			IllegalArgumentException {
 		Hessian2Input hin = new Hessian2Input(rawData);
 		hin.startMessage();
-		int typeValue = hin.readInt();
+		BlobType blobType = BlobType.fromValue(hin.readInt());
+		if(blobType != BlobType.REVTREE)
+			throw new IllegalArgumentException("Could not parse blob of type " + blobType + " as rev tree.");
+		
 		BigInteger size = new BigInteger(hin.readBytes());
 		
 		TreeMap<String, Ref> references = new TreeMap<String, Ref>();

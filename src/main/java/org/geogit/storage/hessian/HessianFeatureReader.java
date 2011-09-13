@@ -43,7 +43,9 @@ public class HessianFeatureReader implements ObjectReader<Feature> {
 			IllegalArgumentException {
 		Hessian2Input in = new Hessian2Input(rawData);
 		in.startMessage();
-		int typeValue = in.readInt();
+		BlobType type = BlobType.fromValue(in.readInt());
+		if(type != BlobType.FEATURE)
+			throw new IllegalArgumentException("Could not parse blob of type " + type + " as a feature.");
 		List<Object>values = new ArrayList<Object>();
 		String typeString = in.readString();
 		int attrCount = in.readInt();
