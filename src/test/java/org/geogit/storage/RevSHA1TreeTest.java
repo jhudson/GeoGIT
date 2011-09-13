@@ -15,6 +15,7 @@ import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import org.custommonkey.xmlunit.XMLAssert;
 import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.PrintTreeVisitor;
@@ -216,6 +217,9 @@ public class RevSHA1TreeTest extends RepositoryTestCase {
     	
     	Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder()
     			.parse(new ByteArrayInputStream(out.toByteArray()));
+    	assertNotNull(dom);
+    	XMLAssert.assertXpathExists("/tree/tree/bucket", dom);
+    	XMLAssert.assertXpathExists("/tree/tree/objectid", dom);
     }
 
     /**
