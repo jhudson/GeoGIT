@@ -1,9 +1,15 @@
 package org.geogit.storage.hessian;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.Serializable;
+import java.lang.reflect.Array;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,8 +21,17 @@ import java.util.Stack;
 import org.geogit.api.BlobPrinter;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
+import org.geotools.referencing.CRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.caucho.hessian.io.Hessian2Input;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
+import com.vividsolutions.jts.io.InStream;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKBReader;
+import com.vividsolutions.jts.io.WKTWriter;
 
 public class HessianBlobPrinter 
 		extends HessianRevReader 
@@ -69,12 +84,14 @@ public class HessianBlobPrinter
 	}
 	
 	private void printFeature(Hessian2Input hin, PrintStream out) throws IOException {
-		out.println("Feature");
+		openTag("feature", out);
+		String typeString = hin.readString();
 		int attrCount = hin.readInt();
 		for(int i = 0; i < attrCount; i++) {
 			Object obj = HessianFeatureReader.readValue(hin);
-			out.println("\t- " + obj.toString());
+			printObject(obj, out);
 		}
+		closeTag(out);
 	}
 
 	private void printRevTree(Hessian2Input hin, PrintStream out) throws IOException {
@@ -218,6 +235,171 @@ public class HessianBlobPrinter
 		closeTag(out);
 	}
 	
+	private void printObject(Object obj, PrintStream out) throws IOException {
+		if(obj == null) {
+			printNull(out);
+		} else if(obj instanceof String) {
+			printString((String)obj, out);
+		} else if(obj instanceof Boolean) {
+			printBoolean((Boolean)obj, out);
+		} else if(obj instanceof Byte) {
+			printByte((Byte)obj, out);
+		} else if(obj instanceof Double) {
+			printDouble((Double)obj, out);
+		} else if(obj instanceof Float) {
+			printFloat((Float)obj, out);
+		} else if(obj instanceof Integer) {
+			printInt((Integer)obj, out);
+		} else if(obj instanceof Long) {
+			printLong((Long)obj, out);
+		} else if(obj instanceof byte[]) {
+			printByteArray((byte[])obj, out);
+		} else if(obj instanceof boolean[]) {
+			printBooleanArray((boolean[])obj, out);
+		} else if(obj instanceof char[]) {
+			printCharArray((char[])obj, out);
+		} else if(obj instanceof double[]) {
+			printDoubleArray((double[])obj, out);
+		} else if(obj instanceof float[]) {
+			printFloatArray((float[])obj, out);
+		} else if(obj instanceof int[]) {
+			printIntArray((int[])obj, out);
+		} else if(obj instanceof long[]) {
+			printLongArray((long[])obj, out);
+		} else if(obj instanceof BigDecimal) {
+			printBigDecimal((BigDecimal)obj, out);
+		} else if(obj instanceof BigInteger) {
+			printBigInteger((BigInteger)obj, out);
+		} else if(obj instanceof Geometry) {
+			printGeometry((Geometry)obj, out);
+		} else if(obj instanceof Serializable) {
+			printSerialisable((Serializable)obj, out);
+		} else {
+			
+		}
+	}
+	
+	private void printGeometry(Geometry value, PrintStream out) throws IOException {
+		String srs;
+		if(value.getUserData() instanceof CoordinateReferenceSystem) {
+			srs = CRS.toSRS((CoordinateReferenceSystem)value.getUserData());
+		} else {
+			srs = "urn.ogc.def.crs.EPSG::4326";
+		}
+		Map<String, String> attr = new HashMap<String, String>();
+		attr.put("crs", srs);
+		openTag("wkb", attr, out, false, false);
+		WKTWriter writ = new WKTWriter();
+		out.print(writ.writeFormatted(value));
+		closeTag(out);
+	}
+	
+	private void printSerialisable(Serializable value, PrintStream out) throws IOException {
+		openTag("serialisable", out, false);
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		ObjectOutputStream oout = new ObjectOutputStream(bout);
+		oout.writeObject(value);
+		out.print(formatArray(bout.toByteArray()));
+		closeTag(out);
+	}
+	
+	private void printBigInteger(BigInteger value, PrintStream out) throws IOException {
+		openTag("biginteger", out, false);
+		out.print(value.toString());
+		closeTag(out);
+	}
+	
+	private void printBigDecimal(BigDecimal value, PrintStream out) throws IOException {
+		openTag("bigdecimal", out, false);
+		out.print(value.toEngineeringString());
+		closeTag(out);
+	}
+	
+	private void printLongArray(long[] value, PrintStream out) throws IOException {
+		openTag("longarray", out, false);
+		out.print(formatArray(value));
+		closeTag(out);
+	}
+	
+	private void printIntArray(int[] value, PrintStream out) throws IOException {
+		openTag("intarray", out, false);
+		out.print(formatArray(value));
+		closeTag(out);
+	}
+	
+	private void printFloatArray(float[] value, PrintStream out) throws IOException {
+		openTag("floatarray", out, false);
+		out.print(formatArray(value));
+		closeTag(out);
+	}
+	
+	private void printDoubleArray(double[] value, PrintStream out) throws IOException {
+		openTag("doublearray", out, false);
+		out.print(formatArray(value));
+		closeTag(out);
+	}
+	
+	private void printCharArray(char[] value, PrintStream out) throws IOException {
+		openTag("chararray", out, false);
+		out.print(formatArray(value));
+		closeTag(out);
+	}
+	
+	private void printBooleanArray(boolean[] value, PrintStream out) throws IOException {
+		openTag("booleanarray", out, false);
+		out.print(formatArray(value));
+		closeTag(out);
+	}
+	
+	private void printByteArray(byte[] value, PrintStream out) throws IOException {
+		openTag("bytearray", out, false);
+		out.print(formatArray(value, "%x"));
+		closeTag(out);
+	}
+	
+	private String formatArray(Object array) {
+		return formatArray(array, "%s");
+	}
+	
+	private String formatArray(Object array, String elementFormat) {
+		StringBuffer buf = new StringBuffer("[");
+		for(int i = 0; i < Array.getLength(array); i++) {
+			buf.append(String.format(elementFormat, Array.get(array, i)));
+		}
+		buf.append("]");
+		return buf.toString();
+	}
+	
+	private void printFloat(float value, PrintStream out) throws IOException {
+		openTag("float", out, false);
+		out.print(value);
+		closeTag(out);
+	}
+	
+	private void printDouble(double value, PrintStream out) throws IOException {
+		openTag("double", out, false);
+		out.print(value);
+		closeTag(out);
+	}
+	
+	private void printByte(byte value, PrintStream out) throws IOException {
+		openTag("byte", out, false);
+		out.print(String.format("%x", value));
+		closeTag(out);
+	}
+	
+	private void printBoolean(boolean value, PrintStream out) throws IOException {
+		openTag("boolean", out, false);
+		out.print(value);
+		closeTag(out);
+	}
+	
+	private void printInt(int value, PrintStream out) throws IOException {
+		openTag("int", out, false);
+		out.print(value);
+		closeTag(out);
+	}
+	
 	private void printLong(long value, PrintStream out) throws IOException {
 		openTag("long", out, false);
 		out.print(value);
@@ -226,11 +408,15 @@ public class HessianBlobPrinter
 	
 	private void printString(String value, PrintStream out) throws IOException {
 		if(value == null) {
-			openTag("null", out, true, true);
+			printNull(out);
 		} else {
 			openTag("string", out, false);
 			out.print(value);
 			closeTag(out);
 		}
+	}
+	
+	private void printNull(PrintStream out) throws IOException {
+		openTag("null", out, true, true);
 	}
 }

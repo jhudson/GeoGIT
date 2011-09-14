@@ -143,11 +143,11 @@ public abstract class RepositoryTestCase extends TestCase {
         linesType = DataUtilities.createType(linesNs, linesName, linesTypeSpec);
 
         lines1 = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
-                "LINESTRING(1 1, 2 2)");
+                "LINESTRING (1 1, 2 2)");
         lines2 = feature(linesType, idL2, "StringProp2_2", new Integer(2000),
-                "LINESTRING(3 3, 4 4)");
+                "LINESTRING (3 3, 4 4)");
         lines3 = feature(linesType, idL3, "StringProp2_3", new Integer(3000),
-                "LINESTRING(5 5, 6 6)");
+                "LINESTRING (5 5, 6 6)");
 
         setUpInternal();
     }
