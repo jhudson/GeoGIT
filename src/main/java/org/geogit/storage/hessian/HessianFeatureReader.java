@@ -66,14 +66,29 @@ public class HessianFeatureReader implements ObjectReader<Feature> {
 		EntityType type = (EntityType)obj;
 		switch(type) {
 		case STRING:
+			String str = in.readString();
+			return str;
 		case BOOLEAN:
+			Boolean bool = Boolean.valueOf(in.readBoolean());
+			return bool;
 		case BYTE:
+			byte[] bts = in.readBytes();
+			if(bts.length == 1)
+				return Byte.valueOf(bts[0]);
+			else
+				return null;
 		case DOUBLE:
+			Double doub = Double.valueOf(in.readDouble());
+			return doub;
 		case FLOAT:
+			Float flt = Float.intBitsToFloat(in.readInt());
+			return flt;
 		case INT:
+			Integer intg = Integer.valueOf(in.readInt());
+			return intg;
 		case LONG:
-			Object obje = in.readObject();
-			return obje;
+			Long lng = Long.valueOf(in.readLong());
+			return lng;
 		case BYTE_ARRAY:
 			return in.readBytes();
 		case BOOLEAN_ARRAY:

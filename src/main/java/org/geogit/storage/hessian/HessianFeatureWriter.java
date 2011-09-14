@@ -51,13 +51,27 @@ public class HessianFeatureWriter implements ObjectWriter<Feature> {
 		out.writeObject(type);
 		switch(type) {
 		case STRING:
+			out.writeString((String) value);
+			break;
 		case BOOLEAN:
+			out.writeBoolean((Boolean)value);
+			break;
 		case BYTE:
+			byte[] bts = new byte[1];
+			bts[0] = ((Byte)value).byteValue();
+			out.writeBytes(bts);
+			break;
 		case DOUBLE:
+			out.writeDouble((Double)value);
+			break;
 		case FLOAT:
+			out.writeInt(Float.floatToRawIntBits((Float)value));
+			break;
 		case INT:
+			out.writeInt((Integer)value);
+			break;
 		case LONG:
-			out.writeObject(value);
+			out.writeLong((Long)value);
 			break;
 		case BYTE_ARRAY:
 			byte[] bytes = (byte[])value;
