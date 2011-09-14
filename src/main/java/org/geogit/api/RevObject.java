@@ -39,6 +39,11 @@ public interface RevObject {
             public int value() {
                 return 3;
             }
+        }, REMOTE {
+            @Override
+            public int value() {
+                return 4;
+            }
         };
 
         public abstract int value();
