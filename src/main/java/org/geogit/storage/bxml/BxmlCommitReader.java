@@ -2,15 +2,15 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-package org.geogit.storage;
+package org.geogit.storage.bxml;
 
-import static org.geogit.storage.BLOBS.AUTHOR;
-import static org.geogit.storage.BLOBS.COMMIT;
-import static org.geogit.storage.BLOBS.COMMITTER;
-import static org.geogit.storage.BLOBS.MESSAGE;
-import static org.geogit.storage.BLOBS.PARENT_IDS;
-import static org.geogit.storage.BLOBS.TIMESTAMP;
-import static org.geogit.storage.BLOBS.TREE;
+import static org.geogit.storage.bxml.BLOBS.AUTHOR;
+import static org.geogit.storage.bxml.BLOBS.COMMIT;
+import static org.geogit.storage.bxml.BLOBS.COMMITTER;
+import static org.geogit.storage.bxml.BLOBS.MESSAGE;
+import static org.geogit.storage.bxml.BLOBS.PARENT_IDS;
+import static org.geogit.storage.bxml.BLOBS.TIMESTAMP;
+import static org.geogit.storage.bxml.BLOBS.TREE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,11 +22,12 @@ import javax.xml.namespace.QName;
 import org.geogit.api.ObjectId;
 import org.geogit.api.RevCommit;
 import org.geogit.repository.CommitBuilder;
+import org.geogit.storage.ObjectReader;
 import org.gvsig.bxml.stream.BxmlInputFactory;
 import org.gvsig.bxml.stream.BxmlStreamReader;
 import org.gvsig.bxml.stream.EventType;
 
-public final class CommitReader implements ObjectReader<RevCommit> {
+public final class BxmlCommitReader implements ObjectReader<RevCommit> {
 
     /**
      * @see org.geogit.storage.ObjectReader#read(org.geogit.api.ObjectId, java.io.InputStream)

@@ -2,29 +2,29 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-package org.geogit.storage;
+package org.geogit.storage.bxml;
 
-import static org.geogit.storage.BLOBS.BIGDECIMAL;
-import static org.geogit.storage.BLOBS.BIGINT;
-import static org.geogit.storage.BLOBS.BOOLEAN;
-import static org.geogit.storage.BLOBS.BOOLEAN_ARRAY;
-import static org.geogit.storage.BLOBS.BYTE;
-import static org.geogit.storage.BLOBS.BYTE_ARRAY;
-import static org.geogit.storage.BLOBS.CHAR_ARRAY;
-import static org.geogit.storage.BLOBS.CONVERTED_FROM_ATT;
-import static org.geogit.storage.BLOBS.CONVERTED_TO_STRING;
-import static org.geogit.storage.BLOBS.DOUBLE;
-import static org.geogit.storage.BLOBS.DOUBLE_ARRAY;
-import static org.geogit.storage.BLOBS.FEATURE;
-import static org.geogit.storage.BLOBS.FLOAT;
-import static org.geogit.storage.BLOBS.FLOAT_ARRAY;
-import static org.geogit.storage.BLOBS.GEOMETRY_WKB;
-import static org.geogit.storage.BLOBS.INT;
-import static org.geogit.storage.BLOBS.INT_ARRAY;
-import static org.geogit.storage.BLOBS.LONG;
-import static org.geogit.storage.BLOBS.LONG_ARRAY;
-import static org.geogit.storage.BLOBS.NULL;
-import static org.geogit.storage.BLOBS.STRING;
+import static org.geogit.storage.bxml.BLOBS.BIGDECIMAL;
+import static org.geogit.storage.bxml.BLOBS.BIGINT;
+import static org.geogit.storage.bxml.BLOBS.BOOLEAN;
+import static org.geogit.storage.bxml.BLOBS.BOOLEAN_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.BYTE;
+import static org.geogit.storage.bxml.BLOBS.BYTE_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.CHAR_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.CONVERTED_FROM_ATT;
+import static org.geogit.storage.bxml.BLOBS.CONVERTED_TO_STRING;
+import static org.geogit.storage.bxml.BLOBS.DOUBLE;
+import static org.geogit.storage.bxml.BLOBS.DOUBLE_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.FEATURE;
+import static org.geogit.storage.bxml.BLOBS.FLOAT;
+import static org.geogit.storage.bxml.BLOBS.FLOAT_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.GEOMETRY_WKB;
+import static org.geogit.storage.bxml.BLOBS.INT;
+import static org.geogit.storage.bxml.BLOBS.INT_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.LONG;
+import static org.geogit.storage.bxml.BLOBS.LONG_ARRAY;
+import static org.geogit.storage.bxml.BLOBS.NULL;
+import static org.geogit.storage.bxml.BLOBS.STRING;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -34,6 +34,7 @@ import java.util.Collection;
 
 import javax.xml.XMLConstants;
 
+import org.geogit.storage.ObjectWriter;
 import org.geotools.referencing.CRS;
 import org.geotools.util.Converters;
 import org.gvsig.bxml.stream.BxmlOutputFactory;
@@ -53,11 +54,11 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.OutStream;
 import com.vividsolutions.jts.io.WKBWriter;
 
-public class FeatureWriter implements ObjectWriter<Feature> {
+public class BxmlFeatureWriter implements ObjectWriter<Feature> {
 
     private final Feature feature;
 
-    public FeatureWriter(final Feature feature) {
+    public BxmlFeatureWriter(final Feature feature) {
         Preconditions.checkArgument(feature instanceof SimpleFeature,
                 "Only SimpleFeature is supported so far");
         this.feature = feature;

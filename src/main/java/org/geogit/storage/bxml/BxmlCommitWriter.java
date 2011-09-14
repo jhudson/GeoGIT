@@ -2,17 +2,17 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-package org.geogit.storage;
+package org.geogit.storage.bxml;
 
-import static org.geogit.storage.BLOBS.AUTHOR;
-import static org.geogit.storage.BLOBS.COMMIT;
-import static org.geogit.storage.BLOBS.COMMITTER;
-import static org.geogit.storage.BLOBS.LONG;
-import static org.geogit.storage.BLOBS.MESSAGE;
-import static org.geogit.storage.BLOBS.NAMESPACE;
-import static org.geogit.storage.BLOBS.PARENT_IDS;
-import static org.geogit.storage.BLOBS.TIMESTAMP;
-import static org.geogit.storage.BLOBS.TREE;
+import static org.geogit.storage.bxml.BLOBS.AUTHOR;
+import static org.geogit.storage.bxml.BLOBS.COMMIT;
+import static org.geogit.storage.bxml.BLOBS.COMMITTER;
+import static org.geogit.storage.bxml.BLOBS.LONG;
+import static org.geogit.storage.bxml.BLOBS.MESSAGE;
+import static org.geogit.storage.bxml.BLOBS.NAMESPACE;
+import static org.geogit.storage.bxml.BLOBS.PARENT_IDS;
+import static org.geogit.storage.bxml.BLOBS.TIMESTAMP;
+import static org.geogit.storage.bxml.BLOBS.TREE;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,14 +20,15 @@ import java.util.List;
 
 import org.geogit.api.ObjectId;
 import org.geogit.api.RevCommit;
+import org.geogit.storage.ObjectWriter;
 import org.gvsig.bxml.stream.BxmlOutputFactory;
 import org.gvsig.bxml.stream.BxmlStreamWriter;
 
-public final class CommitWriter implements ObjectWriter<RevCommit> {
+public final class BxmlCommitWriter implements ObjectWriter<RevCommit> {
 
     private final RevCommit commit;
 
-    public CommitWriter(final RevCommit commit) {
+    public BxmlCommitWriter(final RevCommit commit) {
         this.commit = commit;
     }
 

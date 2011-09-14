@@ -66,10 +66,12 @@ public class RefDatabase {
         RevTree refsTree;
         try {
             if (db.exists(REFS_TREE_ID)) {
-                refsTree = db.get(REFS_TREE_ID, new RevTreeReader(db));
+                refsTree = db.get(REFS_TREE_ID, WrappedSerialisingFactory.getInstance().createRevTreeReader(db));
+//                refsTree = db.get(REFS_TREE_ID, new BxmlRevTreeReader(db));
             } else {
                 refsTree = new RevSHA1Tree(db);
-                db.put(REFS_TREE_ID, new RevTreeWriter(refsTree));
+                db.put(REFS_TREE_ID, WrappedSerialisingFactory.getInstance().createRevTreeWriter(refsTree));
+//                db.put(REFS_TREE_ID, new BxmlRevTreeWriter(refsTree));
             }
         } catch (RuntimeException e) {
             throw e;
@@ -133,7 +135,8 @@ public class RefDatabase {
         refsTree = refsTree.mutable();
         ((MutableTree) refsTree).put(ref);
         try {
-            db.put(REFS_TREE_ID, new RevTreeWriter(refsTree));
+            db.put(REFS_TREE_ID, WrappedSerialisingFactory.getInstance().createRevTreeWriter(refsTree));
+//            db.put(REFS_TREE_ID, new BxmlRevTreeWriter(refsTree));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -21,9 +21,9 @@ import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevTree;
 import org.geogit.api.TreeVisitor;
-import org.geogit.storage.FeatureWriter;
 import org.geogit.storage.ObjectWriter;
 import org.geogit.storage.StagingDatabase;
+import org.geogit.storage.bxml.BxmlFeatureWriter;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.Hints;
 import org.geotools.feature.FeatureCollection;
@@ -109,7 +109,7 @@ public class WorkingTree {
      */
     public String insert(final Feature feature) throws Exception {
 
-        ObjectWriter<?> featureWriter = new FeatureWriter(feature);
+        ObjectWriter<?> featureWriter = new BxmlFeatureWriter(feature);
         final BoundingBox bounds = feature.getBounds();
         final Name typeName = feature.getType().getName();
 
@@ -179,7 +179,7 @@ public class WorkingTree {
         @Override
         public Triplet<ObjectWriter<?>, BoundingBox, List<String>> apply(Feature input) {
 
-            ObjectWriter<?> featureWriter = new FeatureWriter(input);
+            ObjectWriter<?> featureWriter = new BxmlFeatureWriter(input);
             final BoundingBox bounds = input.getBounds();
             final Name typeName = input.getType().getName();
             final String id;

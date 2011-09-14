@@ -6,7 +6,6 @@ package org.geogit.test;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -18,12 +17,10 @@ import org.geogit.api.GeoGIT;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
-import org.geogit.api.RevObject;
 import org.geogit.repository.Repository;
 import org.geogit.repository.StagingArea;
-import org.geogit.storage.CommitWriter;
-import org.geogit.storage.FeatureWriter;
 import org.geogit.storage.RepositoryDatabase;
+import org.geogit.storage.WrappedSerialisingFactory;
 import org.geogit.storage.bdbje.EntityStoreConfig;
 import org.geogit.storage.bdbje.EnvironmentBuilder;
 import org.geogit.storage.bdbje.JERepositoryDatabase;
@@ -222,7 +219,8 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
         String localPart = name.getLocalPart();
         String id = feature.getIdentifier().getID();
 
-        Ref ref = index.inserted(new FeatureWriter(feature), feature.getBounds(), namespaceURI, localPart, id);
+        WrappedSerialisingFactory fact = WrappedSerialisingFactory.getInstance();
+        Ref ref = index.inserted(fact.createFeatureWriter(feature), feature.getBounds(), namespaceURI, localPart, id);
         ObjectId objectId = ref.getObjectId();
         return objectId;
     }
