@@ -1,8 +1,10 @@
 package org.geogit.api;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.geogit.repository.Repository;
 import org.geogit.test.MultipleRepositoryTestCase;
 import org.opengis.feature.Feature;
 
@@ -217,14 +219,7 @@ public class OfflineFetchTest extends MultipleRepositoryTestCase {
                     RevTree tree = ggit.getRepository().getTree(ref.getObjectId());
                     tree.accept(this);
                 } else {
-
                     RevBlob blob = (RevBlob) client.getRepository().getBlob(ref.getObjectId());
-
-                    // Feature theFeature = ggit.getRepository().getFeature(feature.getType(),
-                    // feature.getIdentifier().getID(), blob.getId());
-                    // assertNotNull(theFeature);
-                    // assertEquals(feature, theFeature);
-
                     found[0]++;/* hax */
                 }
                 return true;
@@ -232,4 +227,54 @@ public class OfflineFetchTest extends MultipleRepositoryTestCase {
         });
         assertEquals(expected, found[0]);
     }
+        
+        private void assertFeaturesAvailable(final Repository repo, final String nameSpace){
+            /*
+             * Now I want to confirm that we can get them back out.
+             * We will ignore the commit from here and work against the repository alone.
+             */
+            RevTree tree = repo.getHeadTree();
+            assertNotNull(tree);
+            /* Find the tree of the namespace */
+            Ref namespace = tree.get(nameSpace);
+            assertNotNull(namespace);
+            RevTree nstree = repo.getTree(namespace.getObjectId());
+            assertNotNull(nstree);
+            Iterator<Ref> types = nstree.iterator(null);
+
+            System.out.println(types);
+            
+            while(types.hasNext()) {
+                Ref typeRef = types.next();
+                assertNotNull(typeRef);
+                RevTree typeTree = repo.getTree(typeRef.getObjectId());
+                assertNotNull(typeTree);
+                
+                Iterator<Ref> it = typeTree.iterator(null);
+                assertNotNull(it);
+                while(it.hasNext()) {
+                    Ref featRef = it.next();
+                    assertNotNull(featRef);
+                    if(pointsNs.equals(typeRef.getName())) {
+                        Feature feat = repo.getFeature(pointsType, 
+                                featRef.getName(), featRef.getObjectId());
+                        assertNotNull(feat);
+                        assertTrue(feat.equals(points1) || 
+                                feat.equals(points2) || 
+                                feat.equals(points3));
+                    } else if(linesNs.equals(typeRef.getName())) {
+                        Feature feat = repo.getFeature(linesType, 
+                                featRef.getName(), featRef.getObjectId());
+                        assertNotNull(feat);
+                        assertTrue(feat.equals(lines1) || 
+                                feat.equals(lines2) || 
+                                feat.equals(lines3));
+                    } else {
+                        fail();
+                    }
+                }
+                    
+                
+            }
+        }
 }

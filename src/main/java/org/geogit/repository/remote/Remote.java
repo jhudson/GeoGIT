@@ -1,9 +1,15 @@
 package org.geogit.repository.remote;
 
+import java.io.IOException;
 import java.util.Map;
 
-import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.geogit.repository.Repository;
 import org.geogit.repository.remote.payload.IPayload;
 
@@ -14,19 +20,10 @@ import org.geogit.repository.remote.payload.IPayload;
   */
 public class Remote extends AbstractRemote {
 
-    private final URI uri;
+    private final String location;
     
     public Remote( String location ) throws URIException, NullPointerException {
-        this.uri = new URI(location, true);
-    }
-
-    public URI getUri() {
-        return uri;
-    }
-
-    @Override
-    public String toString() {
-        return "Remote [uri=" + getUri() + "]";
+        this.location = location;
     }
 
     @Override
@@ -38,18 +35,57 @@ public class Remote extends AbstractRemote {
     @Override
     public void setRepository( Repository repo ) {
         // TODO Auto-generated method stub
-        
     }
 
     @Override
     public void dispose() {
         // TODO Auto-generated method stub
-        
     }
 
     @Override
     public IPayload requestFetchPayload( Map<String, String> branchHeads ) {
-        // TODO Auto-generated method stub
+        HttpClient httpclient = new DefaultHttpClient();
+        try {
+
+            StringBuffer branchBuffer = new StringBuffer();
+
+            for (String branchName : branchHeads.keySet()){
+                branchBuffer.append(branchName+":"+branchHeads.get(branchName)+",");
+            }
+
+            String branches = branchBuffer.toString(); 
+            
+            if (branches.length()>0){
+                branches = branches.substring(branches.length()-1);
+            }
+            
+            HttpGet httpget = new HttpGet(location+"?branches="+branches);
+
+            System.out.println("executing request " + httpget.getURI());
+
+            // Create a response handler
+            ResponseHandler<String> responseHandler = new BasicResponseHandler();
+            String responseBody;
+            try {
+                responseBody = httpclient.execute(httpget, responseHandler);
+                System.out.println("----------------------------------------");
+                System.out.println(responseBody);
+                System.out.println("----------------------------------------");
+            } catch (ClientProtocolException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            
+
+        } finally {
+            // When HttpClient instance is no longer needed,
+            // shut down the connection manager to ensure
+            // immediate deallocation of all system resources
+            httpclient.getConnectionManager().shutdown();
+        }
         return null;
     }
 }

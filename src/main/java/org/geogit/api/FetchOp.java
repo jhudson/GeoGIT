@@ -14,6 +14,8 @@ import org.geogit.storage.CommitWriter;
 import org.geogit.storage.ObjectInserter;
 import org.geogit.storage.RevTreeWriter;
 
+import com.google.common.base.Preconditions;
+
 /**
  * Download objects and refs from another repository, currently only works for fast forwards from
  * HEAD of remote http://git-scm.com/gitserver.txt
@@ -44,13 +46,16 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
             if (remote != null) {
 
             	IRemote remoteRepo = RemoteRepositoryFactory.createRemoteRepositroy(remote.getUrl());
+            	Preconditions.checkNotNull(remoteRepo);
+
             	IPayload payload = remoteRepo.requestFetchPayload(RefIO.getRemoteList(getRepository().getRepositoryHome(),remote.getName()));
-                
+            	Preconditions.checkNotNull(payload);
+
                 int commits = 0;
                 int deltas = 0;
 
                 final ObjectInserter objectInserter = getRepository().newObjectInserter();
-                
+
                 /**
                  * Update the local repos commits
                  */
@@ -64,7 +69,6 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
                  * Update the local repos trees
                  */
                 for (RevTree tree: payload.getTreeUpdates()) {
-                    //LOGGER.info("Adding tree: " + tree.toString());
                     ObjectId treeId = objectInserter.insert(new RevTreeWriter(tree));
                     getRepository().getRefDatabase().put(new Ref(remote.getName(), treeId, TYPE.TREE));
                 }
@@ -102,7 +106,7 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
                      */
                     Ref remoteRef = new Ref(Ref.REMOTES_PREFIX+remote.getName()+"/"+Ref.MASTER, ref.getObjectId(), TYPE.REMOTE);
                     Ref oldRef = getRepository().getRef(remoteRef.getName());
-                    
+
                     if (oldRef!=null && !oldRef.equals(remoteRef)){
                         LOGGER.info("  " + remoteRef.getObjectId().printSmallId() + " " + branchName + " -> " + remoteRef.getName());
                         getRepository().updateRef(remoteRef);

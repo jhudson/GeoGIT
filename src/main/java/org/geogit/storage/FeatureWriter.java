@@ -180,7 +180,7 @@ public class FeatureWriter implements ObjectWriter<Feature> {
                 srs = "urn:ogc:def:crs:EPSG::4326";
             }
             writer.writeStartElement(GEOMETRY_WKB);
-            writer.writeStartAttribute(XMLConstants.NULL_NS_URI, "crs");
+            writer.writeStartAttribute(XMLConstants.DEFAULT_NS_PREFIX, "crs");
             writer.writeValue(srs);
             writer.writeEndAttributes();
 
