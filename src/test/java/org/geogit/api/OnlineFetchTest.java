@@ -40,13 +40,13 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
         LOGGER.info("SERVER HEAD          : " + this.server.getRepository().getHead());
     }
 
-    public void testFetchNoRemote() throws Exception {
-        // fetch the remotes
-        client.fetch().call();
-        Ref clientRemoteMaster = this.client.getRepository().getRef(
-                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
-        assertEquals(clientRemoteMaster, null);
-    }
+//    public void testFetchNoRemote() throws Exception {
+//        // fetch the remotes
+//        client.fetch().call();
+//        Ref clientRemoteMaster = this.client.getRepository().getRef(
+//                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
+//        assertEquals(clientRemoteMaster, null);
+//    }
 
     public void testFetchRemoteMasterTwoChanges() throws Exception {
         insertAddCommit(this.server, points1);

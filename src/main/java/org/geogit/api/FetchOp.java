@@ -50,7 +50,7 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
                 int deltas = 0;
 
                 final ObjectInserter objectInserter = getRepository().newObjectInserter();
-                
+
                 /**
                  * Update the local repos commits
                  */
