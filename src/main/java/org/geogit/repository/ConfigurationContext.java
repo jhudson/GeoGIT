@@ -13,6 +13,6 @@ public class ConfigurationContext extends ClassPathXmlApplicationContext {
 	}
 	
 	private ConfigurationContext() {
-		super("applicationContext.xml");
+		super("org/geogit/storage/applicationContext.xml");
 	}
 }
