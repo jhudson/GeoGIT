@@ -48,7 +48,7 @@ public class HessianFeatureWriter implements ObjectWriter<Feature> {
 			throws IOException {
 		Object value = prop.getValue();
 		EntityType type = EntityType.determineType(value);
-		out.writeObject(type);
+		out.writeInt(type.getValue());
 		switch(type) {
 		case STRING:
 			out.writeString((String) value);

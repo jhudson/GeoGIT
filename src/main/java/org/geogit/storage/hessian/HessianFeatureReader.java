@@ -11,13 +11,12 @@ import org.geogit.api.ObjectId;
 import org.geogit.storage.ObjectReader;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.simple.SimpleFeatureImpl;
-import org.geotools.filter.identity.FeatureIdImpl;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.identity.FeatureId;
+import org.opengis.filter.identity.ResourceId;
 
 import com.caucho.hessian.io.Hessian2Input;
 import com.vividsolutions.jts.geom.Geometry;
@@ -54,16 +53,15 @@ public class HessianFeatureReader implements ObjectReader<Feature> {
 			values.add(obj);
 		}
 		in.completeMessage();
-		FeatureId fid = FILTER_FAC.resourceId(featureId, id.toString());
+		ResourceId fid = FILTER_FAC.resourceId(featureId, id.toString());
 		SimpleFeature feat = new SimpleFeatureImpl(values, (SimpleFeatureType)featureType, fid);
 		return feat;
 	}
 	
 	static Object readValue(final Hessian2Input in) throws IOException {
-		Object obj = in.readObject();
-		if(!(obj instanceof EntityType)) 
+		EntityType type = EntityType.fromValue(in.readInt());
+		if(type == null) 
 			throw new IOException("Illegal format in data stream");
-		EntityType type = (EntityType)obj;
 		switch(type) {
 		case STRING:
 			String str = in.readString();
