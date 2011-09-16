@@ -10,7 +10,6 @@ import org.geogit.storage.ObjectWriter;
 import org.geotools.referencing.CRS;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.caucho.hessian.io.Hessian2Output;

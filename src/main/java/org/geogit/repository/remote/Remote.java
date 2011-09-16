@@ -1,34 +1,40 @@
 package org.geogit.repository.remote;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.commons.httpclient.URIException;
-import org.apache.http.Header;
-import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpException;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
-import org.apache.http.HttpResponseInterceptor;
-import org.apache.http.client.entity.GzipDecompressingEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
+import org.apache.http.util.ByteArrayBuffer;
+import org.geogit.api.ObjectId;
+import org.geogit.api.RevBlob;
+import org.geogit.api.RevCommit;
+import org.geogit.api.RevTree;
 import org.geogit.repository.Repository;
 import org.geogit.repository.remote.payload.IPayload;
+import org.geogit.repository.remote.payload.LocalPayload;
+import org.geogit.storage.BlobReader;
+import org.geogit.storage.hessian.HessianCommitReader;
+import org.geogit.storage.hessian.HessianRevTreeReader;
 
- /**
-  * A Remote is a single end point of a request/response geogit instance which response to git protocol  
-  * 
-  * @author jhudson
-  */
+/**
+ * A Remote is a single end point of a request/response geogit instance which response to git
+ * protocol
+ * 
+ * @author jhudson
+ */
 public class Remote extends AbstractRemote {
 
     private final String location;
-    
+    private char type_null = '\u0000';
+    private final static int BUFFER_SIZE = 2048;
+
     public Remote( String location ) throws URIException, NullPointerException {
         this.location = location;
     }
@@ -51,115 +57,173 @@ public class Remote extends AbstractRemote {
 
     @Override
     public IPayload requestFetchPayload( Map<String, String> branchHeads ) {
-        //HttpClient httpclient = new DefaultHttpClient();
-       try {
 
-            StringBuffer branchBuffer = new StringBuffer();
+        LocalPayload payload = null;
 
-            for (String branchName : branchHeads.keySet()){
-                branchBuffer.append(branchName+":"+branchHeads.get(branchName)+",");
-            }
+        StringBuffer branchBuffer = new StringBuffer();
 
-            String branches = branchBuffer.toString(); 
-            
-            if (branches.length()>0){
-                branches = branches.substring(branches.length()-1);
-            }
-            
-            //HttpGet httpget = new HttpGet(location+"?branches="+branches);
-            
-            // Create a response handler
-//            ResponseHandler<String> responseHandler = new BasicResponseHandler();
-//            String responseBody;
-//            try {
-//                responseBody = httpclient.execute(httpget, responseHandler);
-//                System.out.println("----------------------------------------");
-//                System.out.println(responseBody);
-//                System.out.println("----------------------------------------");
-//            } catch (ClientProtocolException e) {
-//                // TODO Auto-generated catch block
-//                e.printStackTrace();
-//            } catch (IOException e) {
-//                // TODO Auto-generated catch block
-//                e.printStackTrace();
-//            }
-            
-            DefaultHttpClient httpclient = new DefaultHttpClient();
-            
-            try {
-                httpclient.addRequestInterceptor(new HttpRequestInterceptor() {
+        for( String branchName : branchHeads.keySet() ) {
+            branchBuffer.append(branchName + ":" + branchHeads.get(branchName) + ",");
+        }
 
-                    public void process(
-                            final HttpRequest request,
-                            final HttpContext context) throws HttpException, IOException {
-                        if (!request.containsHeader("Accept-Encoding")) {
-                            request.addHeader("Accept-Encoding", "gzip");
-                        }
-                    }
+        String branches = branchBuffer.toString();
 
-                });
+        if (branches.length() > 0) {
+            branches = branches.substring(branches.length() - 1);
+        }
 
-                httpclient.addResponseInterceptor(new HttpResponseInterceptor() {
+        DefaultHttpClient httpclient = new DefaultHttpClient();
 
-                    public void process(
-                            final HttpResponse response,
-                            final HttpContext context) throws HttpException, IOException {
-                        HttpEntity entity = response.getEntity();
-                        Header ceheader = entity.getContentEncoding();
-                        if (ceheader != null) {
-                            HeaderElement[] codecs = ceheader.getElements();
-                            for (int i = 0; i < codecs.length; i++) {
-                                if (codecs[i].getName().equalsIgnoreCase("gzip")) {
-                                    response.setEntity(
-                                            new GzipDecompressingEntity(response.getEntity()));
-                                    return;
-                                }
-                            }
-                        }
-                    }
+        try {
+            HttpGet httpget = new HttpGet(location + "?branches=" + branches);
+            HttpResponse response = httpclient.execute(httpget);
+            HttpEntity entity = response.getEntity();
+            payload = parsePayload(entity.getContent(), response);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            httpclient.getConnectionManager().shutdown();
+        }
 
-                });
+        return payload;
+    }
 
-                HttpGet httpget = new HttpGet(location+"?branches="+branches);
-                
-                System.out.println("executing request " + httpget.getURI());
+    /**
+     * This is a custom protocol which is used to transport all of the COMMIT/TREE/BLOB objects to
+     * this client this is the protocol: [{C/T/B}{00000000000000000000}{0000000000}{PAYLOAD}] first
+     * byte is a single character : 'C' for a commit 'T' for a tree 'B' for a blob 2nd byte to the
+     * 21st byte are the objects ID - 20 bytes 22nd byte to the 31st byte is the objects length - 10
+     * bytes the rest is the payload
+     * 
+     * @param instream
+     * @param response
+     * @return
+     * @throws IOException
+     */
+    
+    int read = 0;
+    
+    private LocalPayload parsePayload( InputStream instream, HttpResponse response )
+            throws IOException {
+        final LocalPayload payload = new LocalPayload();
+        try {
+            byte[] buffer = new byte[BUFFER_SIZE];
+            char type = type_null;
+            int length = 0;
+            ObjectId objectId = null;
 
-                // Execute HTTP request
-                System.out.println("executing request " + httpget.getURI());
-                HttpResponse response = httpclient.execute(httpget);
+            /**
+             * This is the main payload buffer, its filled from 0 to MAX with the current payload -
+             * in this context the payload is the CURRENT only COMMT/TREE/BLOB
+             */
+            ByteArrayBuffer payloadBuffer = new ByteArrayBuffer(1);
 
-                System.out.println("----------------------------------------");
-                System.out.println(response.getStatusLine());
-                System.out.println(response.getLastHeader("Content-Encoding"));
-                System.out.println(response.getLastHeader("Content-Length"));
-                System.out.println("----------------------------------------");
+            // consume until EOF
+            while( (read = instream.read(buffer, read, BUFFER_SIZE)) != -1 ) {
 
-                HttpEntity entity = response.getEntity();
+                System.out.println("read: " + read);
+                System.out.println("buffer.length " + buffer.length);
+                System.out.println("buffer[0] " + (char) buffer[0]);
 
-                if (entity != null) {
-                    String content = EntityUtils.toString(entity);
-                    System.out.println(content);
-                    System.out.println("----------------------------------------");
-                    System.out.println("Uncompressed size: "+content.length());
+                if (type == type_null) { // first byte is our type
+                    type = (char) buffer[0];
+
+                    buffer = resetBuffer(buffer, 1);
                 }
 
-            } catch (Exception e){} 
-            finally {
-                // When HttpClient instance is no longer needed,
-                // shut down the connection manager to ensure
-                // immediate deallocation of all system resources
-                httpclient.getConnectionManager().shutdown();
-            }
-            
+                if (objectId == null) {
+                    objectId = extractObjectId(Arrays.copyOfRange(buffer, 0, 20));
 
+                    buffer = resetBuffer(buffer, 20);
+                }
+
+                if (length == 0) {
+                    length = extractLength(Arrays.copyOfRange(buffer, 0, 10));
+
+                    buffer = resetBuffer(buffer, 10);
+                }
+
+                if (type != type_null && objectId != null && length != 0) {
+
+                    System.out.println("TYPE: " + type);
+                    System.out.println("OBJECT ID: " + objectId);
+                    System.out.println("LENGTH: " + length);
+
+                    if (length > buffer.length) {
+                        payloadBuffer.append(buffer, 0, buffer.length);
+                        buffer = resetBuffer(buffer, buffer.length);
+                    } else {
+                        int to = length - payloadBuffer.length();
+                        // System.out.println("adding " + to + " to payload buffer");
+                        payloadBuffer.append(buffer, 0, to);
+                        buffer = resetBuffer(buffer, to);
+                    }
+
+                    if (payloadBuffer.buffer().length >= length) { /* YAY, we have full payload */
+                        // System.out.println("Full payload of type : " + type);
+                        if (type == 'C') {
+                            RevCommit commit = extractCommit(objectId, payloadBuffer.buffer());
+                            payload.addCommits(commit);
+                            System.out.println(commit);
+                        } else if (type == 'T') {
+                            RevTree tree = extractTree(objectId, payloadBuffer.buffer());
+                            payload.addTrees(tree);
+                            System.out.println(tree);
+                        } else if (type == 'B') {
+                            RevBlob blob = extractBlob(objectId, payloadBuffer.buffer());
+                            payload.addBlobs(blob);
+                            System.out.println("blob");
+                        }
+                        type = type_null;
+                        objectId = null;
+                        length = 0;
+                        buffer = Arrays.copyOfRange(buffer, 0, buffer.length + (BUFFER_SIZE - buffer.length)); /* push is back to big */
+                        payloadBuffer = new ByteArrayBuffer(1);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
-            // When HttpClient instance is no longer needed,
-            // shut down the connection manager to ensure
-            // immediate deallocation of all system resources
-           // httpclient.getConnectionManager().shutdown();
+            // instream.close();
         }
-        return null;
+        return payload;
     }
-    
-    
+
+    private byte[] resetBuffer( byte[] buffer, int from ) {
+        // System.out.println("Moving buffer forward: " + from );
+        read -= from;
+        return Arrays.copyOfRange(buffer, from, buffer.length);
+    }
+
+    private RevTree extractTree( ObjectId objectId, byte[] buffer ) throws IOException {
+        ByteArrayInputStream b = new ByteArrayInputStream(buffer);
+        HessianRevTreeReader tr = new HessianRevTreeReader(null);
+        RevTree tree = tr.read(objectId, b);
+        return tree;
+    }
+
+    private RevBlob extractBlob( ObjectId objectId, byte[] buffer ) throws IOException {
+        ByteArrayInputStream b = new ByteArrayInputStream(buffer);
+        BlobReader br = new BlobReader();
+        RevBlob blob = br.read(objectId, b);
+        return blob;
+    }
+
+    private RevCommit extractCommit( ObjectId objectId, byte[] buffer ) throws IOException {
+        ByteArrayInputStream b = new ByteArrayInputStream(buffer);
+
+        HessianCommitReader cr = new HessianCommitReader();
+        RevCommit commit = cr.read(objectId, b);
+        return commit;
+    }
+
+    private ObjectId extractObjectId( byte[] byteArray ) {
+        return new ObjectId(byteArray);
+    }
+
+    private int extractLength( byte[] byteArray ) {
+        String value = new String(byteArray).trim();
+        return Integer.parseInt(value);
+    }
 }

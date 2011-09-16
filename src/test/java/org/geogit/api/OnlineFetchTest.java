@@ -50,7 +50,9 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
 
     public void testFetchRemoteMasterTwoChanges() throws Exception {
         insertAddCommit(this.server, points1);
-        insertAddCommit(this.server, points2);
+        insertAddCommit(this.server, lines3);
+        insertAddCommit(this.server, lines1);
+        insertAddCommit(this.server, points3);
 
         this.server.getRepository().close();
         
