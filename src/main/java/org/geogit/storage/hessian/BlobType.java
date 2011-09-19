@@ -6,34 +6,34 @@ package org.geogit.storage.hessian;
  * @author mleslie
  */
 enum BlobType {
-	/**
-	 * Blob encodes a feature object
-	 */
-	FEATURE(0),
-	/**
-	 * Blob encodes a RevTree
-	 */
-	REVTREE(1),
-	/**
-	 * Blob encodes a Commit
-	 */
-	COMMIT(2);
+    /**
+     * Blob encodes a feature object
+     */
+    FEATURE(0),
+    /**
+     * Blob encodes a RevTree
+     */
+    REVTREE(1),
+    /**
+     * Blob encodes a Commit
+     */
+    COMMIT(2);
 
-	private int value;
+    private int value;
 
-	private BlobType(int value) {
-		this.value = value;
-	}
-	
-	public int getValue() {
-		return this.value;
-	}
-	
-	public static BlobType fromValue(int value) {
-		for(BlobType type : BlobType.values()) {
-			if(type.value == value)
-				return type;
-		}
-		return null;
-	}
+    private BlobType(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return this.value;
+    }
+
+    public static BlobType fromValue(int value) {
+        for (BlobType type : BlobType.values()) {
+            if (type.value == value)
+                return type;
+        }
+        return null;
+    }
 }

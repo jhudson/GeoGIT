@@ -27,130 +27,133 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 
 /**
- * Reads features from a binary encoded stream.  Refer to HessianFeatureWriter
- * for encoding details.
+ * Reads features from a binary encoded stream. Refer to HessianFeatureWriter for encoding details.
  * 
  * @author mleslie
  */
 public class HessianFeatureReader implements ObjectReader<Feature> {
 
-	private static final FilterFactory2 FILTER_FAC = CommonFactoryFinder.getFilterFactory2(null);
-	
-	private FeatureType featureType;
-	private String featureId;
-	private static GeometryFactory geometryFactory = new GeometryFactory();
-	public HessianFeatureReader(final FeatureType featureType, final String featureId) {
-		this.featureType = featureType;
-		this.featureId = featureId;
-	}
-	
-	public Feature read(ObjectId id, InputStream rawData) throws IOException,
-			IllegalArgumentException {
-		Hessian2Input in = new Hessian2Input(rawData);
-		in.startMessage();
-		BlobType type = BlobType.fromValue(in.readInt());
-		if(type != BlobType.FEATURE)
-			throw new IllegalArgumentException("Could not parse blob of type " + type + " as a feature.");
-		List<Object>values = new ArrayList<Object>();
-		String typeString = in.readString();
-		int attrCount = in.readInt();
-		for(int i = 0; i < attrCount; i++) {
-			Object obj = readValue(in);
-			values.add(obj);
-		}
-		in.completeMessage();
-		ResourceId fid = FILTER_FAC.resourceId(featureId, id.toString());
-		SimpleFeature feat = new SimpleFeatureImpl(values, (SimpleFeatureType)featureType, fid);
-		return feat;
-	}
-	
-	static Object readValue(final Hessian2Input in) throws IOException {
-		EntityType type = EntityType.fromValue(in.readInt());
-		if(type == null) 
-			throw new IOException("Illegal format in data stream");
-		switch(type) {
-		case STRING:
-			String str = in.readString();
-			return str;
-		case BOOLEAN:
-			Boolean bool = Boolean.valueOf(in.readBoolean());
-			return bool;
-		case BYTE:
-			byte[] bts = in.readBytes();
-			if(bts.length == 1)
-				return Byte.valueOf(bts[0]);
-			else
-				return null;
-		case DOUBLE:
-			Double doub = Double.valueOf(in.readDouble());
-			return doub;
-		case FLOAT:
-			Float flt = Float.intBitsToFloat(in.readInt());
-			return flt;
-		case INT:
-			Integer intg = Integer.valueOf(in.readInt());
-			return intg;
-		case LONG:
-			Long lng = Long.valueOf(in.readLong());
-			return lng;
-		case BYTE_ARRAY:
-			return in.readBytes();
-		case BOOLEAN_ARRAY:
-			int boolLength = in.readInt();
-			boolean[] bools = new boolean[boolLength];
-			for(int i = 0; i < boolLength; i++) {
-				bools[i] = in.readBoolean();
-			}
-			return bools;
-		case CHAR_ARRAY:
-			String charstring = in.readString();
-			return charstring.toCharArray();
-		case DOUBLE_ARRAY:
-			in.readNull();
-			break;
-		case FLOAT_ARRAY:
-			in.readNull();
-			break;
-		case INT_ARRAY:
-			in.readNull();
-			break;
-		case LONG_ARRAY:
-			in.readNull();
-			break;
-		case BIGDECIMAL:
-			String bdString = in.readString();
-			return new BigDecimal(bdString);
-		case BIGINT:
-			byte[] biBytes = in.readBytes();
-			return new BigInteger(biBytes);
-		case GEOMETRY:
-			String srs = in.readString();
-			if(geometryFactory == null)
-				geometryFactory = new GeometryFactory(new PackedCoordinateSequenceFactory());
-			WKBReader wkbReader = new WKBReader(geometryFactory);
-			Geometry geom;
-			try {
-				geom = wkbReader.read(new InStream() {
-					
-					public void read(byte[] buf) throws IOException {
-						int length = buf.length;
-						int returned = in.readBytes(buf, 0, length);
-					}
-				});
-			} catch(ParseException ex) {
-				throw (IOException)new IOException(ex.getMessage()).initCause(ex);
-			}
-			return geom;
-		case NULL:
-			in.readNull();
-			return null;
-		case UNKNOWN_SERIALISABLE:
-			return in.readObject();
-		case UNKNOWN:
-			String classname = in.readString();
-			String value = in.readString();
-			return classname + value;
-		}
-		return null;
-	}
+    private static final FilterFactory2 FILTER_FAC = CommonFactoryFinder.getFilterFactory2(null);
+
+    private FeatureType featureType;
+
+    private String featureId;
+
+    private static GeometryFactory geometryFactory = new GeometryFactory();
+
+    public HessianFeatureReader(final FeatureType featureType, final String featureId) {
+        this.featureType = featureType;
+        this.featureId = featureId;
+    }
+
+    public Feature read(ObjectId id, InputStream rawData) throws IOException,
+            IllegalArgumentException {
+        Hessian2Input in = new Hessian2Input(rawData);
+        in.startMessage();
+        BlobType type = BlobType.fromValue(in.readInt());
+        if (type != BlobType.FEATURE)
+            throw new IllegalArgumentException("Could not parse blob of type " + type
+                    + " as a feature.");
+        List<Object> values = new ArrayList<Object>();
+        String typeString = in.readString();
+        int attrCount = in.readInt();
+        for (int i = 0; i < attrCount; i++) {
+            Object obj = readValue(in);
+            values.add(obj);
+        }
+        in.completeMessage();
+        ResourceId fid = FILTER_FAC.resourceId(featureId, id.toString());
+        SimpleFeature feat = new SimpleFeatureImpl(values, (SimpleFeatureType) featureType, fid);
+        return feat;
+    }
+
+    static Object readValue(final Hessian2Input in) throws IOException {
+        EntityType type = EntityType.fromValue(in.readInt());
+        if (type == null)
+            throw new IOException("Illegal format in data stream");
+        switch (type) {
+        case STRING:
+            String str = in.readString();
+            return str;
+        case BOOLEAN:
+            Boolean bool = Boolean.valueOf(in.readBoolean());
+            return bool;
+        case BYTE:
+            byte[] bts = in.readBytes();
+            if (bts.length == 1)
+                return Byte.valueOf(bts[0]);
+            else
+                return null;
+        case DOUBLE:
+            Double doub = Double.valueOf(in.readDouble());
+            return doub;
+        case FLOAT:
+            Float flt = Float.intBitsToFloat(in.readInt());
+            return flt;
+        case INT:
+            Integer intg = Integer.valueOf(in.readInt());
+            return intg;
+        case LONG:
+            Long lng = Long.valueOf(in.readLong());
+            return lng;
+        case BYTE_ARRAY:
+            return in.readBytes();
+        case BOOLEAN_ARRAY:
+            int boolLength = in.readInt();
+            boolean[] bools = new boolean[boolLength];
+            for (int i = 0; i < boolLength; i++) {
+                bools[i] = in.readBoolean();
+            }
+            return bools;
+        case CHAR_ARRAY:
+            String charstring = in.readString();
+            return charstring.toCharArray();
+        case DOUBLE_ARRAY:
+            in.readNull();
+            break;
+        case FLOAT_ARRAY:
+            in.readNull();
+            break;
+        case INT_ARRAY:
+            in.readNull();
+            break;
+        case LONG_ARRAY:
+            in.readNull();
+            break;
+        case BIGDECIMAL:
+            String bdString = in.readString();
+            return new BigDecimal(bdString);
+        case BIGINT:
+            byte[] biBytes = in.readBytes();
+            return new BigInteger(biBytes);
+        case GEOMETRY:
+            String srs = in.readString();
+            if (geometryFactory == null)
+                geometryFactory = new GeometryFactory(new PackedCoordinateSequenceFactory());
+            WKBReader wkbReader = new WKBReader(geometryFactory);
+            Geometry geom;
+            try {
+                geom = wkbReader.read(new InStream() {
+
+                    public void read(byte[] buf) throws IOException {
+                        int length = buf.length;
+                        int returned = in.readBytes(buf, 0, length);
+                    }
+                });
+            } catch (ParseException ex) {
+                throw (IOException) new IOException(ex.getMessage()).initCause(ex);
+            }
+            return geom;
+        case NULL:
+            in.readNull();
+            return null;
+        case UNKNOWN_SERIALISABLE:
+            return in.readObject();
+        case UNKNOWN:
+            String classname = in.readString();
+            String value = in.readString();
+            return classname + value;
+        }
+        return null;
+    }
 }
