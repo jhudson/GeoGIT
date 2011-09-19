@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.apache.commons.httpclient.URIException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -41,7 +40,7 @@ public class Remote extends AbstractRemote {
     private ObjectId objectId = null;
     private int onHold = 0;
 
-    public Remote( String location ) throws URIException, NullPointerException {
+    public Remote( String location ) throws NullPointerException {
         this.location = location;
     }
 
