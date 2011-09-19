@@ -5,32 +5,24 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import org.geogit.api.BlobPrinter;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
+import org.geogit.storage.BlobPrinter;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.caucho.hessian.io.Hessian2Input;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.impl.PackedCoordinateSequenceFactory;
-import com.vividsolutions.jts.io.InStream;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKTWriter;
 
 public class HessianBlobPrinter 
@@ -39,7 +31,7 @@ public class HessianBlobPrinter
 	
 	/**
 	 * This keeps a reference to the tags that have been opened to prevent
-	 * me from making typos that break the well-formadness of the xml output.
+	 * me from making typos that break the well-formedness of the xml output.
 	 */
 	Stack<EntityState> entityStack;
 	
@@ -83,6 +75,25 @@ public class HessianBlobPrinter
 		hin.completeMessage();
 	}
 	
+	/**
+	 * Prints a simple xml representation of the feature.
+	 * 
+	 * The feature will be formatted similar to the following:
+	 * 
+	 * <pre>
+	 * {@code
+	 * <feature>
+     *   <string>StringProp2_1</string>
+     *   <int>1000</int>
+     *   <wkb crs="urn.ogc.def.crs.EPSG::4326">LINESTRING (1 1, 2 2)</wkb>
+     * </feature>
+     * }
+     * </pre>
+	 * 
+	 * @param hin Hessian input stream to parse the feature from
+	 * @param out PrintStream to write into.
+	 * @throws IOException
+	 */
 	private void printFeature(Hessian2Input hin, PrintStream out) throws IOException {
 		openTag("feature", out);
 		String typeString = hin.readString();
@@ -94,6 +105,26 @@ public class HessianBlobPrinter
 		closeTag(out);
 	}
 
+	/**
+	 * Prints an xml representation of the RevTree object.
+	 * 
+	 * The tree will be formatted similar to the following:
+	 * 
+	 * <pre>
+	 * {@code
+	 * <tree size="66536">
+     *   <tree>
+     *   <bucket>0</bucket>
+     *   <objectid>5e1bd061389a03853b6004c7cac2e295b4456d4a</objectid>
+     *   </tree>
+     * </tree>
+     * }
+     * </pre>
+	 * 
+	 * @param hin Hessian input stream to parse the tree from
+	 * @param out PrintStream to write into
+	 * @throws IOException
+	 */
 	private void printRevTree(Hessian2Input hin, PrintStream out) throws IOException {
 		BigInteger size = new BigInteger(hin.readBytes());
 		Map<String, String> attr = new HashMap<String, String>();
@@ -131,6 +162,33 @@ public class HessianBlobPrinter
 		}
 	}
 	
+	/**
+	 * Prints an xml representation of the RevCommit object.
+	 * 
+	 * The commit will be formatted similar to:
+	 * 
+	 * <pre>
+	 * {@code
+	 * <commit xmlns="">
+     *   <tree>
+     *     <objectid>4efbc525a7143adbe0c5467ea161be80b7a9c7ac</objectid>
+     *   </tree>
+     *   <parentids>
+     *     <objectid>56d67008b5d5e331a877de9aa0727ff85183fc1a</objectid>
+     *     <objectid>cffb4d4a1c9f69c972cfd5d6851cb3c2415e2fda</objectid>
+     *   </parentids>
+     *   <author>
+     *     <string>groldan</string>
+     *   </author>
+     *   ...
+     * </commit>
+	 * }
+	 * </pre>
+	 * 
+	 * @param hin Hessian input stream to parse the tree from
+	 * @param out PrintStream to write into
+	 * @throws IOException
+	 */
 	private void printCommit(Hessian2Input hin, PrintStream out) throws IOException {
 		Map<String, String> attrMap = new HashMap<String, String>();
 		attrMap.put("xmlns", null);
@@ -171,6 +229,19 @@ public class HessianBlobPrinter
 		openTag(entity, null, out, wrap, empty);
 	}
 	
+	/**
+	 * Prints an opening tag of the given entity, with the provided attributes.
+	 * An EntityState object is then created and stuffed on the stack to 
+	 * be used to close the tag appropriately.
+	 * If the tag is empty, it will not be placed on the stack for later closing.
+	 * 
+	 * @param entity
+	 * @param attrs
+	 * @param out
+	 * @param wrap true to print a new line and indentation before the tag
+	 * @param empty true to print a tag with no content.
+	 * @throws IOException
+	 */
 	private void openTag(String entity, Map<String, String> attrs, PrintStream out, boolean wrap, boolean empty) throws IOException {
 		startNew = false;
 		if(entityStack.size() > 0) {
@@ -202,6 +273,11 @@ public class HessianBlobPrinter
 			out.print("\n");
 	}
 	
+	/**
+	 * Closes the tag at the top of the stack.
+	 * @param out
+	 * @throws IOException
+	 */
 	private void closeTag(PrintStream out) throws IOException {
 		EntityState entity = entityStack.pop();
 		if(entity.wrap) {
@@ -275,7 +351,7 @@ public class HessianBlobPrinter
 		} else if(obj instanceof Serializable) {
 			printSerialisable((Serializable)obj, out);
 		} else {
-			
+			// There's a bit of a hole here.
 		}
 	}
 	

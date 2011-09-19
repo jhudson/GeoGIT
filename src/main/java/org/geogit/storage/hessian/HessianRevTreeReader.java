@@ -12,7 +12,6 @@ import org.geogit.api.RevTree;
 import org.geogit.storage.ObjectDatabase;
 import org.geogit.storage.ObjectReader;
 import org.geogit.storage.RevSHA1Tree;
-import org.geogit.storage.hessian.HessianRevReader.Node;
 
 import com.caucho.hessian.io.Hessian2Input;
 import com.caucho.hessian.io.HessianProtocolException;

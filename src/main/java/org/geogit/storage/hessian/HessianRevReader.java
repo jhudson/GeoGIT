@@ -17,7 +17,13 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.caucho.hessian.io.Hessian2Input;
 import com.google.common.base.Throwables;
 
-public class HessianRevReader {
+/**
+ * Abstract parent class to readers of Rev's.  This class provides some common 
+ * functions used by various Rev readers and printers.
+ * 
+ * @author mleslie
+ */
+public abstract class HessianRevReader {
 	public enum Node {
 		REF(0),
 		TREE(1),
@@ -50,9 +56,19 @@ public class HessianRevReader {
 		super();
 	}
 	
+	/**
+	 * Reads the ObjectId content from the given input stream and creates a 
+	 * new ObjectId object from it.
+	 * 
+	 * @param hin
+	 * @return
+	 * @throws IOException
+	 */
 	protected ObjectId readObjectId(Hessian2Input hin) 
 			throws IOException {
 		byte[] bytes = hin.readBytes();
+		if(bytes.length == 0)
+			return null;
 		ObjectId id = new ObjectId(bytes);
 		return id;
 	}
@@ -74,6 +90,17 @@ public class HessianRevReader {
 		return ref;
 	}
 	
+	/**
+	 * Reads the corner coordinates of a bounding box from the input stream.
+	 * 
+	 * A complete bounding box is encoded as four double values.
+	 * An empty bounding box is encoded as a single NaN value.  In this case
+	 * null is returned.
+	 * 
+	 * @param hin
+	 * @return The BoundingBox described in the stream, or null if none found.
+	 * @throws IOException
+	 */
 	protected BoundingBox readBBox(Hessian2Input hin) 
 			throws IOException {
 		double minx = hin.readDouble();

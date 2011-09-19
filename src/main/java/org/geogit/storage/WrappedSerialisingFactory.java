@@ -1,7 +1,5 @@
 package org.geogit.storage;
 
-import org.geogit.api.BlobPrinter;
-import org.geogit.api.ObjectSerialisingFactory;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
 import org.geogit.repository.ConfigurationContext;
@@ -57,9 +55,5 @@ public class WrappedSerialisingFactory implements ObjectSerialisingFactory {
 			instance = new WrappedSerialisingFactory();
 		}
 		return instance;
-	}
-	
-	public static boolean isInitialised() {
-		return (instance != null);
 	}
 }

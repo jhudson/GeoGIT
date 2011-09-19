@@ -10,7 +10,6 @@ import org.geogit.storage.ObjectWriter;
 import org.geotools.referencing.CRS;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.caucho.hessian.io.Hessian2Output;
@@ -18,6 +17,24 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.OutStream;
 import com.vividsolutions.jts.io.WKBWriter;
 
+/**
+ * Encodes a feature as a binary stream.
+ * 
+ * The encoding takes the following form:
+ * <ul>
+ * <li>message start</li>
+ * <li>blob type (BlobType.FEATURE)</li>
+ * <li>feature type name (String)</li>
+ * <li>property count (integer)</li>
+ * <li>encoded properties</li>
+ * <li>message end</li>
+ * </ul>
+ * 
+ * For the encoding details of each property, refer to 
+ * HessianFeatureWriter.writeProperty
+ * 
+ * @author mleslie
+ */
 public class HessianFeatureWriter implements ObjectWriter<Feature> {
 	Feature feat;
 	
@@ -44,6 +61,20 @@ public class HessianFeatureWriter implements ObjectWriter<Feature> {
 		}
 	}
 	
+	/**
+	 * Encodes supported properties in the provided Hessian2Output stream.
+	 * 
+	 * Not all primitives are supported by the Hessian2Output write methods,
+	 * and the writeObject approach incurs a pretty big overhead.  As such, 
+	 * many objects are encoded using native formatting calls to convert them
+	 * to supported formats such as byte arrays or Strings.
+	 * 
+	 * Most array types are not currently supported.
+	 * 
+	 * @param out
+	 * @param prop
+	 * @throws IOException
+	 */
 	private void writeProperty(final Hessian2Output out, Property prop) 
 			throws IOException {
 		Object value = prop.getValue();

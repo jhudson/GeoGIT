@@ -26,6 +26,12 @@ import com.vividsolutions.jts.io.InStream;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 
+/**
+ * Reads features from a binary encoded stream.  Refer to HessianFeatureWriter
+ * for encoding details.
+ * 
+ * @author mleslie
+ */
 public class HessianFeatureReader implements ObjectReader<Feature> {
 
 	private static final FilterFactory2 FILTER_FAC = CommonFactoryFinder.getFilterFactory2(null);

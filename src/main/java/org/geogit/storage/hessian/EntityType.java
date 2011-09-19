@@ -6,6 +6,17 @@ import java.math.BigInteger;
 
 import com.vividsolutions.jts.geom.Geometry;
 
+/**
+ * This enum describes the data type of each encoded feature attribute.
+ * 
+ * The integer value of each data type should never be changed, for backwards
+ * compatibility purposes.  If the method of encoding of an attribute type
+ * is changed, a new type should be created, with a new value, and the writers
+ * updated to use it.  The readers should continue to support both the old 
+ * and new versions.
+ * 
+ * @author mleslie
+ */
 public enum EntityType implements Serializable {
 	STRING(0),
 	BOOLEAN(1),
@@ -80,6 +91,12 @@ public enum EntityType implements Serializable {
 		return this.value;
 	}
 	
+	/**
+	 * Determines the EntityType given its integer value.
+	 * 
+	 * @param value The value of the desired EntityType, as read from the blob
+	 * @return The correct EntityType for the value, or null if none is found.
+	 */
 	public static EntityType fromValue(int value) {
 		for(EntityType type : EntityType.values()) {
 			if(type.value == value)
