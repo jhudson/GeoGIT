@@ -5,11 +5,11 @@ import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.geogit.api.ObjectId;
 import org.geogit.api.RevCommit;
 import org.geogit.repository.CommitBuilder;
-
-import junit.framework.TestCase;
 
 public class HessianCommitSerialisationTest extends TestCase {
 	public void testCommitRoundTrippin() throws Exception {

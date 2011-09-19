@@ -58,6 +58,7 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
                     commits++;
                     ObjectId commitId = objectInserter.insert(fact.createCommitWriter(commit));
                     getRepository().getRefDatabase().put(new Ref(remote.getName(), commitId, TYPE.COMMIT));
+                    //LOGGER.info("Adding commit: " + commit.toString());
                 }
 
                 /**

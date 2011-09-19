@@ -5,6 +5,7 @@
 package org.geogit.test;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
@@ -113,29 +114,7 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
 
         for (int i=0;i<numberOfRepos;i++){
 
-            final File envHome = new File(new File("target/project"+i), "geogit");
-            final File repositoryHome = new File(envHome, "repository");
-            final File indexHome = new File(envHome, "index");
-    
-            FileUtils.deleteDirectory(envHome);
-            repositoryHome.mkdirs();
-            indexHome.mkdirs();
-    
-            EntityStoreConfig config = new EntityStoreConfig();
-            config.setCacheMemoryPercentAllowed(50);
-            EnvironmentBuilder esb = new EnvironmentBuilder(config);
-            Properties bdbEnvProperties = null;
-            Environment environment;
-            environment = esb.buildEnvironment(repositoryHome, bdbEnvProperties);
-
-            Environment stagingEnvironment;
-            stagingEnvironment = esb.buildEnvironment(indexHome, bdbEnvProperties);
-    
-            repositoryDatabase = new JERepositoryDatabase(environment, stagingEnvironment);
-
-            Repository repo = new Repository(repositoryDatabase, envHome);
-    
-            repo.create();
+            Repository repo = createRepo(i, true);
     
             pointsType = DataUtilities.createType(pointsNs, pointsName, pointsTypeSpec);
     
@@ -157,6 +136,37 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
 
         setUpInternal();
     }
+
+    protected Repository createRepo( int i, boolean delete ) throws IOException {
+        final File envHome = new File(new File("target/project"+i), "geogit");
+        final File repositoryHome = new File(envHome, "repository");
+        final File indexHome = new File(envHome, "index");
+   
+        if (delete){
+            FileUtils.deleteDirectory(envHome);
+            repositoryHome.mkdirs();
+            indexHome.mkdirs();
+        }
+        
+        EntityStoreConfig config = new EntityStoreConfig();
+        config.setCacheMemoryPercentAllowed(50);
+        EnvironmentBuilder esb = new EnvironmentBuilder(config);
+        Properties bdbEnvProperties = null;
+        Environment environment;
+        environment = esb.buildEnvironment(repositoryHome, bdbEnvProperties);
+
+        Environment stagingEnvironment;
+        stagingEnvironment = esb.buildEnvironment(indexHome, bdbEnvProperties);
+   
+        repositoryDatabase = new JERepositoryDatabase(environment, stagingEnvironment);
+
+        Repository repo = new Repository(repositoryDatabase, envHome);
+   
+        repo.create();
+        return repo;
+    }
+    
+    
 
     @Override
     protected final void tearDown() throws Exception {

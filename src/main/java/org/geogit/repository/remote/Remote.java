@@ -1,5 +1,6 @@
 package org.geogit.repository.remote;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,7 +19,7 @@ import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
 import org.geogit.repository.Repository;
 import org.geogit.repository.remote.payload.IPayload;
-import org.geogit.repository.remote.payload.LocalPayload;
+import org.geogit.repository.remote.payload.Payload;
 import org.geogit.storage.BlobReader;
 import org.geogit.storage.hessian.HessianCommitReader;
 import org.geogit.storage.hessian.HessianRevTreeReader;
@@ -34,6 +35,11 @@ public class Remote extends AbstractRemote {
     private final String location;
     private char type_null = '\u0000';
     private final static int BUFFER_SIZE = 2048;
+    private int read = 0;
+    private char type = type_null;
+    private int length = 0;
+    private ObjectId objectId = null;
+    private int onHold = 0;
 
     public Remote( String location ) throws URIException, NullPointerException {
         this.location = location;
@@ -58,7 +64,7 @@ public class Remote extends AbstractRemote {
     @Override
     public IPayload requestFetchPayload( Map<String, String> branchHeads ) {
 
-        LocalPayload payload = null;
+        Payload payload = null;
 
         StringBuffer branchBuffer = new StringBuffer();
 
@@ -100,100 +106,56 @@ public class Remote extends AbstractRemote {
      * @return
      * @throws IOException
      */
-    
-    int read = 0;
-    
-    private LocalPayload parsePayload( InputStream instream, HttpResponse response )
-            throws IOException {
-        final LocalPayload payload = new LocalPayload();
+    private Payload parsePayload( InputStream instream, HttpResponse response ) throws IOException {
+        final Payload payload = new Payload();
         try {
-            byte[] buffer = new byte[BUFFER_SIZE];
-            char type = type_null;
-            int length = 0;
-            ObjectId objectId = null;
+            ByteArrayBuffer payloadBuffer = new ByteArrayBuffer(0);
 
-            /**
-             * This is the main payload buffer, its filled from 0 to MAX with the current payload -
-             * in this context the payload is the CURRENT only COMMT/TREE/BLOB
-             */
-            ByteArrayBuffer payloadBuffer = new ByteArrayBuffer(1);
+            int c;
 
-            // consume until EOF
-            while( (read = instream.read(buffer, read, BUFFER_SIZE)) != -1 ) {
+            while( (c = instream.read()) != -1 ) {
 
-                System.out.println("read: " + read);
-                System.out.println("buffer.length " + buffer.length);
-                System.out.println("buffer[0] " + (char) buffer[0]);
+                type = (char) c;
 
-                if (type == type_null) { // first byte is our type
-                    type = (char) buffer[0];
-
-                    buffer = resetBuffer(buffer, 1);
+                while( payloadBuffer.length() < 20 ) {
+                    int cc = instream.read();
+                    payloadBuffer.append(cc);
                 }
 
-                if (objectId == null) {
-                    objectId = extractObjectId(Arrays.copyOfRange(buffer, 0, 20));
+                objectId = extractObjectId(payloadBuffer.toByteArray());
+                payloadBuffer = new ByteArrayBuffer(0);
 
-                    buffer = resetBuffer(buffer, 20);
+                while( payloadBuffer.length() < 10 ) {
+                    payloadBuffer.append(instream.read());
+                }
+                length = extractLength(payloadBuffer.toByteArray());
+                payloadBuffer = new ByteArrayBuffer(0);
+
+                while( payloadBuffer.length() < length ) {
+                    payloadBuffer.append(instream.read());
                 }
 
-                if (length == 0) {
-                    length = extractLength(Arrays.copyOfRange(buffer, 0, 10));
-
-                    buffer = resetBuffer(buffer, 10);
+                if (type == 'C') {
+                    RevCommit commit = extractCommit(objectId, payloadBuffer.toByteArray());
+                    payload.addCommits(commit);
+                    //System.out.println(commit);
+                } else if (type == 'T') {
+                    RevTree tree = extractTree(objectId, payloadBuffer.toByteArray());
+                    payload.addTrees(tree);
+                    //System.out.println(tree);
+                } else if (type == 'B') {
+                    RevBlob blob = extractBlob(objectId, payloadBuffer.toByteArray());
+                    payload.addBlobs(blob);
+                    //System.out.println(blob);
                 }
-
-                if (type != type_null && objectId != null && length != 0) {
-
-                    System.out.println("TYPE: " + type);
-                    System.out.println("OBJECT ID: " + objectId);
-                    System.out.println("LENGTH: " + length);
-
-                    if (length > buffer.length) {
-                        payloadBuffer.append(buffer, 0, buffer.length);
-                        buffer = resetBuffer(buffer, buffer.length);
-                    } else {
-                        int to = length - payloadBuffer.length();
-                        // System.out.println("adding " + to + " to payload buffer");
-                        payloadBuffer.append(buffer, 0, to);
-                        buffer = resetBuffer(buffer, to);
-                    }
-
-                    if (payloadBuffer.buffer().length >= length) { /* YAY, we have full payload */
-                        // System.out.println("Full payload of type : " + type);
-                        if (type == 'C') {
-                            RevCommit commit = extractCommit(objectId, payloadBuffer.buffer());
-                            payload.addCommits(commit);
-                            System.out.println(commit);
-                        } else if (type == 'T') {
-                            RevTree tree = extractTree(objectId, payloadBuffer.buffer());
-                            payload.addTrees(tree);
-                            System.out.println(tree);
-                        } else if (type == 'B') {
-                            RevBlob blob = extractBlob(objectId, payloadBuffer.buffer());
-                            payload.addBlobs(blob);
-                            System.out.println("blob");
-                        }
-                        type = type_null;
-                        objectId = null;
-                        length = 0;
-                        buffer = Arrays.copyOfRange(buffer, 0, buffer.length + (BUFFER_SIZE - buffer.length)); /* push is back to big */
-                        payloadBuffer = new ByteArrayBuffer(1);
-                    }
-                }
+                payloadBuffer = new ByteArrayBuffer(0);
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            // instream.close();
+            instream.close();
         }
         return payload;
-    }
-
-    private byte[] resetBuffer( byte[] buffer, int from ) {
-        // System.out.println("Moving buffer forward: " + from );
-        read -= from;
-        return Arrays.copyOfRange(buffer, from, buffer.length);
     }
 
     private RevTree extractTree( ObjectId objectId, byte[] buffer ) throws IOException {

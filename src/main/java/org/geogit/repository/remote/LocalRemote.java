@@ -17,7 +17,7 @@ import org.geogit.api.config.BranchConfigObject;
 import org.geogit.api.config.Config;
 import org.geogit.repository.Repository;
 import org.geogit.repository.remote.payload.IPayload;
-import org.geogit.repository.remote.payload.LocalPayload;
+import org.geogit.repository.remote.payload.Payload;
 import org.geogit.storage.RepositoryDatabase;
 import org.geogit.storage.bdbje.EntityStoreConfig;
 import org.geogit.storage.bdbje.EnvironmentBuilder;
@@ -48,7 +48,7 @@ public class LocalRemote extends AbstractRemote {
      */
     @Override
     public IPayload requestFetchPayload( Map<String, String> branchHeads ) {
-        final LocalPayload payload = new LocalPayload();
+        final Payload payload = new Payload();
 
         // for each branch
         // grab the branch_name
@@ -154,7 +154,7 @@ public class LocalRemote extends AbstractRemote {
      * 
      * @param payload
      */
-    public void addBranches( final LocalPayload payload ) {
+    public void addBranches( final Payload payload ) {
         GeoGIT ggit = new GeoGIT(repository);
         Config config = ggit.getConfig();
         Map<String, BranchConfigObject> branches = config.getBranches();

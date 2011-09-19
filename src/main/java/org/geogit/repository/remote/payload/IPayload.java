@@ -10,7 +10,6 @@ import org.geogit.api.RevTag;
 import org.geogit.api.RevTree;
 
 public interface IPayload {
-	public IPayload resolve();
 	public void addBranches(String branchName, Ref branchRef);
 	public void addCommits(RevCommit ... commits);
 	public void addTrees(RevTree ... trees);
