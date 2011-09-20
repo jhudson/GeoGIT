@@ -11,7 +11,9 @@ import org.opengis.feature.Feature;
 public class OfflineFetchTest extends MultipleRepositoryTestCase {
 
     private GeoGIT server;
+
     private GeoGIT server2;
+
     private GeoGIT client;
 
     public OfflineFetchTest() {
@@ -117,7 +119,7 @@ public class OfflineFetchTest extends MultipleRepositoryTestCase {
         List<ObjectId> featureIds = new ArrayList<ObjectId>();
         List<Feature> features = new ArrayList<Feature>();
 
-        for( int i = 0; i < 10; i++ ) {
+        for (int i = 0; i < 10; i++) {
             Feature point = feature(pointsType, "Points." + i, "StringProp1_" + i + "",
                     new Integer(1000 * i), "POINT(" + i + " " + i + ")");
             featureIds.add(insert(this.server, point));
@@ -133,7 +135,7 @@ public class OfflineFetchTest extends MultipleRepositoryTestCase {
         client.fetch().call();
 
         int index = 0;
-        for( RevCommit commit : commits ) {
+        for (RevCommit commit : commits) {
             RevCommit serverCommitOnClient = this.client.getRepository().getCommit(commit.getId());
             assertNotNull("Fetch Op failed to transfer the commit from server to client",
                     serverCommitOnClient);
@@ -154,7 +156,7 @@ public class OfflineFetchTest extends MultipleRepositoryTestCase {
         List<ObjectId> featureIds = new ArrayList<ObjectId>();
         List<Feature> features = new ArrayList<Feature>();
 
-        for( int i = 0; i < 10; i++ ) {
+        for (int i = 0; i < 10; i++) {
             Feature point = feature(pointsType, "Points." + i, "StringProp1_" + i + "",
                     new Integer(1000 * i), "POINT(" + i + " " + i + ")");
             featureIds.add(insert(this.server, point));
@@ -203,18 +205,19 @@ public class OfflineFetchTest extends MultipleRepositoryTestCase {
                 Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
     }
 
-    private void assertHasFeatuers( final GeoGIT ggit, final RevTree tree, final int expected ) {
+    private void assertHasFeatuers(final GeoGIT ggit, final RevTree tree, final int expected) {
         final int found[] = new int[1];
-        tree.accept(new TreeVisitor(){
+        tree.accept(new TreeVisitor() {
 
             @Override
-            public boolean visitSubTree( int bucket, ObjectId treeId ) {
+            public boolean visitSubTree(int bucket, ObjectId treeId) {
                 RevTree tree = ggit.getRepository().getTree(treeId);
                 tree.accept(this);
                 return true;
             }
+
             @Override
-            public boolean visitEntry( Ref ref ) {
+            public boolean visitEntry(Ref ref) {
                 if (ref.getType().equals(RevObject.TYPE.TREE)) {
                     RevTree tree = ggit.getRepository().getTree(ref.getObjectId());
                     tree.accept(this);
@@ -227,54 +230,49 @@ public class OfflineFetchTest extends MultipleRepositoryTestCase {
         });
         assertEquals(expected, found[0]);
     }
-        
-        private void assertFeaturesAvailable(final Repository repo, final String nameSpace){
-            /*
-             * Now I want to confirm that we can get them back out.
-             * We will ignore the commit from here and work against the repository alone.
-             */
-            RevTree tree = repo.getHeadTree();
-            assertNotNull(tree);
-            /* Find the tree of the namespace */
-            Ref namespace = tree.get(nameSpace);
-            assertNotNull(namespace);
-            RevTree nstree = repo.getTree(namespace.getObjectId());
-            assertNotNull(nstree);
-            Iterator<Ref> types = nstree.iterator(null);
 
-            System.out.println(types);
-            
-            while(types.hasNext()) {
-                Ref typeRef = types.next();
-                assertNotNull(typeRef);
-                RevTree typeTree = repo.getTree(typeRef.getObjectId());
-                assertNotNull(typeTree);
-                
-                Iterator<Ref> it = typeTree.iterator(null);
-                assertNotNull(it);
-                while(it.hasNext()) {
-                    Ref featRef = it.next();
-                    assertNotNull(featRef);
-                    if(pointsNs.equals(typeRef.getName())) {
-                        Feature feat = repo.getFeature(pointsType, 
-                                featRef.getName(), featRef.getObjectId());
-                        assertNotNull(feat);
-                        assertTrue(feat.equals(points1) || 
-                                feat.equals(points2) || 
-                                feat.equals(points3));
-                    } else if(linesNs.equals(typeRef.getName())) {
-                        Feature feat = repo.getFeature(linesType, 
-                                featRef.getName(), featRef.getObjectId());
-                        assertNotNull(feat);
-                        assertTrue(feat.equals(lines1) || 
-                                feat.equals(lines2) || 
-                                feat.equals(lines3));
-                    } else {
-                        fail();
-                    }
+    private void assertFeaturesAvailable(final Repository repo, final String nameSpace) {
+        /*
+         * Now I want to confirm that we can get them back out. We will ignore the commit from here
+         * and work against the repository alone.
+         */
+        RevTree tree = repo.getHeadTree();
+        assertNotNull(tree);
+        /* Find the tree of the namespace */
+        Ref namespace = tree.get(nameSpace);
+        assertNotNull(namespace);
+        RevTree nstree = repo.getTree(namespace.getObjectId());
+        assertNotNull(nstree);
+        Iterator<Ref> types = nstree.iterator(null);
+
+        System.out.println(types);
+
+        while (types.hasNext()) {
+            Ref typeRef = types.next();
+            assertNotNull(typeRef);
+            RevTree typeTree = repo.getTree(typeRef.getObjectId());
+            assertNotNull(typeTree);
+
+            Iterator<Ref> it = typeTree.iterator(null);
+            assertNotNull(it);
+            while (it.hasNext()) {
+                Ref featRef = it.next();
+                assertNotNull(featRef);
+                if (pointsNs.equals(typeRef.getName())) {
+                    Feature feat = repo.getFeature(pointsType, featRef.getName(),
+                            featRef.getObjectId());
+                    assertNotNull(feat);
+                    assertTrue(feat.equals(points1) || feat.equals(points2) || feat.equals(points3));
+                } else if (linesNs.equals(typeRef.getName())) {
+                    Feature feat = repo.getFeature(linesType, featRef.getName(),
+                            featRef.getObjectId());
+                    assertNotNull(feat);
+                    assertTrue(feat.equals(lines1) || feat.equals(lines2) || feat.equals(lines3));
+                } else {
+                    fail();
                 }
-                    
-                
             }
+
         }
+    }
 }

@@ -165,8 +165,6 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
         repo.create();
         return repo;
     }
-    
-    
 
     @Override
     protected final void tearDown() throws Exception {
