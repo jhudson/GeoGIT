@@ -233,10 +233,15 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
         // re-open the server
         this.server = new GeoGIT(createRepo(0, false));
         // re-open the server
-        this.server = new GeoGIT(createRepo(2, false));
+        this.server2 = new GeoGIT(createRepo(2, false));
 
-        Ref clientRemoteMaster = this.client.getRepository().getRef(
+        Ref clientRemoteMaster1 = this.client.getRepository().getRef(
                 Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
+        Ref clientRemoteMaster2 = this.client.getRepository().getRef(
+                Ref.REMOTES_PREFIX + "project2/" + Ref.MASTER);
+
+        assertEquals(clientRemoteMaster1.getObjectId(), this.server.getRepository().getHead().getObjectId());
+        assertEquals(clientRemoteMaster2.getObjectId(), this.server2.getRepository().getHead().getObjectId());
     }
 
     private void assertHasFeatuers(final GeoGIT ggit, final RevTree tree, final int expected) {
