@@ -2,10 +2,10 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-package org.geogit.storage;
+package org.geogit.storage.bxml;
 
-import static org.geogit.storage.BLOBS.REF;
-import static org.geogit.storage.BLOBS.STRING;
+import static org.geogit.storage.bxml.BLOBS.REF;
+import static org.geogit.storage.bxml.BLOBS.STRING;
 
 import java.io.IOException;
 
@@ -14,7 +14,7 @@ import org.geogit.api.SpatialRef;
 import org.gvsig.bxml.stream.BxmlStreamWriter;
 import org.opengis.geometry.BoundingBox;
 
-class RefWriter {
+class BxmlRefWriter {
 
     /**
      * <pre>

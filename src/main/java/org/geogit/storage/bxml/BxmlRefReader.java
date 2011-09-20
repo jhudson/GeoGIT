@@ -2,10 +2,10 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-package org.geogit.storage;
+package org.geogit.storage.bxml;
 
-import static org.geogit.storage.BLOBS.REF;
-import static org.geogit.storage.BLOBS.WHERE;
+import static org.geogit.storage.bxml.BLOBS.REF;
+import static org.geogit.storage.bxml.BLOBS.WHERE;
 
 import java.io.IOException;
 
@@ -17,7 +17,7 @@ import org.gvsig.bxml.stream.BxmlStreamReader;
 import org.gvsig.bxml.stream.EventType;
 import org.opengis.geometry.BoundingBox;
 
-class RefReader {
+class BxmlRefReader {
 
     public Ref read(final BxmlStreamReader r) throws IOException {
         TYPE type;

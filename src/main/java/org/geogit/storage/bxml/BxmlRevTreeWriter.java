@@ -2,10 +2,10 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-package org.geogit.storage;
+package org.geogit.storage.bxml;
 
-import static org.geogit.storage.BLOBS.BUCKET;
-import static org.geogit.storage.BLOBS.TREE;
+import static org.geogit.storage.bxml.BLOBS.BUCKET;
+import static org.geogit.storage.bxml.BLOBS.TREE;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -16,16 +16,18 @@ import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevTree;
 import org.geogit.api.TreeVisitor;
+import org.geogit.storage.ObjectWriter;
+import org.geogit.storage.RevSHA1Tree;
 import org.gvsig.bxml.stream.BxmlOutputFactory;
 import org.gvsig.bxml.stream.BxmlStreamWriter;
 
 import com.google.common.base.Throwables;
 
-public class RevTreeWriter implements ObjectWriter<RevTree> {
+public class BxmlRevTreeWriter implements ObjectWriter<RevTree> {
 
     private final RevSHA1Tree tree;
 
-    public RevTreeWriter(RevTree tree) {
+    public BxmlRevTreeWriter(RevTree tree) {
         this.tree = (RevSHA1Tree) tree;
     }
 
@@ -64,11 +66,11 @@ public class RevTreeWriter implements ObjectWriter<RevTree> {
 
         private final BxmlStreamWriter writer;
 
-        private final RefWriter refWriter;
+        private final BxmlRefWriter refWriter;
 
         public WriteTreeVisitor(final BxmlStreamWriter writer) {
             this.writer = writer;
-            this.refWriter = new RefWriter();
+            this.refWriter = new BxmlRefWriter();
         }
 
         /**

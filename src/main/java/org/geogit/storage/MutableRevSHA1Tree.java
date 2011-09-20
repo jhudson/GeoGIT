@@ -184,7 +184,8 @@ class MutableRevSHA1Tree extends RevSHA1Tree implements MutableTree {
                     subtree = new MutableRevSHA1Tree(db, childOrder);
                 } else {
                     subtreeId = subtreeRef.getObjectId();
-                    subtree = db.get(subtreeId, new RevTreeReader(db, childOrder)).mutable();
+                    subtree = db.get(subtreeId, WrappedSerialisingFactory.getInstance().createRevTreeReader(db, childOrder)).mutable();
+//                    subtree = db.get(subtreeId, new BxmlRevTreeReader(db, childOrder)).mutable();
                 }
                 for (String key : keys) {
                     Ref value = myEntries.remove(key);
@@ -195,7 +196,8 @@ class MutableRevSHA1Tree extends RevSHA1Tree implements MutableTree {
                     }
                 }
                 size = size.add(subtree.size());
-                subtreeId = this.db.put(new RevTreeWriter(subtree));
+                subtreeId = this.db.put(WrappedSerialisingFactory.getInstance().createRevTreeWriter(subtree));
+//                subtreeId = this.db.put(new BxmlRevTreeWriter(subtree));
                 subtreeRef = new Ref("", subtreeId, TYPE.TREE);
                 ignoreForSizeComputation.add(subtreeRef);
                 mySubTrees.put(bucket, subtreeRef);
@@ -221,7 +223,8 @@ class MutableRevSHA1Tree extends RevSHA1Tree implements MutableTree {
                 continue;
             }
             subtreeId = ref.getObjectId();
-            size = size.add(db.getCached(subtreeId, new RevTreeReader(db, childOrder)).size());
+            size = size.add(db.getCached(subtreeId, WrappedSerialisingFactory.getInstance().createRevTreeReader(db,childOrder)).size());
+//            size = size.add(db.getCached(subtreeId, new BxmlRevTreeReader(db, childOrder)).size());
         }
         return size;
     }

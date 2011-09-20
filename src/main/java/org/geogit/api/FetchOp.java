@@ -10,9 +10,8 @@ import org.geogit.repository.remote.IRemote;
 import org.geogit.repository.remote.RemoteRepositoryFactory;
 import org.geogit.repository.remote.payload.IPayload;
 import org.geogit.storage.BlobWriter;
-import org.geogit.storage.CommitWriter;
 import org.geogit.storage.ObjectInserter;
-import org.geogit.storage.RevTreeWriter;
+import org.geogit.storage.WrappedSerialisingFactory;
 
 /**
  * Download objects and refs from another repository, currently only works for fast forwards from
@@ -42,6 +41,7 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
          */
         for( RemoteConfigObject remote : remotes.values() ) {
             if (remote != null) {
+            	WrappedSerialisingFactory fact = WrappedSerialisingFactory.getInstance();
 
             	IRemote remoteRepo = RemoteRepositoryFactory.createRemoteRepositroy(remote.getUrl());
             	IPayload payload = remoteRepo.requestFetchPayload(RefIO.getRemoteList(getRepository().getRepositoryHome(),remote.getName()));
@@ -50,14 +50,15 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
                 int deltas = 0;
 
                 final ObjectInserter objectInserter = getRepository().newObjectInserter();
-                
+
                 /**
                  * Update the local repos commits
                  */
                 for (RevCommit commit: payload.getCommitUpdates()) {
                     commits++;
-                    ObjectId commitId = objectInserter.insert(new CommitWriter(commit));
+                    ObjectId commitId = objectInserter.insert(fact.createCommitWriter(commit));
                     getRepository().getRefDatabase().put(new Ref(remote.getName(), commitId, TYPE.COMMIT));
+                    //LOGGER.info("Adding commit: " + commit.toString());
                 }
 
                 /**
@@ -65,7 +66,7 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
                  */
                 for (RevTree tree: payload.getTreeUpdates()) {
                     //LOGGER.info("Adding tree: " + tree.toString());
-                    ObjectId treeId = objectInserter.insert(new RevTreeWriter(tree));
+                    ObjectId treeId = objectInserter.insert(fact.createRevTreeWriter(tree));
                     getRepository().getRefDatabase().put(new Ref(remote.getName(), treeId, TYPE.TREE));
                 }
 

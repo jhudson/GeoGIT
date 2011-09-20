@@ -17,7 +17,7 @@ import org.geogit.api.config.BranchConfigObject;
 import org.geogit.api.config.Config;
 import org.geogit.repository.Repository;
 import org.geogit.repository.remote.payload.IPayload;
-import org.geogit.repository.remote.payload.LocalPayload;
+import org.geogit.repository.remote.payload.Payload;
 import org.geogit.storage.RepositoryDatabase;
 import org.geogit.storage.bdbje.EntityStoreConfig;
 import org.geogit.storage.bdbje.EnvironmentBuilder;
@@ -42,32 +42,31 @@ public class LocalRemote extends AbstractRemote {
     }
 
     /**
-     * Create a set of changes it can be applied to a repository 
-     * 1. Get the local repository local branches 
-     * 2. Compare them to the ones the client has sent us 
-     * 2. Create a set of changes since the clients id for each branch
+     * Create a set of changes it can be applied to a repository 1. Get the local repository local
+     * branches 2. Compare them to the ones the client has sent us 2. Create a set of changes since
+     * the clients id for each branch
      */
     @Override
     public IPayload requestFetchPayload( Map<String, String> branchHeads ) {
-        final LocalPayload payload = new LocalPayload();
+        final Payload payload = new Payload();
 
-        //for each branch
-        //  grab the branch_name
-        //  switch to branch_nane
-        //  fill payload with branch updates
+        // for each branch
+        // grab the branch_name
+        // switch to branch_nane
+        // fill payload with branch updates
 
         /**
-         * Since there is no concept of branching and current branch, lets just 
-         * grab the 'master' as this is the only 'branch' the remote has
+         * Since there is no concept of branching and current branch, lets just grab the 'master' as
+         * this is the only 'branch' the remote has
          */
         String branchHeadId = branchHeads.get("master");
         ObjectId branchId;
-        if (branchHeadId == null){
+        if (branchHeadId == null) {
             branchId = ObjectId.NULL;
         } else {
-            branchId = new ObjectId(branchHeadId.getBytes());
+            branchId = ObjectId.valueOf(branchHeadId);
         }
-        
+
         LogOp logOp = new LogOp(getRepository());
 
         if (!getRepository().getHead().getObjectId().equals(branchId)) {
@@ -76,7 +75,9 @@ public class LocalRemote extends AbstractRemote {
              * If local has no commits don't set since, since we need all refs
              */
             if (!ObjectId.NULL/* THE HEAD */.equals(branchId)) {
-                logOp.setSince(branchId);
+                if (getRepository().commitExists(branchId)){
+                    logOp.setSince(branchId);
+                }
             }
 
             try {
@@ -86,7 +87,8 @@ public class LocalRemote extends AbstractRemote {
                     payload.addCommits(commit);
 
                     /**
-                     * ok we have the commit, this should be a reference to the tree,blob,tag objects
+                     * ok we have the commit, this should be a reference to the tree,blob,tag
+                     * objects
                      */
                     ObjectId treeId = commit.getTreeId();
                     RevTree tree = getRepository().getTree(treeId);
@@ -95,9 +97,9 @@ public class LocalRemote extends AbstractRemote {
                      * Add Trees to payload
                      */
                     payload.addTrees(tree);
-                    
+
                     tree.accept(new TreeVisitor(){
-                        
+
                         @Override
                         public boolean visitSubTree( int bucket, ObjectId treeId ) {
                             /**
@@ -122,19 +124,18 @@ public class LocalRemote extends AbstractRemote {
                                 /**
                                  * Add BLOB to store
                                  */
-                                payload.addBlobs(getRepository().getObjectDatabase().getBlob(ref.getObjectId()));
+                                payload.addBlobs(getRepository().getObjectDatabase().getBlob(
+                                        ref.getObjectId()));
                             }
                             return true;
-                            
+
                         }
                     });
-                    
+
                     /**
-                     * Add Tags to payload, 
-                     * 
-                     * there are none for now...
+                     * Add Tags to payload, there are none for now...
                      */
-                    
+
                 }
 
             } catch (Exception e) {
@@ -149,10 +150,11 @@ public class LocalRemote extends AbstractRemote {
     }
 
     /**
-     * Add this remotes branch head refs to the payload so the client can update its references  
+     * Add this remotes branch head refs to the payload so the client can update its references
+     * 
      * @param payload
      */
-    public void addBranches( final LocalPayload payload ) {
+    public void addBranches( final Payload payload ) {
         GeoGIT ggit = new GeoGIT(repository);
         Config config = ggit.getConfig();
         Map<String, BranchConfigObject> branches = config.getBranches();
