@@ -4,22 +4,33 @@
  */
 package org.geogit.api;
 
+import org.geogit.api.RevObject.TYPE;
 import org.geogit.repository.Repository;
 
 public class MergeOp extends AbstractGeoGitOp<MergeResult> {
 
+    private Ref branch;
+    
     public MergeOp(Repository repository) {
         super(repository);
     }
 
     public MergeOp include(final Ref branch) {
-        // TODO Auto-generated method stub
-        return null;
+        this.branch = branch;
+        return this;
     }
 
     public MergeResult call() throws Exception {
-        // TODO Auto-generated method stub
-        return null;
-    }
+        if (branch == null){
+            return null;
+        }
+        /**
+         * 1. make it the master head
+         */
+        Ref newRef = new Ref(Ref.HEAD, branch.getObjectId(), TYPE.COMMIT);
+        getRepository().updateRef(newRef);
 
+        MergeResult mergeResult = new MergeResult();
+        return mergeResult;
+    }
 }

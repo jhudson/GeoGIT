@@ -80,7 +80,7 @@ public class RefIO {
             for( File refFile : file.listFiles() ) {
                 try {
                     String refHead = readFileAsString(refFile);
-                    retMap.put(file.getName(), refHead);
+                    retMap.put(refFile.getName(), refHead);
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
