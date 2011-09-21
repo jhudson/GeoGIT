@@ -232,15 +232,15 @@ public class LogOpTest extends RepositoryTestCase {
         List<RevCommit> expected;
 
         logs = toList(logOp.setSince(commit1_2.getId()).setUntil(null).call());
-        expected = Arrays.asList(commit2_2, commit2_1, commit1_2);
+        expected = Arrays.asList(commit2_2, commit2_1);
         assertEquals(expected, logs);
 
         logs = toList(logOp.setSince(commit2_2.getId()).setUntil(null).call());
-        expected = Arrays.asList(commit2_2);
+        expected = Collections.emptyList();
         assertEquals(expected, logs);
 
         logs = toList(logOp.setSince(commit1_2.getId()).setUntil(commit2_1.getId()).call());
-        expected = Arrays.asList(commit2_1, commit1_2);
+        expected = Arrays.asList(commit2_1);
         assertEquals(expected, logs);
 
         logs = toList(logOp.setSince(null).setUntil(commit2_1.getId()).call());
