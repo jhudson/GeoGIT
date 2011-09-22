@@ -130,6 +130,47 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
         assertEquals(lines1, feature3);
         assertEquals(lines2, feature4);
     }
+    
+    public void testFetchOneRemoteNonFastForward() throws Exception {
+        insertAddCommit(this.server, points1);
+        insertAddCommit(this.server, points3);
+        this.server.getRepository().close();
+
+        // setup the client to have a remote ref to the server
+        this.client.remoteAddOp().setName("project0").setFetch("project0")
+                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+
+        // fetch the remotes
+        client.fetch().call();
+
+        // re-open the server
+        this.server = new GeoGIT(createRepo(0, false));
+
+        Ref clientRemoteMaster = this.client.getRepository().getRef(
+                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
+        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
+                .getObjectId());
+
+        printHeads();
+
+        // add more to server
+        insertAddCommit(this.server, lines1);
+        insertAddCommit(this.server, lines2);
+        insertAddCommit(this.server, lines3);
+        this.server.getRepository().close();
+
+        // fetch the remotes
+        client.fetch().call();
+
+        // re-open the server
+        this.server = new GeoGIT(createRepo(0, false));
+
+        clientRemoteMaster = this.client.getRepository().getRef(
+                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
+
+        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
+                .getObjectId());
+    }
 
     public void testFetchRemoteMasterManyCommits() throws Exception {
         List<RevCommit> commits = new ArrayList<RevCommit>();

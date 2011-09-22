@@ -44,8 +44,6 @@ public class RefIO {
             } catch (IOException e) {
                 System.err.println("Could not open refs file: " + file.getAbsolutePath());
             }
-        } else {
-            return;
         }
 
         try {

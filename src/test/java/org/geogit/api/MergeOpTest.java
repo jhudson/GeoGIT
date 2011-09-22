@@ -1,6 +1,9 @@
 package org.geogit.api;
 
+import java.util.List;
+
 import org.geogit.test.MultipleRepositoryTestCase;
+import org.opengis.feature.Feature;
 
 public class MergeOpTest extends MultipleRepositoryTestCase {
 
@@ -42,46 +45,36 @@ public class MergeOpTest extends MultipleRepositoryTestCase {
         LOGGER.info("SERVER HEAD          : " + this.server.getRepository().getHead());
     }
 
-    // public void testMergeNoRemote() throws Exception {
-    // // fetch the remotes
-    // client.merge().call();
-    // Ref clientRemoteMaster = this.client.getRepository().getRef(Ref.REMOTES_PREFIX + "project0/"
-    // + Ref.MASTER);
-    // assertEquals(clientRemoteMaster, null);
-    // }
-    //
-    // public void testMergeOneRemote() throws Exception{
-    // insertAddCommit(this.server, points1);
-    // insertAddCommit(this.server, points2);
-    // insertAddCommit(this.server, points3);
-    // insertAddCommit(this.server, lines1);
-    // insertAddCommit(this.server, lines2);
-    // insertAddCommit(this.server, lines3);
-    //
-    // this.server.getRepository().close();
-    //
-    // // setup the client to have a remote ref to the server
-    // this.client.remoteAddOp().setName("project0").setFetch("project0")
-    // .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
-    //
-    // // fetch the remotes
-    // client.fetch().call();
-    //
-    // Ref clientRemoteMaster = this.client.getRepository().getRef(
-    // Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
-    //
-    // // re-open the server
-    // this.server = new GeoGIT(createRepo(0, false));
-    //
-    // assertEquals(clientRemoteMaster.getObjectId(),
-    // this.server.getRepository().getHead().getObjectId());
-    //
-    // // merge the fetch
-    // client.merge().include(clientRemoteMaster).call();
-    //
-    // assertEquals(clientRemoteMaster.getObjectId(),
-    // this.client.getRepository().getHead().getObjectId());
-    // }
+    public void testOneCommitMerge() throws Exception {
+        // setup the client to have a remote ref to the server
+        this.client.remoteAddOp().setName("project0").setFetch("project0")
+                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+
+        /**
+         * INSERT 1 - SERVER
+         */
+        insertAddCommit(this.server, points1);
+        this.server.getRepository().close();
+
+        // fetch the remotes
+        client.fetch().call();
+
+        // re-open the server
+        this.server = new GeoGIT(createRepo(0, false));
+
+        Ref clientRemoteMaster = this.client.getRepository().getRef(
+                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
+        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
+                .getObjectId());
+
+        /**
+         * MERGE - REBASE
+         */
+        client.merge().include(clientRemoteMaster).call();
+
+        assertEquals(this.client.getRepository().getHead().getObjectId(), this.server
+                .getRepository().getHead().getObjectId());
+    }
 
     public void testMergeOneRemoteNonFastForward() throws Exception {
         insertAddCommit(this.server, points1);
@@ -104,13 +97,10 @@ public class MergeOpTest extends MultipleRepositoryTestCase {
                 .getObjectId());
 
         printHeads();
-        
-        // add new to local
-        //insertAddCommit(this.client, points2);
 
         // add more to server
-        //insertAddCommit(this.server, lines1);
-        //insertAddCommit(this.server, lines2);
+        insertAddCommit(this.server, lines1);
+        insertAddCommit(this.server, lines2);
         insertAddCommit(this.server, lines3);
         this.server.getRepository().close();
 
@@ -119,165 +109,152 @@ public class MergeOpTest extends MultipleRepositoryTestCase {
 
         // re-open the server
         this.server = new GeoGIT(createRepo(0, false));
-//
-//        clientRemoteMaster = this.client.getRepository().getRef(
-//                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
-//
-//        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
-//                .getObjectId());
-        //
-        // // merge the fetch
-        // client.merge().include(clientRemoteMaster).call();
-        //
-        // assertEquals(clientRemoteMaster.getObjectId(), this.client.getRepository().getHead()
-        // .getObjectId());
+
+        clientRemoteMaster = this.client.getRepository().getRef(
+                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
+
+        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
+                .getObjectId());
+
+        // merge the fetch
+        client.merge().include(clientRemoteMaster).call();
+
+        assertEquals(clientRemoteMaster.getObjectId(), this.client.getRepository().getHead()
+                .getObjectId());
     }
 
-    // public void testMergeRemoteMasterRetrieveFeature() throws Exception {
-    // ObjectId featureRefId1 = insert(this.server, points1);
-    // ObjectId featureRefId2 = insert(this.server, points2);
-    // ObjectId featureRefId3 = insert(this.server, lines1);
-    // ObjectId featureRefId4 = insert(this.server, lines2);
-    // RevCommit commit = server.commit().setMessage("commited a new feature").setAll(true).call();
-    //
-    // this.server.getRepository().close();
-    //
-    // // setup the client to have a remote ref to the server
-    // this.client.remoteAddOp().setName("project0").setFetch("project0")
-    // .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
-    //
-    // // fetch the remotes
-    // client.fetch().call();
-    //
-    // // re-open the server
-    // this.server = new GeoGIT(createRepo(0, false));
-    //
-    // Ref clientRemoteMaster = this.client.getRepository().getRef(
-    // Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
-    // assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
-    // .getObjectId());
-    //
-    // RevCommit serverCommitOnClient = this.client.getRepository().getCommit(commit.getId());
-    // assertNotNull("Fetch Op failed to transfer the commit from server to client",
-    // serverCommitOnClient);
-    //
-    // RevTree tree = this.client.getRepository().getTree(serverCommitOnClient.getTreeId());
-    // assertHasFeatuers(this.client, tree, 4);
-    //
-    // Feature feature1 = client.getRepository().getFeature(points1.getType(),
-    // points1.getIdentifier().getID(), featureRefId1);
-    // Feature feature2 = client.getRepository().getFeature(points2.getType(),
-    // points2.getIdentifier().getID(), featureRefId2);
-    // Feature feature3 = client.getRepository().getFeature(lines1.getType(),
-    // lines1.getIdentifier().getID(), featureRefId3);
-    // Feature feature4 = client.getRepository().getFeature(lines2.getType(),
-    // lines2.getIdentifier().getID(), featureRefId4);
-    //
-    // assertEquals(points1, feature1);
-    // assertEquals(points2, feature2);
-    // assertEquals(lines1, feature3);
-    // assertEquals(lines2, feature4);
-    //
-    // // merge the fetch
-    // client.merge().include(clientRemoteMaster).call();
-    //
-    // assertEquals(clientRemoteMaster.getObjectId(),
-    // this.client.getRepository().getHead().getObjectId());
-    // }
-    //
-    // public void testMergeRemoteMasterManyCommits() throws Exception {
-    // List<RevCommit> commits = new ArrayList<RevCommit>();
-    // List<ObjectId> featureIds = new ArrayList<ObjectId>();
-    // List<Feature> features = new ArrayList<Feature>();
-    //
-    // for (int i = 0; i < 10; i++) {
-    // Feature point = feature(pointsType, "Points." + i, "StringProp1_" + i + "",
-    // new Integer(1000 * i), "POINT(" + i + " " + i + ")");
-    // featureIds.add(insert(this.server, point));
-    // features.add(point);
-    // commits.add(server.commit().setMessage("commited a new feature").setAll(true).call());
-    // }
-    //
-    // this.server.getRepository().close();
-    //
-    // // setup the client to have a remote ref to the server
-    // this.client.remoteAddOp().setName("project0").setFetch("project0")
-    // .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
-    //
-    // // fetch the remotes
-    // client.fetch().call();
-    //
-    // // re-open the server
-    // this.server = new GeoGIT(createRepo(0, false));
-    //
-    // int index = 0;
-    // for (RevCommit commit : commits) {
-    // RevCommit serverCommitOnClient = this.client.getRepository().getCommit(commit.getId());
-    // assertNotNull("Fetch Op failed to transfer the commit from server to client",
-    // serverCommitOnClient);
-    //
-    // RevTree tree = this.client.getRepository().getTree(serverCommitOnClient.getTreeId());
-    // assertHasFeatuers(this.client, tree, index + 1);
-    //
-    // Feature feature = client.getRepository().getFeature(features.get(index).getType(),
-    // features.get(index).getIdentifier().getID(), featureIds.get(index));
-    //
-    // assertEquals(features.get(index), feature);
-    // index++;
-    // }
-    //
-    // Ref clientRemoteMaster = this.client.getRepository().getRef(
-    // Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
-    //
-    // // merge the fetch
-    // client.merge().include(clientRemoteMaster).call();
-    //
-    // assertEquals(clientRemoteMaster.getObjectId(),
-    // this.client.getRepository().getHead().getObjectId());
-    // }
-    //
-    // public void testMergeRemoteMasterManyChangesOneCommit() throws Exception {
-    // RevCommit commit;
-    // List<ObjectId> featureIds = new ArrayList<ObjectId>();
-    // List<Feature> features = new ArrayList<Feature>();
-    //
-    // for (int i = 0; i < 10; i++) {
-    // Feature point = feature(pointsType, "Points." + i, "StringProp1_" + i + "",
-    // new Integer(1000 * i), "POINT(" + i + " " + i + ")");
-    // featureIds.add(insert(this.server, point));
-    // features.add(point);
-    // }
-    //
-    // commit = server.commit().setMessage("commited a new feature").setAll(true).call();
-    //
-    // this.server.getRepository().close();
-    //
-    // // setup the client to have a remote ref to the server
-    // this.client.remoteAddOp().setName("project0").setFetch("project0")
-    // .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
-    //
-    // // fetch the remotes
-    // client.fetch().call();
-    //
-    // // re-open the server
-    // this.server = new GeoGIT(createRepo(0, false));
-    //
-    // RevCommit serverCommitOnClient = this.client.getRepository().getCommit(commit.getId());
-    // assertNotNull("Fetch Op failed to transfer the commit from server to client",
-    // serverCommitOnClient);
-    //
-    // RevTree tree = this.client.getRepository().getTree(serverCommitOnClient.getTreeId());
-    // assertHasFeatuers(this.client, tree, 10);
-    //
-    // Ref clientRemoteMaster = this.client.getRepository().getRef(
-    // Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
-    //
-    // // merge the fetch
-    // client.merge().include(clientRemoteMaster).call();
-    //
-    // assertEquals(clientRemoteMaster.getObjectId(),
-    // this.client.getRepository().getHead().getObjectId());
-    // }
+    public void testMergeCrissCrossTest() throws Exception {
+        // setup the client to have a remote ref to the server
+        this.client.remoteAddOp().setName("project0").setFetch("project0")
+                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+
+        /**
+         * INSERT 1 - SERVER
+         */
+        insertAddCommit(this.server, points1);
+        this.server.getRepository().close();
+
+        // fetch the remotes
+        client.fetch().call();
+
+        // re-open the server
+        this.server = new GeoGIT(createRepo(0, false));
+
+        Ref clientRemoteMaster = this.client.getRepository().getRef(
+                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
+        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
+                .getObjectId());
+
+        /**
+         * MERGE - REBASE
+         */
+        client.merge().include(clientRemoteMaster).call();
+
+        /**
+         * INSERT 1 - CLIENT
+         */
+        insertAddCommit(this.client, points2);
+
+        /**
+         * INSEERT 2 - SERVER
+         */
+        insertAddCommit(this.server, lines1);
+        this.server.getRepository().close();
+
+        // fetch the remotes
+        client.fetch().call();
+
+        // re-open the server
+        this.server = new GeoGIT(createRepo(0, false));
+
+        clientRemoteMaster = this.client.getRepository().getRef(
+                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
+        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
+                .getObjectId());
+
+        // merge the fetch
+        client.merge().include(clientRemoteMaster).call();
+
+        /**
+         * INSERT 2 - CLIENT
+         */
+        RevCommit clientsLastCommit = insertAddCommit(this.client, points3);
+
+        /**
+         * INSEERT 3 - SERVER
+         */
+        RevCommit serversLastCommit = insertAddCommit(this.server, lines3);
+        this.server.getRepository().close();
+
+        // fetch the remotes
+        client.fetch().call();
+
+        // re-open the server
+        this.server = new GeoGIT(createRepo(0, false));
+
+        clientRemoteMaster = this.client.getRepository().getRef(
+                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
+        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
+                .getObjectId());
+
+        // merge the fetch
+        client.merge().include(clientRemoteMaster).call();
+
+        RevCommit clientHead = this.client.getRepository().getCommit(
+                this.client.getRepository().getHead().getObjectId());
+        assertContains(clientHead.getParentIds(), clientsLastCommit, serversLastCommit);
+    }
+
+    public void testMergeRemoteMasterRetrieveFeature() throws Exception {
+        ObjectId featureRefId1 = insert(this.server, points1);
+        ObjectId featureRefId2 = insert(this.server, points2);
+        ObjectId featureRefId3 = insert(this.server, lines1);
+        ObjectId featureRefId4 = insert(this.server, lines2);
+        server.commit().setMessage("commited a new feature").setAll(true).call();
+        this.server.getRepository().close();
+
+        // setup the client to have a remote ref to the server
+        this.client.remoteAddOp().setName("project0").setFetch("project0")
+                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+
+        // fetch the remotes
+        client.fetch().call();
+
+        // re-open the server
+        this.server = new GeoGIT(createRepo(0, false));
+
+        Ref clientRemoteMaster = this.client.getRepository().getRef(
+                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
+        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
+                .getObjectId());
+
+        // merge the fetch
+        client.merge().include(clientRemoteMaster).call();
+
+        Feature feature1 = client.getRepository().getFeature(points1.getType(),
+                points1.getIdentifier().getID(), featureRefId1);
+        Feature feature2 = client.getRepository().getFeature(points2.getType(),
+                points2.getIdentifier().getID(), featureRefId2);
+        Feature feature3 = client.getRepository().getFeature(lines1.getType(),
+                lines1.getIdentifier().getID(), featureRefId3);
+        Feature feature4 = client.getRepository().getFeature(lines2.getType(),
+                lines2.getIdentifier().getID(), featureRefId4);
+
+        assertEquals(points1, feature1);
+        assertEquals(points2, feature2);
+        assertEquals(lines1, feature3);
+        assertEquals(lines2, feature4);
+
+        assertEquals(clientRemoteMaster.getObjectId(), this.client.getRepository().getHead()
+                .getObjectId());
+
+    }
+
+    private void assertContains(List<ObjectId> parentIds, RevCommit... commits) {
+        for (RevCommit commit : commits) {
+            assertTrue(parentIds.contains(commit.getId()));
+        }
+    }
 
     private void assertHasFeatuers(final GeoGIT ggit, final RevTree tree, final int expected) {
         final int found[] = new int[1];
