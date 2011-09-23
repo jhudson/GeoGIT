@@ -67,6 +67,8 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
     protected Feature points2;
 
     protected Feature points3;
+    
+    protected Feature points3_modify;
 
     protected static final String linesNs = "http://geogit.lines";
 
@@ -121,7 +123,8 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
             points1 = feature(pointsType, idP1, "StringProp1_1", new Integer(1000), "POINT(1 1)");
             points2 = feature(pointsType, idP2, "StringProp1_2", new Integer(2000), "POINT(2 2)");
             points3 = feature(pointsType, idP3, "StringProp1_3", new Integer(3000), "POINT(3 3)");
-    
+            points3_modify = feature(pointsType, idP3, "StringProp1_3", new Integer(3000), "POINT(3 5)");
+
             linesType = DataUtilities.createType(linesNs, linesName, linesTypeSpec);
     
             lines1 = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
