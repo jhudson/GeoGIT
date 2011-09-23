@@ -179,8 +179,8 @@ public class GeoGIT {
     /**
      * Fetch from and merge with another repository or a local branch
      */
-    public void pull() {
-
+    public PullOp pull() {
+        return new PullOp(repository);
     }
 
     /**

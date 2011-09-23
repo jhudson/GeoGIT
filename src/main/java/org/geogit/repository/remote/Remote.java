@@ -1,3 +1,7 @@
+/* Copyright (c) 2011 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the LGPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geogit.repository.remote;
 
 import java.io.ByteArrayInputStream;
@@ -16,7 +20,6 @@ import org.geogit.api.RevBlob;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.api.RevTree;
-import org.geogit.repository.Repository;
 import org.geogit.repository.remote.payload.IPayload;
 import org.geogit.repository.remote.payload.Payload;
 import org.geogit.storage.BlobReader;
@@ -30,13 +33,13 @@ import org.geogit.storage.hessian.HessianRevTreeReader;
  * This is a custom protocol which is used to transport all of the COMMIT/TREE/BLOB/BRANCH_HEAD objects to this
  * client this is the protocol: 
  * 
- * [{C/T/B}{00000000000000000000}{0000000000}{PAYLOAD}] 
+ * [{C/T/B}{00000000000000000000}{0000000000}{PAYLOAD}]
  * 
  * first byte is a single character : 
- * 'C' for a commit 
- * 'T' for a tree 
+ * 'C' for a commit
+ * 'T' for a tree
  * 'B' for a blob
- * 'N' for branch head 
+ * 'N' for branch head
  * 
  * 2nd byte to the 21st byte are the objects ID - 20 bytes 
  * 22nd byte to the 31st byte is the objects length - 10 bytes

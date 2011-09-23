@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -234,5 +235,11 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
         Ref ref = index.inserted(fact.createFeatureWriter(feature), feature.getBounds(), namespaceURI, localPart, id);
         ObjectId objectId = ref.getObjectId();
         return objectId;
+    }
+    
+    protected void assertContains(List<ObjectId> parentIds, RevCommit... commits) {
+        for (RevCommit commit : commits) {
+            assertTrue(parentIds.contains(commit.getId()));
+        }
     }
 }

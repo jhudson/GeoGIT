@@ -1,5 +1,5 @@
 /* Copyright (c) 2011 TOPP - www.openplans.org. All rights reserved.
- * This code is licensed under the GPL 2.0 license, available at the root
+ * This code is licensed under the LGPL 2.0 license, available at the root
  * application directory.
  */
 package org.geogit.api.config;
@@ -17,9 +17,6 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.geogit.api.ObjectId;
-import org.geogit.api.Ref;
-import org.geogit.api.RemoteAddOp;
 import org.geogit.repository.Repository;
 
 import com.google.common.base.Preconditions;
