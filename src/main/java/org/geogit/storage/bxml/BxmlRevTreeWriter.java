@@ -23,7 +23,7 @@ import org.gvsig.bxml.stream.BxmlStreamWriter;
 
 import com.google.common.base.Throwables;
 
-public class BxmlRevTreeWriter implements ObjectWriter<RevTree> {
+class BxmlRevTreeWriter implements ObjectWriter<RevTree> {
 
     private final RevSHA1Tree tree;
 

@@ -14,7 +14,7 @@ import org.geogit.storage.ObjectWriter;
 
 import com.caucho.hessian.io.Hessian2Output;
 
-public class HessianCommitWriter extends HessianRevWriter implements ObjectWriter<RevCommit> {
+class HessianCommitWriter extends HessianRevWriter implements ObjectWriter<RevCommit> {
 
     private RevCommit commit;
 

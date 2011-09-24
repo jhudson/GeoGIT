@@ -29,7 +29,7 @@ import com.caucho.hessian.io.Hessian2Input;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTWriter;
 
-public class HessianBlobPrinter extends HessianRevReader implements BlobPrinter {
+class HessianBlobPrinter extends HessianRevReader implements BlobPrinter {
 
     /**
      * This keeps a reference to the tags that have been opened to prevent me from making typos that

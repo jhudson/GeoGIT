@@ -16,7 +16,7 @@ import org.geogit.storage.RevSHA1Tree;
 import com.caucho.hessian.io.Hessian2Input;
 import com.caucho.hessian.io.HessianProtocolException;
 
-public class HessianRevTreeReader extends HessianRevReader implements ObjectReader<RevTree> {
+class HessianRevTreeReader extends HessianRevReader implements ObjectReader<RevTree> {
 
     private ObjectDatabase objectDb;
 

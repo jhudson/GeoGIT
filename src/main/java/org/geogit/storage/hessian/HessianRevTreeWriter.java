@@ -18,7 +18,7 @@ import org.geogit.storage.RevSHA1Tree;
 import com.caucho.hessian.io.Hessian2Output;
 import com.google.common.base.Throwables;
 
-public class HessianRevTreeWriter extends HessianRevWriter implements ObjectWriter<RevTree> {
+class HessianRevTreeWriter extends HessianRevWriter implements ObjectWriter<RevTree> {
     private final RevSHA1Tree tree;
 
     public HessianRevTreeWriter(RevTree tree) {

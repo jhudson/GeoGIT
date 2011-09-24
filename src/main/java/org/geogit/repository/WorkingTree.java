@@ -23,7 +23,7 @@ import org.geogit.api.RevTree;
 import org.geogit.api.TreeVisitor;
 import org.geogit.storage.ObjectWriter;
 import org.geogit.storage.StagingDatabase;
-import org.geogit.storage.bxml.BxmlFeatureWriter;
+import org.geogit.storage.WrappedSerialisingFactory;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.factory.Hints;
 import org.geotools.feature.FeatureCollection;
@@ -104,22 +104,6 @@ public class WorkingTree {
         index.deleted(typeName.getNamespaceURI(), typeName.getLocalPart());
     }
 
-    /**
-     * Inserts a feature to the {@link Index} without staging it and returns the feature id.
-     */
-    public String insert(final Feature feature) throws Exception {
-
-        ObjectWriter<?> featureWriter = new BxmlFeatureWriter(feature);
-        final BoundingBox bounds = feature.getBounds();
-        final Name typeName = feature.getType().getName();
-
-        final String id = feature.getIdentifier().getID();
-
-        List<String> path = path(typeName, id);
-        index.inserted(featureWriter, bounds, path.toArray(new String[path.size()]));
-        return id;
-    }
-
     private List<String> path(final Name typeName, final String id) {
         List<String> path = new ArrayList<String>(3);
         if (typeName.getNamespaceURI() != null) {
@@ -172,14 +156,17 @@ public class WorkingTree {
 
         private final boolean forceUseProvidedFID;
 
+        private final WrappedSerialisingFactory serialisingFactory;
+
         public FeatureInserter(final boolean forceUseProvidedFID) {
             this.forceUseProvidedFID = forceUseProvidedFID;
+            serialisingFactory = WrappedSerialisingFactory.getInstance();
         }
 
         @Override
-        public Triplet<ObjectWriter<?>, BoundingBox, List<String>> apply(Feature input) {
+        public Triplet<ObjectWriter<?>, BoundingBox, List<String>> apply(final Feature input) {
 
-            ObjectWriter<?> featureWriter = new BxmlFeatureWriter(input);
+            ObjectWriter<Feature> featureWriter = serialisingFactory.createFeatureWriter(input);
             final BoundingBox bounds = input.getBounds();
             final Name typeName = input.getType().getName();
             final String id;

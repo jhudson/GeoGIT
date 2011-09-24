@@ -27,7 +27,7 @@ import com.google.common.base.Throwables;
  * 
  * @author mleslie
  */
-public abstract class HessianRevReader {
+abstract class HessianRevReader {
     public enum Node {
         REF(0), TREE(1), END(2);
 

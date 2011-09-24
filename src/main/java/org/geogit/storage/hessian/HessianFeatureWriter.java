@@ -38,7 +38,7 @@ import com.vividsolutions.jts.io.WKBWriter;
  * 
  * @author mleslie
  */
-public class HessianFeatureWriter implements ObjectWriter<Feature> {
+class HessianFeatureWriter implements ObjectWriter<Feature> {
     Feature feat;
 
     public HessianFeatureWriter(final Feature feature) {

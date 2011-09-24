@@ -19,7 +19,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.caucho.hessian.io.Hessian2Output;
 import com.google.common.base.Throwables;
 
-public class HessianRevWriter {
+class HessianRevWriter {
 
     @SuppressWarnings("unchecked")
     private static Map<CoordinateReferenceSystem, String> crsIdCache = Collections

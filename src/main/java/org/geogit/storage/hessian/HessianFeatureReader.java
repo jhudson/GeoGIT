@@ -36,7 +36,7 @@ import com.vividsolutions.jts.io.WKBReader;
  * 
  * @author mleslie
  */
-public class HessianFeatureReader implements ObjectReader<Feature> {
+class HessianFeatureReader implements ObjectReader<Feature> {
 
     private static final FilterFactory2 FILTER_FAC = CommonFactoryFinder.getFilterFactory2(null);
 

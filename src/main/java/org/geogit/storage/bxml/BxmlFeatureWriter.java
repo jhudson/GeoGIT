@@ -54,7 +54,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.OutStream;
 import com.vividsolutions.jts.io.WKBWriter;
 
-public class BxmlFeatureWriter implements ObjectWriter<Feature> {
+class BxmlFeatureWriter implements ObjectWriter<Feature> {
 
     private final Feature feature;
 
