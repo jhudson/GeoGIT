@@ -155,6 +155,7 @@ class HessianFeatureReader implements ObjectReader<Feature> {
             } catch (ParseException ex) {
                 throw (IOException) new IOException(ex.getMessage()).initCause(ex);
             }
+            in.readBytes(new byte[1], 0, 1);
             return geom;
         case NULL:
             in.readNull();
