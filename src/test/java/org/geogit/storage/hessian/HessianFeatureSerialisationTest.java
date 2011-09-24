@@ -54,7 +54,7 @@ public class HessianFeatureSerialisationTest extends TestCase {
         assertTrue(data.length > 0);
 
         HessianFeatureReader reader = new HessianFeatureReader(featureType1, feature1_1
-                .getIdentifier().getID());
+                .getIdentifier().getID(), null);
         ByteArrayInputStream input = new ByteArrayInputStream(data);
         Feature feat = reader.read(ObjectId.forString(feature1_1.getIdentifier().getID()), input);
 

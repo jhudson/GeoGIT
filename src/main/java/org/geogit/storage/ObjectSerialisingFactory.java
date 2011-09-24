@@ -6,6 +6,7 @@ package org.geogit.storage;
 
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
+import org.geotools.factory.Hints;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 
@@ -76,6 +77,18 @@ public interface ObjectSerialisingFactory {
      */
     public ObjectReader<Feature> createFeatureReader(final FeatureType featureType,
             final String featureId);
+
+    /**
+     * Creates an instance of a Feature reader that can parse features of the given feature type.
+     * 
+     * @param featureType FeatureType description of the feature to be read
+     * @param featureId String representation of the feature id
+     * @param hints feature creation hints
+     * @return feature reader
+     * @see Hints#GEOMETRY_FACTORY
+     */
+    public ObjectReader<Feature> createFeatureReader(final FeatureType featureType,
+            final String featureId, final Hints hints);
 
     /**
      * Creates a BlobPrinter that can parse serialised elements into a human-readable(ish)
