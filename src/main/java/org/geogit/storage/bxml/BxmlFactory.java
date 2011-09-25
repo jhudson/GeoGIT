@@ -1,11 +1,11 @@
 package org.geogit.storage.bxml;
 
-import org.geogit.api.BlobPrinter;
-import org.geogit.api.ObjectSerialisingFactory;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
+import org.geogit.storage.BlobPrinter;
 import org.geogit.storage.ObjectDatabase;
 import org.geogit.storage.ObjectReader;
+import org.geogit.storage.ObjectSerialisingFactory;
 import org.geogit.storage.ObjectWriter;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
