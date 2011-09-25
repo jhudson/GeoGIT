@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.geogit.api.DiffEntry.ChangeType;
 import org.geogit.api.RevObject.TYPE;
+import org.geogit.api.config.RefIO;
 import org.geogit.repository.CommitBuilder;
 import org.geogit.repository.Repository;
 import org.geogit.storage.ObjectInserter;

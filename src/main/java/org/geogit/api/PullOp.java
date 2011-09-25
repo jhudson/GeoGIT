@@ -21,8 +21,8 @@ public class PullOp extends AbstractGeoGitOp<MergeResult> {
         super(repository);
     }
     
-    public PullOp include(final String branchName) {
-        this.branchName = branchName;
+    public PullOp setRepository(final String branchName) {
+        this.branchName = Ref.REMOTES_PREFIX + branchName;
         return this;
     }
 

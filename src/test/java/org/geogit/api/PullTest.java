@@ -64,7 +64,7 @@ public class PullTest extends MultipleRepositoryTestCase {
                 .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
 
         // fetch the remotes
-        MergeResult mergeResults = client.pull().include(Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER).call();
+        MergeResult mergeResults = client.pull().setRepository("project0/" + Ref.MASTER).call();
 
         Ref clientRemoteMaster = this.client.getRepository().getRef(Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
 
