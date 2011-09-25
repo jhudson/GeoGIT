@@ -64,10 +64,10 @@ public class LogOp extends AbstractGeoGitOp<Iterator<RevCommit>> {
     }
 
     /**
-     * Shows only commits
+     * Indicates to return only commits newer than the given one ({@code since} is exclusive)
      * 
      * @param the
-     *            initial (oldest) commit id, ({@code null} sets the default)
+     *            initial (oldest and exclusive) commit id, ({@code null} sets the default)
      * @return
      * @see #setUntil(ObjectId)
      */
@@ -77,8 +77,10 @@ public class LogOp extends AbstractGeoGitOp<Iterator<RevCommit>> {
     }
 
     /**
+     * Indicates to return commits up to the provided one, inclusive.
+     * 
      * @param the
-     *            final (newest) commit id, ({@code null} sets the default)
+     *            final (newest and inclusive) commit id, ({@code null} sets the default)
      * @return
      * @see #setSince(ObjectId)
      */
@@ -214,6 +216,17 @@ public class LogOp extends AbstractGeoGitOp<Iterator<RevCommit>> {
 
         private final Repository repo;
 
+        /**
+         * @param repo
+         *            the repository where to get the commits from
+         * @param oldestCommitId
+         *            the oldest commit, exclusive. Indicates when to stop evaluating.
+         * @param timeRange
+         *            extra time range filter besides oldest commit
+         * @param paths
+         *            extra filter on content, indicates to return only commits that affected any of
+         *            the provided paths
+         */
         public LogFilter(final Repository repo, final ObjectId oldestCommitId,
                 final Range<Long> timeRange, final Set<List<String>> paths) {
             Preconditions.checkNotNull(repo);
@@ -237,6 +250,7 @@ public class LogOp extends AbstractGeoGitOp<Iterator<RevCommit>> {
             }
             if (oldestCommitId.equals(commit.getId())) {
                 toReached = true;
+                return false;
             }
             boolean applies = timeRange.contains(Long.valueOf(commit.getTimestamp()));
             if (!applies) {
