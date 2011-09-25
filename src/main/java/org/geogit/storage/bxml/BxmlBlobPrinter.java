@@ -9,8 +9,8 @@ import java.io.PrintStream;
 
 import javax.xml.namespace.QName;
 
-import org.geogit.api.BlobPrinter;
 import org.geogit.api.ObjectId;
+import org.geogit.storage.BlobPrinter;
 import org.gvsig.bxml.stream.BxmlInputFactory;
 import org.gvsig.bxml.stream.BxmlStreamReader;
 import org.gvsig.bxml.stream.EventType;
