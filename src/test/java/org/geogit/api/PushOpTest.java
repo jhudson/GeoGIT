@@ -21,7 +21,7 @@ public class PushOpTest extends MultipleRepositoryTestCase {
         this.client.pull();
         origin.getRepository().close();
 
-        this.client.remoteAddOp().setName("origin").setFetch("project1")
+        this.client.remoteAddOp().setName("origin").setFetch("master")
         .setUrl("http://localhost:8080/geoserver/geogit/project1/geogit").call();
 
         printHeads();
