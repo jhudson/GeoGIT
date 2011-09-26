@@ -45,8 +45,16 @@ public class PullTest extends MultipleRepositoryTestCase {
     public void testPullNoRemote() throws Exception {
         // fetch the remotes
         client.fetch().call();
-        Ref clientRemoteMaster = this.client.getRepository().getRef(Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
+        Ref clientRemoteMaster = this.client.getRepository().getRef(
+                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
         assertEquals(clientRemoteMaster, null);
+    }
+
+    public void testOnlyOrigin() throws Exception {
+        insertAddCommit(this.server, points1);
+        this.client.remoteAddOp().setName("origin").setFetch("master")
+                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+        this.client.pull();
     }
 
     public void testPullRemoteMasterTwoChanges() throws Exception {
@@ -66,12 +74,14 @@ public class PullTest extends MultipleRepositoryTestCase {
         // fetch the remotes
         MergeResult mergeResults = client.pull().setRepository("project0/" + Ref.MASTER).call();
 
-        Ref clientRemoteMaster = this.client.getRepository().getRef(Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
+        Ref clientRemoteMaster = this.client.getRepository().getRef(
+                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
 
         // re-open the server
         this.server = new GeoGIT(createRepo(0, false));
 
-        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead().getObjectId());
+        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
+                .getObjectId());
         assertEquals(0, mergeResults.getMerged().size());
     }
 }

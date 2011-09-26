@@ -30,6 +30,9 @@ public class PullOp extends AbstractGeoGitOp<MergeResult> {
     public MergeResult call() throws Exception {
         GeoGIT gg = new GeoGIT(getRepository());
         gg.fetch().call();
+        if (branchName == null || "".equals(branchName)){
+            branchName = Ref.ORIGIN + Ref.MASTER;
+        }
         Ref branch = getRepository().getRef(branchName);
         return gg.merge().include(branch).call();
     }
