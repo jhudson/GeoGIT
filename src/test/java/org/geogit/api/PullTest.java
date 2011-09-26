@@ -51,10 +51,22 @@ public class PullTest extends MultipleRepositoryTestCase {
     }
 
     public void testOnlyOrigin() throws Exception {
+        // setup the 'origin'
+        //GeoGIT origin = new GeoGIT(getRepository(0));
         insertAddCommit(this.server, points1);
-        this.client.remoteAddOp().setName("origin").setFetch("master")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
         this.client.pull();
+        this.server.getRepository().close();
+
+        this.client.remoteAddOp().setName("origin").setFetch(Ref.MASTER)
+                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+
+        this.client.pull().call();
+        
+        // re-open the server - so we can check the heads
+        this.server = new GeoGIT(createRepo(0, false));
+
+        Ref clientRemoteMaster = this.client.getRepository().getRef(Ref.REMOTES_PREFIX + Ref.ORIGIN + Ref.MASTER);
+        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead().getObjectId());
     }
 
     public void testPullRemoteMasterTwoChanges() throws Exception {
