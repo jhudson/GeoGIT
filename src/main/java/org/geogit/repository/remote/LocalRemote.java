@@ -47,6 +47,10 @@ public class LocalRemote extends AbstractRemote {
         this.file = new File(location);
     }
 
+    public LocalRemote(Repository repository) {
+        this.repository = repository;
+    }
+
     /**
      * Create a set of changes it can be applied to a repository 1. Get the local repository local
      * branches 2. Compare them to the ones the client has sent us 2. Create a set of changes since
@@ -87,7 +91,6 @@ public class LocalRemote extends AbstractRemote {
              */
             if (!ObjectId.NULL/* THE HEAD */.equals(branchId)) {
                 if (getRepository().commitExists(branchId)) {
-                    System.out.println("set since: " + branchId);
                     logOp.setSince(branchId);
                     
                     RevCommit commit = getRepository().getCommit(branchId);
