@@ -1,13 +1,15 @@
+/* Copyright (c) 2011 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the LGPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geogit.api;
 
-import java.io.InputStream;
 import java.util.Map;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.ByteArrayBuffer;
 import org.geogit.api.config.RefIO;
 import org.geogit.repository.Repository;
 import org.geogit.repository.remote.LocalRemote;

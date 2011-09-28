@@ -7,6 +7,12 @@ import java.io.OutputStream;
 import org.apache.http.entity.AbstractHttpEntity;
 import org.geogit.repository.remote.payload.IPayload;
 
+/**
+ * A payload entity object for sending over a httpdefaultclient
+ * 
+ * @author jhudson
+ * @since 1.2.0
+ */
 public class PayloadEntity extends AbstractHttpEntity {
 
     protected final IPayload payload;

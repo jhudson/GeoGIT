@@ -1,11 +1,17 @@
+/* Copyright (c) 2011 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the LGPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geogit.api;
+
+import java.io.IOException;
 
 import org.geogit.test.MultipleRepositoryTestCase;
 
 public class PushOpTest extends MultipleRepositoryTestCase {
 
     private GeoGIT client;
-    
+
     private GeoGIT origin;
 
     public PushOpTest() {
@@ -46,22 +52,64 @@ public class PushOpTest extends MultipleRepositoryTestCase {
         insertAddCommit(this.client, lines1);
         insertAddCommit(this.client, lines2);
         insertAddCommit(this.client, lines3);
-
-        // fetch the remotes
+        
+        // push to origin
         PushResult pushResult = client.push().call();
         assertEquals(pushResult.getStatus(), PushResult.STATUS.OK_APPLIED);
+
+        this.origin = new GeoGIT(createRepo(1, false));
+        Ref originHead = this.origin.getRepository().getHead();
+        assertEquals(this.client.getRepository().getHead(), originHead);
+
+        LOGGER.info("ORIGIN HEAD          : " + this.origin.getRepository().getHead());
     }
 
     public void testPullNonFastForward() throws Exception {
         insertAddCommit(this.client, points2);
 
-        //reopen the server - put client out of sync
+        // reopen the server - put client out of sync
         this.origin = new GeoGIT(createRepo(1, false));
         insertAddCommit(this.origin, lines2);
         this.origin.getRepository().close();
 
-        // fetch the remotes
+        // push to origin
         PushResult pushResult = client.push().call();
         assertEquals(pushResult.getStatus(), PushResult.STATUS.CONFLICT);
+
+        this.origin = new GeoGIT(createRepo(1, false));
+        Ref originHead = this.origin.getRepository().getHead();
+        assertNotSame(this.client.getRepository().getHead(), originHead);
+
+        LOGGER.info("ORIGIN HEAD          : " + this.origin.getRepository().getHead());
+    }
+
+    public void testPullNonFastForwardItsokIllfetchFirst() throws Exception {
+        insertAddCommit(this.client, points2);
+
+        // reopen the server - put client out of sync
+        this.origin = new GeoGIT(createRepo(1, false));
+        insertAddCommit(this.origin, lines2);
+        this.origin.getRepository().close();
+
+        // push to origin
+        PushResult pushResult = client.push().call();
+        assertEquals(pushResult.getStatus(), PushResult.STATUS.CONFLICT);
+
+        this.origin = new GeoGIT(createRepo(1, false));
+        Ref originHead = this.origin.getRepository().getHead();
+        assertNotSame(this.client.getRepository().getHead(), originHead);
+        LOGGER.info("ORIGIN HEAD          : " + this.origin.getRepository().getHead());
+        this.origin.getRepository().close();
+
+        PullOp pull = new PullOp(this.client.getRepository());
+        pull.call();
+
+        // push to origin
+        pushResult = client.push().call();
+        assertEquals(pushResult.getStatus(), PushResult.STATUS.OK_APPLIED);
+        
+        this.origin = new GeoGIT(createRepo(1, false));
+        originHead = this.origin.getRepository().getHead();
+        assertEquals(this.client.getRepository().getHead(), originHead);
     }
 }

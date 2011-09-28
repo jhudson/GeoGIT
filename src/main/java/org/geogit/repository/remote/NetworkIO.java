@@ -173,20 +173,20 @@ public class NetworkIO {
                 if (type == 'C') {
                     RevCommit commit = extractCommit(objectId, payloadBuffer.toByteArray());
                     payload.addCommits(commit);
-                    // System.out.println(commit);
+                    //System.out.println(commit);
                 } else if (type == 'T') {
                     RevTree tree = extractTree(objectId, payloadBuffer.toByteArray());
                     payload.addTrees(tree);
-                    // System.out.println(tree);
+                    //System.out.println(tree);
                 } else if (type == 'B') {
                     RevBlob blob = extractBlob(objectId, payloadBuffer.toByteArray());
                     payload.addBlobs(blob);
-                    // System.out.println(blob);
+                    //System.out.println(blob);
                 } else if (type == 'N') {
                     String branchName = new String(payloadBuffer.toByteArray());
                     Ref branchRef = new Ref(branchName, objectId, TYPE.REMOTE);
                     payload.addBranches(branchName, branchRef);
-                    // System.out.println(branchName + " added to payload");
+                    //System.out.println(branchName + " added to payload");
                 }
                 payloadBuffer = new ByteArrayBuffer(0);
             }
