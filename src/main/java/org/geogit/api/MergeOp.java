@@ -1,5 +1,5 @@
 /* Copyright (c) 2011 TOPP - www.openplans.org. All rights reserved.
- * This code is licensed under the GPL 2.0 license, available at the root
+ * This code is licensed under the LGPL 2.0 license, available at the root
  * application directory.
  */
 package org.geogit.api;
@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.geogit.api.DiffEntry.ChangeType;
 import org.geogit.api.RevObject.TYPE;
+import org.geogit.api.config.RefIO;
 import org.geogit.repository.CommitBuilder;
 import org.geogit.repository.Repository;
 import org.geogit.storage.ObjectInserter;

@@ -1,11 +1,10 @@
 package org.geogit.api;
-
-import java.util.List;
-
+/* Copyright (c) 2011 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the LGPL 2.0 license, available at the root
+ * application directory.
+ */
 import org.geogit.test.MultipleRepositoryTestCase;
-import org.geotools.data.DataUtilities;
 import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 public class MergeOpTest extends MultipleRepositoryTestCase {
 
@@ -250,10 +249,6 @@ public class MergeOpTest extends MultipleRepositoryTestCase {
     }
 
     public void testMergeComplex() throws Exception {
-//        insertAddCommit(this.server, points1);
-//        insertAddCommit(this.server, points3);
-//        this.server.getRepository().close();
-
         ObjectId featureRefId1 = insert(this.server, points1);
         ObjectId featureRefId2 = insert(this.server, points3);
         RevCommit serversLastCommit = server.commit().setMessage("commited a new feature").setAll(true).call();
@@ -302,12 +297,6 @@ public class MergeOpTest extends MultipleRepositoryTestCase {
         for (ObjectId id : mergeResult.getMerged()){
             Feature feature = this.client.getRepository().getFeature(pointsType, "Points.3", id);
             assertEquals(points3_modify, feature);
-        }
-    }
-
-    private void assertContains(List<ObjectId> parentIds, RevCommit... commits) {
-        for (RevCommit commit : commits) {
-            assertTrue(parentIds.contains(commit.getId()));
         }
     }
 }

@@ -29,7 +29,7 @@ public class Remote extends AbstractRemote {
 
     @Override
     public IPayload requestFetchPayload(Map<String, String> branchHeads) {
-        
+
         Payload payload = null;
 
         StringBuffer branchBuffer = new StringBuffer();
@@ -41,7 +41,7 @@ public class Remote extends AbstractRemote {
         String branches = branchBuffer.toString();
 
         if (branches.length() > 0) {
-            branches = branches.substring(0,branches.length() - 1);
+            branches = branches.substring(branches.length() - 1);
         }
 
         DefaultHttpClient httpclient = new DefaultHttpClient();
