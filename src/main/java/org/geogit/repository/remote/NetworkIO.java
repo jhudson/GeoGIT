@@ -84,9 +84,9 @@ public class NetworkIO {
             output.write(Arrays.copyOf((String.valueOf(bufferedCount.size())).getBytes(), 10));
             cw.write(output);
             commits++;
-            System.out.println(commit);
+            //System.out.println(commit);
         }
-        System.out.println("  " + commits + " new commits");
+        //System.out.println("  " + commits + " new commits");
 
         int trees = 0;
         for( RevTree tree : payload.getTreeUpdates() ) {
@@ -98,9 +98,9 @@ public class NetworkIO {
             output.write(Arrays.copyOf((String.valueOf(bufferedCount.size())).getBytes(), 10));
             tw.write(output);
             trees++;
-            System.out.println( tree.getId() + " : " + bufferedCount.size() + " : " + tree);
+            //System.out.println( tree.getId() + " : " + bufferedCount.size() + " : " + tree);
         }
-        System.out.println("  " + trees + " new trees");
+        //System.out.println("  " + trees + " new trees");
 
         int blobs = 0;
         for( RevBlob blob : payload.getBlobUpdates() ) {
@@ -113,9 +113,9 @@ public class NetworkIO {
             output.write((byte[])blob.getParsed());
 
             blobs++;
-            System.out.println( blob.getId() + " : " + length + " : " + blob);
+            //System.out.println( blob.getId() + " : " + length + " : " + blob);
         }
-        System.out.println("  " + blobs + " new blobs");
+        //System.out.println("  " + blobs + " new blobs");
 
         /**
          * Send the branch heads: which is the master for now
@@ -128,9 +128,9 @@ public class NetworkIO {
             output.write(Arrays.copyOf(String.valueOf(branch.getName().getBytes().length).getBytes(), 10));
             output.write(branch.getName().getBytes());
             branches++;
-            System.out.println( branch );
+            //System.out.println( branch );
         }
-        System.out.println("  " + branches + " new branches");
+        //System.out.println("  " + branches + " new branches");
     }
     
     /**
@@ -173,20 +173,20 @@ public class NetworkIO {
                 if (type == 'C') {
                     RevCommit commit = extractCommit(objectId, payloadBuffer.toByteArray());
                     payload.addCommits(commit);
-                    // System.out.println(commit);
+                    //System.out.println(commit);
                 } else if (type == 'T') {
                     RevTree tree = extractTree(objectId, payloadBuffer.toByteArray());
                     payload.addTrees(tree);
-                    // System.out.println(tree);
+                    //System.out.println(tree);
                 } else if (type == 'B') {
                     RevBlob blob = extractBlob(objectId, payloadBuffer.toByteArray());
                     payload.addBlobs(blob);
-                    // System.out.println(blob);
+                    //System.out.println(blob);
                 } else if (type == 'N') {
                     String branchName = new String(payloadBuffer.toByteArray());
                     Ref branchRef = new Ref(branchName, objectId, TYPE.REMOTE);
                     payload.addBranches(branchName, branchRef);
-                    // System.out.println(branchName + " added to payload");
+                    //System.out.println(branchName + " added to payload");
                 }
                 payloadBuffer = new ByteArrayBuffer(0);
             }

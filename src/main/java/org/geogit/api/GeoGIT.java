@@ -7,6 +7,7 @@ package org.geogit.api;
 import java.util.List;
 
 import org.geogit.api.config.Config;
+import org.geogit.api.config.RemoteConfigObject;
 import org.geogit.repository.Repository;
 import org.geotools.feature.FeatureCollection;
 import org.opengis.feature.type.Name;
@@ -186,15 +187,19 @@ public class GeoGIT {
     /**
      * Update remote refs along with associated objects
      */
-    public void push() {
-
+    public PushOp push() {
+        RemoteConfigObject origin = config.getRemote("origin");
+        if (origin != null) {
+            return new PushOp(repository, origin.getUrl());
+        }
+        return new PushOp(repository, "");
     }
 
     /**
      * Forward-port local commits to the updated upstream head
      */
-    public void rebase() {
-
+    public RebaseOp rebase() {
+        return new RebaseOp(repository);
     }
 
     /**
@@ -238,7 +243,7 @@ public class GeoGIT {
     public Config getConfig() {
        return this.config;
     }
-    
+
     /**
      * Implementation of a "git remote add" command to add remotes to the configuraiton, which get updated after a fetch
      * @return

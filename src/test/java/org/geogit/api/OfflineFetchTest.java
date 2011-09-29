@@ -38,6 +38,9 @@ public class OfflineFetchTest extends MultipleRepositoryTestCase {
     @Override
     protected void tearDownInternal() throws Exception {
         printHeads();
+        this.server.getRepository().close();
+        this.server2.getRepository().close();
+        this.client.getRepository().close();
         super.tearDownInternal();
     }
 

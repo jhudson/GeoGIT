@@ -20,7 +20,6 @@ public class MergeOpTest extends MultipleRepositoryTestCase {
 
     @Override
     protected void setUpInternal() throws Exception {
-
         // setup repository 1 - acting as our server
         this.server = new GeoGIT(getRepository(0));
 
@@ -36,6 +35,9 @@ public class MergeOpTest extends MultipleRepositoryTestCase {
     @Override
     protected void tearDownInternal() throws Exception {
         printHeads();
+        this.server.getRepository().close();
+        this.server2.getRepository().close();
+        this.client.getRepository().close();
         super.tearDownInternal();
     }
 
