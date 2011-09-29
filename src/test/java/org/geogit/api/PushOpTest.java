@@ -37,6 +37,8 @@ public class PushOpTest extends MultipleRepositoryTestCase {
     @Override
     protected void tearDownInternal() throws Exception {
         printHeads();
+        this.origin.getRepository().close();
+        this.client.getRepository().close();
         super.tearDownInternal();
     }
 

@@ -66,7 +66,7 @@ public class Repository {
         workingTree = new WorkingTree(this);
         this.repositoryHome = envHome;
     }
-    
+
     public void create() {
         repoDb.create();
     }

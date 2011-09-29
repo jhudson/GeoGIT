@@ -6,8 +6,6 @@ package org.geogit.test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -87,7 +85,7 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
 
     protected Feature lines3;
 
-    protected Collection<Repository> repos;
+    protected Repository[] repos;
     
     protected final Logger LOGGER;
 
@@ -113,7 +111,7 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
         setup = true;
         Logging.ALL.forceMonolineConsoleOutput();
         
-        repos = new ArrayList<Repository>();
+        repos = new Repository[numberOfRepos];
 
         for (int i=0;i<numberOfRepos;i++){
 
@@ -135,7 +133,7 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
             lines3 = feature(linesType, idL3, "StringProp2_3", new Integer(3000),
                     "LINESTRING(5 5, 6 6)");
 
-            repos.add(repo);
+            repos[i] = repo;
         }
 
         setUpInternal();
@@ -151,7 +149,7 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
             repositoryHome.mkdirs();
             indexHome.mkdirs();
         }
-        
+
         EntityStoreConfig config = new EntityStoreConfig();
         config.setCacheMemoryPercentAllowed(50);
         EnvironmentBuilder esb = new EnvironmentBuilder(config);
@@ -174,9 +172,9 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
     protected final void tearDown() throws Exception {
         setup = false;
         tearDownInternal();
-        for (Repository repo : repos) {
-            if (repo != null) {
-                repo.close();
+        for (Repository repository : this.repos) {
+            if (repository != null) {
+                repository.close();
             }
         }
     }
@@ -190,11 +188,11 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
      * Called before {@link #tearDown()}, subclasses may override as appropriate
      */
     protected void tearDownInternal() throws Exception {
-        //
+
     }
 
     public Repository getRepository(int index) {
-        return repos.toArray(new Repository[repos.size()])[index];
+        return repos[index];
     }
 
     protected Feature feature(SimpleFeatureType type, String id, Object... values)

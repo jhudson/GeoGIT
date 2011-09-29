@@ -5,7 +5,6 @@
 package org.geogit.api;
 
 import org.geogit.test.MultipleRepositoryTestCase;
-import org.opengis.feature.Feature;
 
 public class PullTest extends MultipleRepositoryTestCase {
 
@@ -32,6 +31,8 @@ public class PullTest extends MultipleRepositoryTestCase {
     @Override
     protected void tearDownInternal() throws Exception {
         printHeads();
+        this.server.getRepository().close();
+        this.client.getRepository().close();
         super.tearDownInternal();
     }
 
