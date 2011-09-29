@@ -45,7 +45,7 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
 
             	IRemote remoteRepo = RemoteRepositoryFactory.createRemoteRepositroy(remote.getUrl());
             	IPayload payload = remoteRepo.requestFetchPayload(RefIO.getRemoteList(getRepository().getRepositoryHome(),remote.getName()));
-                
+
                 int commits = 0;
                 int deltas = 0;
 
