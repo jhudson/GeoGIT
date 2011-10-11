@@ -1,17 +1,14 @@
 package org.geogit.api;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.geogit.repository.Repository;
 import org.geogit.test.MultipleRepositoryTestCase;
 import org.opengis.feature.Feature;
 
-/**
- * To test a remote fetch using the GeoGIT protocol
- * @author jhudson
- * @since 1.2.0
- */
-public class OnlineFetchTest extends MultipleRepositoryTestCase {
+public class FetchOpTest extends MultipleRepositoryTestCase {
 
     private GeoGIT server;
 
@@ -19,7 +16,7 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
 
     private GeoGIT client;
 
-    public OnlineFetchTest() {
+    public FetchOpTest() {
         super(3/* three repositories */);
     }
 
@@ -41,9 +38,9 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
     @Override
     protected void tearDownInternal() throws Exception {
         printHeads();
-        this.client.getRepository().close();
         this.server.getRepository().close();
         this.server2.getRepository().close();
+        this.client.getRepository().close();
         super.tearDownInternal();
     }
 
@@ -65,27 +62,18 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
     public void testFetchRemoteMasterTwoChanges() throws Exception {
         insertAddCommit(this.server, points1);
         insertAddCommit(this.server, points2);
-        insertAddCommit(this.server, points3);
-        insertAddCommit(this.server, lines1);
-        insertAddCommit(this.server, lines2);
-        insertAddCommit(this.server, lines3);
-
-        this.server.getRepository().close();
 
         // setup the client to have a remote ref to the server
         this.client.remoteAddOp().setName("project0").setFetch("project0")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+                .setUrl(this.server.getRepository().getRepositoryHome().getAbsolutePath()).call();
 
         // fetch the remotes
         client.fetch().call();
 
         Ref clientRemoteMaster = this.client.getRepository().getRef(
                 Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
-
-        // re-open the server
-        this.server = new GeoGIT(createRepo(0, false));
-
-        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead().getObjectId());
+        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
+                .getObjectId());
     }
 
     public void testFetchRemoteMasterRetrieveFeature() throws Exception {
@@ -95,17 +83,12 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
         ObjectId featureRefId4 = insert(this.server, lines2);
         RevCommit commit = server.commit().setMessage("commited a new feature").setAll(true).call();
 
-        this.server.getRepository().close();
-
         // setup the client to have a remote ref to the server
         this.client.remoteAddOp().setName("project0").setFetch("project0")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+                .setUrl(this.server.getRepository().getRepositoryHome().getAbsolutePath()).call();
 
         // fetch the remotes
         client.fetch().call();
-
-        // re-open the server
-        this.server = new GeoGIT(createRepo(0, false));
 
         Ref clientRemoteMaster = this.client.getRepository().getRef(
                 Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
@@ -133,47 +116,6 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
         assertEquals(lines1, feature3);
         assertEquals(lines2, feature4);
     }
-    
-    public void testFetchOneRemoteNonFastForward() throws Exception {
-        insertAddCommit(this.server, points1);
-        insertAddCommit(this.server, points3);
-        this.server.getRepository().close();
-
-        // setup the client to have a remote ref to the server
-        this.client.remoteAddOp().setName("project0").setFetch("project0")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
-
-        // fetch the remotes
-        client.fetch().call();
-
-        // re-open the server
-        this.server = new GeoGIT(createRepo(0, false));
-
-        Ref clientRemoteMaster = this.client.getRepository().getRef(
-                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
-        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
-                .getObjectId());
-
-        printHeads();
-
-        // add more to server
-        insertAddCommit(this.server, lines1);
-        insertAddCommit(this.server, lines2);
-        insertAddCommit(this.server, lines3);
-        this.server.getRepository().close();
-
-        // fetch the remotes
-        client.fetch().call();
-
-        // re-open the server
-        this.server = new GeoGIT(createRepo(0, false));
-
-        clientRemoteMaster = this.client.getRepository().getRef(
-                Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
-
-        assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
-                .getObjectId());
-    }
 
     public void testFetchRemoteMasterManyCommits() throws Exception {
         List<RevCommit> commits = new ArrayList<RevCommit>();
@@ -188,17 +130,12 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
             commits.add(server.commit().setMessage("commited a new feature").setAll(true).call());
         }
 
-        this.server.getRepository().close();
-
         // setup the client to have a remote ref to the server
         this.client.remoteAddOp().setName("project0").setFetch("project0")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+                .setUrl(this.server.getRepository().getRepositoryHome().getAbsolutePath()).call();
 
         // fetch the remotes
         client.fetch().call();
-
-        // re-open the server
-        this.server = new GeoGIT(createRepo(0, false));
 
         int index = 0;
         for (RevCommit commit : commits) {
@@ -231,17 +168,12 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
 
         commit = server.commit().setMessage("commited a new feature").setAll(true).call();
 
-        this.server.getRepository().close();
-
         // setup the client to have a remote ref to the server
         this.client.remoteAddOp().setName("project0").setFetch("project0")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+                .setUrl(this.server.getRepository().getRepositoryHome().getAbsolutePath()).call();
 
         // fetch the remotes
         client.fetch().call();
-
-        // re-open the server
-        this.server = new GeoGIT(createRepo(0, false));
 
         RevCommit serverCommitOnClient = this.client.getRepository().getCommit(commit.getId());
         assertNotNull("Fetch Op failed to transfer the commit from server to client",
@@ -262,28 +194,21 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
         insertAddCommit(this.server2, points2);
         insertAddCommit(this.server2, lines2);
 
-        this.server.getRepository().close();
-        this.server2.getRepository().close();
-
         // setup the client to have a remote ref to the server
         this.client.remoteAddOp().setName("project0").setFetch("project0")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+                .setUrl(this.server.getRepository().getRepositoryHome().getAbsolutePath()).call();
+        // setup the client to have a remote ref to the server
         this.client.remoteAddOp().setName("project2").setFetch("project2")
-                .setUrl("http://localhost:8080/geoserver/geogit/project2/geogit").call();
+                .setUrl(this.server2.getRepository().getRepositoryHome().getAbsolutePath()).call();
 
         // fetch the remotes
         client.fetch().call();
-
-        // re-open the server
-        this.server = new GeoGIT(createRepo(0, false));
-        // re-open the server
-        this.server2 = new GeoGIT(createRepo(2, false));
 
         Ref clientRemoteMaster1 = this.client.getRepository().getRef(
                 Ref.REMOTES_PREFIX + "project0/" + Ref.MASTER);
         Ref clientRemoteMaster2 = this.client.getRepository().getRef(
                 Ref.REMOTES_PREFIX + "project2/" + Ref.MASTER);
-
+        
         assertEquals(clientRemoteMaster1.getObjectId(), this.server.getRepository().getHead().getObjectId());
         assertEquals(clientRemoteMaster2.getObjectId(), this.server2.getRepository().getHead().getObjectId());
     }
@@ -305,19 +230,57 @@ public class OnlineFetchTest extends MultipleRepositoryTestCase {
                     RevTree tree = ggit.getRepository().getTree(ref.getObjectId());
                     tree.accept(this);
                 } else {
-
                     RevBlob blob = (RevBlob) client.getRepository().getBlob(ref.getObjectId());
-
-                    // Feature theFeature = ggit.getRepository().getFeature(feature.getType(),
-                    // feature.getIdentifier().getID(), blob.getId());
-                    // assertNotNull(theFeature);
-                    // assertEquals(feature, theFeature);
-
                     found[0]++;/* hax */
                 }
                 return true;
             }
         });
         assertEquals(expected, found[0]);
+    }
+
+    private void assertFeaturesAvailable(final Repository repo, final String nameSpace) {
+        /*
+         * Now I want to confirm that we can get them back out. We will ignore the commit from here
+         * and work against the repository alone.
+         */
+        RevTree tree = repo.getHeadTree();
+        assertNotNull(tree);
+        /* Find the tree of the namespace */
+        Ref namespace = tree.get(nameSpace);
+        assertNotNull(namespace);
+        RevTree nstree = repo.getTree(namespace.getObjectId());
+        assertNotNull(nstree);
+        Iterator<Ref> types = nstree.iterator(null);
+
+        System.out.println(types);
+
+        while (types.hasNext()) {
+            Ref typeRef = types.next();
+            assertNotNull(typeRef);
+            RevTree typeTree = repo.getTree(typeRef.getObjectId());
+            assertNotNull(typeTree);
+
+            Iterator<Ref> it = typeTree.iterator(null);
+            assertNotNull(it);
+            while (it.hasNext()) {
+                Ref featRef = it.next();
+                assertNotNull(featRef);
+                if (pointsNs.equals(typeRef.getName())) {
+                    Feature feat = repo.getFeature(pointsType, featRef.getName(),
+                            featRef.getObjectId());
+                    assertNotNull(feat);
+                    assertTrue(feat.equals(points1) || feat.equals(points2) || feat.equals(points3));
+                } else if (linesNs.equals(typeRef.getName())) {
+                    Feature feat = repo.getFeature(linesType, featRef.getName(),
+                            featRef.getObjectId());
+                    assertNotNull(feat);
+                    assertTrue(feat.equals(lines1) || feat.equals(lines2) || feat.equals(lines3));
+                } else {
+                    fail();
+                }
+            }
+
+        }
     }
 }

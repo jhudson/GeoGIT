@@ -58,6 +58,8 @@ import org.geogit.storage.hessian.HessianRevTreeWriter;
  * <p>
  * The rest is the payload in bytes
  * </p>
+ * TODO: add tag support
+ * 
  * @author jhudson
  * @since 1.2.0
  */

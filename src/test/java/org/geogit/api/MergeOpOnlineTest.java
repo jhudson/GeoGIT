@@ -6,7 +6,7 @@ package org.geogit.api;
 import org.geogit.test.MultipleRepositoryTestCase;
 import org.opengis.feature.Feature;
 
-public class MergeOpTest extends MultipleRepositoryTestCase {
+public class MergeOpOnlineTest extends MultipleRepositoryTestCase {
 
     private GeoGIT server;
 
@@ -14,7 +14,7 @@ public class MergeOpTest extends MultipleRepositoryTestCase {
 
     private GeoGIT client;
 
-    public MergeOpTest() {
+    public MergeOpOnlineTest() {
         super(3/* three repositories */);
     }
 

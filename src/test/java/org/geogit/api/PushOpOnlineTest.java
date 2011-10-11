@@ -8,13 +8,13 @@ import java.io.IOException;
 
 import org.geogit.test.MultipleRepositoryTestCase;
 
-public class PushOpTest extends MultipleRepositoryTestCase {
+public class PushOpOnlineTest extends MultipleRepositoryTestCase {
 
     private GeoGIT client;
 
     private GeoGIT origin;
 
-    public PushOpTest() {
+    public PushOpOnlineTest() {
         super(2/* one repository */);
     }
 

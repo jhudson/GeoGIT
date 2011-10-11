@@ -6,13 +6,13 @@ package org.geogit.api;
 
 import org.geogit.test.MultipleRepositoryTestCase;
 
-public class PullTest extends MultipleRepositoryTestCase {
+public class PullOpOnlineTest extends MultipleRepositoryTestCase {
 
     private GeoGIT server;
 
     private GeoGIT client;
 
-    public PullTest() {
+    public PullOpOnlineTest() {
         super(2/* two repositories */);
     }
 
