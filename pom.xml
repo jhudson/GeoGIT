@@ -74,7 +74,8 @@
 		<test.maxHeapSize>256M</test.maxHeapSize>
 		<maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
 		<build.timestamp>${maven.build.timestamp}</build.timestamp>
-		<online.skip.pattern>**/Online*Test.java</online.skip.pattern>
+		<online.skip.pattern>**/*OnlineTest.java</online.skip.pattern>
+		<allow.test.skip>true</allow.test.skip>
 	</properties>
 
 	<dependencyManagement>
