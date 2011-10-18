@@ -23,7 +23,7 @@ public class RemoteRepositoryFactoryTest extends RepositoryTestCase{
 
     @Test
     public void testRemote() {
-        IRemote remoteRepo = RemoteRepositoryFactory.createRemoteRepositroy("http://localhost:8081/projects/target0.geogit"); //$NON-NLS-1$
+        IRemote remoteRepo = RemoteRepositoryFactory.createRemoteRepositroy("http://localhost:81/projects/target0.geogit"); //$NON-NLS-1$
         assertTrue(remoteRepo instanceof Remote);
         assertTrue(remoteRepo instanceof IRemote);
         assertFalse(remoteRepo instanceof LocalRemote);

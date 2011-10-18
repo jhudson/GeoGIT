@@ -51,7 +51,7 @@ public class MergeOpOnlineTest extends MultipleRepositoryTestCase {
     public void testOneCommitMerge() throws Exception {
         // setup the client to have a remote ref to the server
         this.client.remoteAddOp().setName("project0").setFetch("project0")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+                .setUrl(GEOGIT_URL+"/project0/geogit").call();
 
         /**
          * INSERT 1 - SERVER
@@ -86,7 +86,7 @@ public class MergeOpOnlineTest extends MultipleRepositoryTestCase {
 
         // setup the client to have a remote ref to the server
         this.client.remoteAddOp().setName("project0").setFetch("project0")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+                .setUrl(GEOGIT_URL+"/project0/geogit").call();
 
         // fetch the remotes
         client.fetch().call();
@@ -129,7 +129,7 @@ public class MergeOpOnlineTest extends MultipleRepositoryTestCase {
     public void testMergeCrissCrossTest() throws Exception {
         // setup the client to have a remote ref to the server
         this.client.remoteAddOp().setName("project0").setFetch("project0")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+                .setUrl(GEOGIT_URL+"/project0/geogit").call();
 
         /**
          * INSERT 1 - SERVER
@@ -217,7 +217,7 @@ public class MergeOpOnlineTest extends MultipleRepositoryTestCase {
 
         // setup the client to have a remote ref to the server
         this.client.remoteAddOp().setName("project0").setFetch("project0")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+                .setUrl(GEOGIT_URL+"/project0/geogit").call();
 
         // fetch the remotes
         client.fetch().call();
@@ -258,7 +258,7 @@ public class MergeOpOnlineTest extends MultipleRepositoryTestCase {
 
         // setup the client to have a remote ref to the server
         this.client.remoteAddOp().setName("project0").setFetch("project0")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+                .setUrl(GEOGIT_URL+"/project0/geogit").call();
 
         // fetch the remotes
         client.fetch().call();

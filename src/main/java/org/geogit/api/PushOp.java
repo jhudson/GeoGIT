@@ -59,9 +59,7 @@ public class PushOp extends AbstractGeoGitOp<PushResult> {
             HttpResponse response = httpclient.execute(post);
             if (response.getStatusLine().getStatusCode()!= HttpStatus.SC_OK){
                 result.setStatus(PushResult.STATUS.CONFLICT);
-                System.out.println(response.getStatusLine().getReasonPhrase());
             } else {
-                System.out.println("Sent payload to server payload");
                 result.setStatus(PushResult.STATUS.OK_APPLIED);
             }
         } catch (Exception e) {

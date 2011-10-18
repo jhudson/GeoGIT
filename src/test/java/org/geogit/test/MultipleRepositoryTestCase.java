@@ -96,6 +96,8 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
     
     protected int numberOfRepos;
     
+    protected static final String GEOGIT_URL = "http://localhost:8081/parkinfo-central/geogit";
+    
     public MultipleRepositoryTestCase( int numberOfRepos ) {
         super();
         LOGGER = Logging.getLogger(getClass());

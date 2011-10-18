@@ -59,7 +59,7 @@ public class PullOpOnlineTest extends MultipleRepositoryTestCase {
         this.server.getRepository().close();
 
         this.client.remoteAddOp().setName("origin").setFetch(Ref.MASTER)
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+                .setUrl(GEOGIT_URL+"/project0/geogit").call();
 
         this.client.pull().call();
         
@@ -82,7 +82,7 @@ public class PullOpOnlineTest extends MultipleRepositoryTestCase {
 
         // setup the client to have a remote ref to the server
         this.client.remoteAddOp().setName("project0").setFetch("project0")
-                .setUrl("http://localhost:8080/geoserver/geogit/project0/geogit").call();
+                .setUrl(GEOGIT_URL+"/project0/geogit").call();
 
         // fetch the remotes
         MergeResult mergeResults = client.pull().setRepository("project0/" + Ref.MASTER).call();
