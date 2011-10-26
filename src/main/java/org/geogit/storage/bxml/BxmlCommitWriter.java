@@ -24,7 +24,7 @@ import org.geogit.storage.ObjectWriter;
 import org.gvsig.bxml.stream.BxmlOutputFactory;
 import org.gvsig.bxml.stream.BxmlStreamWriter;
 
-public final class BxmlCommitWriter implements ObjectWriter<RevCommit> {
+final class BxmlCommitWriter implements ObjectWriter<RevCommit> {
 
     private final RevCommit commit;
 

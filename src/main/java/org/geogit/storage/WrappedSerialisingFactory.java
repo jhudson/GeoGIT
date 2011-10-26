@@ -7,6 +7,7 @@ package org.geogit.storage;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
 import org.geogit.repository.ConfigurationContext;
+import org.geotools.factory.Hints;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 
@@ -33,6 +34,10 @@ public class WrappedSerialisingFactory implements ObjectSerialisingFactory {
 
     public ObjectReader<Feature> createFeatureReader(FeatureType featureType, String featureId) {
         return wrappedFactory.createFeatureReader(featureType, featureId);
+    }
+
+    public ObjectReader<Feature> createFeatureReader(FeatureType featureType, String featureId, Hints hints) {
+        return wrappedFactory.createFeatureReader(featureType, featureId, hints);
     }
 
     public ObjectReader<RevTree> createRevTreeReader(ObjectDatabase objectDb) {

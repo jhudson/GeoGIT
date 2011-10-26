@@ -20,7 +20,7 @@ import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 import com.vividsolutions.jts.io.WKTWriter;
 
-public class BxmlBlobPrinter implements BlobPrinter {
+class BxmlBlobPrinter implements BlobPrinter {
 
     public void print(final byte[] rawBlob, final PrintStream out) throws IOException {
         print(new ByteArrayInputStream(rawBlob), out);

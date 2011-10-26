@@ -26,7 +26,7 @@ public class HessianFeatureSerialisationTest extends TestCase {
 
     private String typeSpec1 = "str:String," + "bool:Boolean," + "byte:java.lang.Byte,"
             + "doub:Double," + "bdec:java.math.BigDecimal," + "flt:Float," + "int:Integer,"
-            + "bint:java.math.BigInteger," + "lng:java.lang.Long," + "pp:Point:srid=4326";
+            + "bint:java.math.BigInteger," + "pp:Point:srid=4326," + "lng:java.lang.Long";
 
     private SimpleFeatureType featureType1;
 
@@ -39,8 +39,8 @@ public class HessianFeatureSerialisationTest extends TestCase {
         featureType1 = DataUtilities.createType(namespace1, typeName1, typeSpec1);
         feature1_1 = feature(featureType1, "TestType.feature.1", "StringProp1_1", Boolean.TRUE,
                 Byte.valueOf("18"), new Double(100.01), new BigDecimal("1.89e1021"),
-                new Float(12.5), new Integer(1000), new BigInteger("90000000"), new Long(800000),
-                "POINT(1 1)");
+                new Float(12.5), new Integer(1000), new BigInteger("90000000"), "POINT(1 1)",
+                new Long(800000));
     };
 
     public void testSerialise() throws Exception {
@@ -54,7 +54,7 @@ public class HessianFeatureSerialisationTest extends TestCase {
         assertTrue(data.length > 0);
 
         HessianFeatureReader reader = new HessianFeatureReader(featureType1, feature1_1
-                .getIdentifier().getID());
+                .getIdentifier().getID(), null);
         ByteArrayInputStream input = new ByteArrayInputStream(data);
         Feature feat = reader.read(ObjectId.forString(feature1_1.getIdentifier().getID()), input);
 

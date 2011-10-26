@@ -11,6 +11,7 @@ import org.geogit.storage.ObjectDatabase;
 import org.geogit.storage.ObjectReader;
 import org.geogit.storage.ObjectSerialisingFactory;
 import org.geogit.storage.ObjectWriter;
+import org.geotools.factory.Hints;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 
@@ -33,7 +34,12 @@ public class HessianFactory implements ObjectSerialisingFactory {
 
     @Override
     public ObjectReader<Feature> createFeatureReader(FeatureType featureType, String featureId) {
-        return new HessianFeatureReader(featureType, featureId);
+        return new HessianFeatureReader(featureType, featureId, null);
+    }
+
+    @Override
+    public ObjectReader<Feature> createFeatureReader(FeatureType featureType, String featureId, Hints hints) {
+        return new HessianFeatureReader(featureType, featureId, hints);
     }
 
     @Override

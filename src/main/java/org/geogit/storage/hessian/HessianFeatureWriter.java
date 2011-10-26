@@ -38,7 +38,7 @@ import com.vividsolutions.jts.io.WKBWriter;
  * 
  * @author mleslie
  */
-public class HessianFeatureWriter implements ObjectWriter<Feature> {
+class HessianFeatureWriter implements ObjectWriter<Feature> {
     Feature feat;
 
     public HessianFeatureWriter(final Feature feature) {
@@ -77,9 +77,11 @@ public class HessianFeatureWriter implements ObjectWriter<Feature> {
      * @throws IOException
      */
     private void writeProperty(final Hessian2Output out, Property prop) throws IOException {
-        Object value = prop.getValue();
-        EntityType type = EntityType.determineType(value);
+        final Object value = prop.getValue();
+        final EntityType type = EntityType.determineType(value);
+        
         out.writeInt(type.getValue());
+        
         switch (type) {
         case STRING:
             out.writeString((String) value);
@@ -165,7 +167,7 @@ public class HessianFeatureWriter implements ObjectWriter<Feature> {
 
             WKBWriter wkbwriter = new WKBWriter();
             wkbwriter.write(geom, wkbOut);
-            out.writeByteBufferEnd(new byte[0], 0, 0);
+            out.writeByteBufferEnd(new byte[1], 0, 1);
 
             break;
         case NULL:

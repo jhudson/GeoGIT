@@ -7,8 +7,11 @@ import org.geogit.storage.ObjectDatabase;
 import org.geogit.storage.ObjectReader;
 import org.geogit.storage.ObjectSerialisingFactory;
 import org.geogit.storage.ObjectWriter;
+import org.geotools.factory.Hints;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
+
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 public class BxmlFactory implements ObjectSerialisingFactory {
 	private BxmlBlobPrinter printer;
@@ -19,12 +22,23 @@ public class BxmlFactory implements ObjectSerialisingFactory {
 	}
 
 	@Override
-	public ObjectReader<Feature> createFeatureReader(FeatureType featureType,
+	public BxmlFeatureReader createFeatureReader(FeatureType featureType,
 			String featureId) {
 		return new BxmlFeatureReader(featureType, featureId);
 	}
 	
-	@Override
+    @Override
+    public ObjectReader<Feature> createFeatureReader(FeatureType featureType, String featureId,
+            Hints hints) {
+        BxmlFeatureReader featureReader = createFeatureReader(featureType, featureId);
+        GeometryFactory gf = (GeometryFactory) hints.get(Hints.GEOMETRY_FACTORY);
+        if(gf != null){
+            featureReader.setGeometryFactory(gf);
+        }
+        return featureReader;
+    }
+
+        @Override
 	public ObjectReader<RevTree> createRevTreeReader(ObjectDatabase objectDb) {
 		return new BxmlRevTreeReader(objectDb);
 	}

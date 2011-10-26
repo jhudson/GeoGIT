@@ -69,7 +69,7 @@ import com.vividsolutions.jts.io.InStream;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKBReader;
 
-public class BxmlFeatureReader implements ObjectReader<Feature> {
+class BxmlFeatureReader implements ObjectReader<Feature> {
 
     private static final FilterFactory2 FILTER_FAC = CommonFactoryFinder.getFilterFactory2(null);
 

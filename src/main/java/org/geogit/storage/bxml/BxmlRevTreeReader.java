@@ -24,7 +24,7 @@ import org.gvsig.bxml.stream.BxmlInputFactory;
 import org.gvsig.bxml.stream.BxmlStreamReader;
 import org.gvsig.bxml.stream.EventType;
 
-public class BxmlRevTreeReader implements ObjectReader<RevTree> {
+class BxmlRevTreeReader implements ObjectReader<RevTree> {
 
     private ObjectDatabase objectDb;
 

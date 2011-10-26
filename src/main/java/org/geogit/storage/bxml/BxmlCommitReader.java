@@ -27,7 +27,7 @@ import org.gvsig.bxml.stream.BxmlInputFactory;
 import org.gvsig.bxml.stream.BxmlStreamReader;
 import org.gvsig.bxml.stream.EventType;
 
-public final class BxmlCommitReader implements ObjectReader<RevCommit> {
+final class BxmlCommitReader implements ObjectReader<RevCommit> {
 
     /**
      * @see org.geogit.storage.ObjectReader#read(org.geogit.api.ObjectId, java.io.InputStream)

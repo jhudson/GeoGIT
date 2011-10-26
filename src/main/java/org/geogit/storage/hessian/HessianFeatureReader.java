@@ -14,6 +14,7 @@ import java.util.List;
 import org.geogit.api.ObjectId;
 import org.geogit.storage.ObjectReader;
 import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.factory.Hints;
 import org.geotools.feature.simple.SimpleFeatureImpl;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -35,7 +36,7 @@ import com.vividsolutions.jts.io.WKBReader;
  * 
  * @author mleslie
  */
-public class HessianFeatureReader implements ObjectReader<Feature> {
+class HessianFeatureReader implements ObjectReader<Feature> {
 
     private static final FilterFactory2 FILTER_FAC = CommonFactoryFinder.getFilterFactory2(null);
 
@@ -45,9 +46,16 @@ public class HessianFeatureReader implements ObjectReader<Feature> {
 
     private static GeometryFactory geometryFactory = new GeometryFactory();
 
-    public HessianFeatureReader(final FeatureType featureType, final String featureId) {
+    public HessianFeatureReader(final FeatureType featureType, final String featureId,
+            final Hints hints) {
         this.featureType = featureType;
         this.featureId = featureId;
+        if (hints != null) {
+            GeometryFactory gf = (GeometryFactory) hints.get(Hints.GEOMETRY_FACTORY);
+            if (gf != null) {
+                geometryFactory = gf;
+            }
+        }
     }
 
     public Feature read(ObjectId id, InputStream rawData) throws IOException,
@@ -147,6 +155,7 @@ public class HessianFeatureReader implements ObjectReader<Feature> {
             } catch (ParseException ex) {
                 throw (IOException) new IOException(ex.getMessage()).initCause(ex);
             }
+            in.readBytes(new byte[1], 0, 1);
             return geom;
         case NULL:
             in.readNull();

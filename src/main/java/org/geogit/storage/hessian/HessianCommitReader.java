@@ -16,7 +16,7 @@ import org.geogit.storage.ObjectReader;
 
 import com.caucho.hessian.io.Hessian2Input;
 
-public class HessianCommitReader extends HessianRevReader implements ObjectReader<RevCommit> {
+class HessianCommitReader extends HessianRevReader implements ObjectReader<RevCommit> {
 
     @Override
     public RevCommit read(ObjectId id, InputStream rawData) throws IOException,
