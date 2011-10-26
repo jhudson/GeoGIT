@@ -17,10 +17,9 @@ import org.geogit.api.RevTree;
 import org.geogit.repository.remote.payload.IPayload;
 import org.geogit.repository.remote.payload.Payload;
 import org.geogit.storage.BlobReader;
-import org.geogit.storage.hessian.HessianCommitReader;
-import org.geogit.storage.hessian.HessianCommitWriter;
-import org.geogit.storage.hessian.HessianRevTreeReader;
-import org.geogit.storage.hessian.HessianRevTreeWriter;
+import org.geogit.storage.ObjectReader;
+import org.geogit.storage.ObjectWriter;
+import org.geogit.storage.hessian.HessianFactory;
 
 /**
  * <p>
@@ -76,11 +75,14 @@ public class NetworkIO {
      * @param out
      */
     public static void sendPayload(final IPayload payload, final OutputStream output) throws Exception {
+        
+        HessianFactory factory = new HessianFactory();
+        
         int commits = 0;
         for( RevCommit commit : payload.getCommitUpdates() ) {
             output.write("C".getBytes());
             output.write(commit.getId().getRawValue());            
-            HessianCommitWriter cw = new HessianCommitWriter(commit);
+            ObjectWriter<RevCommit> cw = factory.createCommitWriter(commit);
             ByteArrayOutputStream bufferedCount = new ByteArrayOutputStream();
             cw.write(bufferedCount);
             output.write(Arrays.copyOf((String.valueOf(bufferedCount.size())).getBytes(), 10));
@@ -93,8 +95,8 @@ public class NetworkIO {
         int trees = 0;
         for( RevTree tree : payload.getTreeUpdates() ) {
             output.write("T".getBytes());
-            output.write(tree.getId().getRawValue());            
-            HessianRevTreeWriter tw = new HessianRevTreeWriter(tree);
+            output.write(tree.getId().getRawValue());         
+            ObjectWriter<RevTree> tw = factory.createRevTreeWriter(tree);
             ByteArrayOutputStream bufferedCount = new ByteArrayOutputStream();
             tw.write(bufferedCount);
             output.write(Arrays.copyOf((String.valueOf(bufferedCount.size())).getBytes(), 10));
@@ -201,8 +203,9 @@ public class NetworkIO {
     }
 
     private static RevTree extractTree(ObjectId objectId, byte[] buffer) throws IOException {
+        HessianFactory factory = new HessianFactory();
         ByteArrayInputStream b = new ByteArrayInputStream(buffer);
-        HessianRevTreeReader tr = new HessianRevTreeReader(null);
+        ObjectReader<RevTree> tr = factory.createRevTreeReader(null);
         RevTree tree = tr.read(objectId, b);
         return tree;
     }
@@ -215,9 +218,9 @@ public class NetworkIO {
     }
 
     private static RevCommit extractCommit(ObjectId objectId, byte[] buffer) throws IOException {
+        HessianFactory factory = new HessianFactory();
         ByteArrayInputStream b = new ByteArrayInputStream(buffer);
-
-        HessianCommitReader cr = new HessianCommitReader();
+        ObjectReader<RevCommit> cr = factory.createCommitReader();
         RevCommit commit = cr.read(objectId, b);
         return commit;
     }
