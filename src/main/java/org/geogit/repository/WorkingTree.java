@@ -35,7 +35,6 @@ import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.identity.FeatureId;
-import org.opengis.filter.identity.ResourceId;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.util.ProgressListener;
 
@@ -80,8 +79,8 @@ public class WorkingTree {
     private static class RefToResourceId implements Function<Ref, FeatureId> {
 
         @Override
-        public ResourceId apply(Ref input) {
-            return filterFactory.resourceId(input.getName(), input.getObjectId().toString());
+        public FeatureId apply(Ref input) {
+            return filterFactory.featureId(input.getName(), input.getObjectId().toString());
         }
 
     }
