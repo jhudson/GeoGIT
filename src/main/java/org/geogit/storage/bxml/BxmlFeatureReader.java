@@ -121,7 +121,7 @@ class BxmlFeatureReader implements ObjectReader<Feature> {
         }
 
         // SimpleFeature feature = builder.buildFeature(featureId);
-        FeatureId resourceId = FILTER_FAC.resourceId(featureId, id.toString());
+        FeatureId resourceId = FILTER_FAC.featureId(featureId, id.toString());
         SimpleFeature feature = new SimpleFeatureImpl(values, (SimpleFeatureType) featureType,
                 resourceId);
 
