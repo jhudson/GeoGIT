@@ -13,6 +13,11 @@ import org.geogit.repository.remote.IRemote;
 import org.geogit.repository.remote.RemoteRepositoryFactory;
 import org.geogit.repository.remote.payload.IPayload;
 
+<<<<<<< HEAD
+=======
+import com.google.common.base.Preconditions;
+
+>>>>>>> upstream/master
 /**
  * Download objects and refs from another repository, currently only works for fast forwards from
  * HEAD of remote http://git-scm.com/gitserver.txt
@@ -42,7 +47,14 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
         for( RemoteConfigObject remote : remotes.values() ) {
             if (remote != null) {
             	IRemote remoteRepo = RemoteRepositoryFactory.createRemoteRepositroy(remote.getUrl());
+<<<<<<< HEAD
             	IPayload payload = remoteRepo.requestFetchPayload(RefIO.getRemoteList(getRepository().getRepositoryHome(),remote.getName()));
+=======
+            	Preconditions.checkNotNull(remoteRepo);
+
+            	IPayload payload = remoteRepo.requestFetchPayload(RefIO.getRemoteList(getRepository().getRepositoryHome(),remote.getName()));
+
+>>>>>>> upstream/master
             	PayloadUtil payloadUtil = new PayloadUtil(getRepository());
                 payloadUtil.applyPayloadTo(remote.getName(), payload);
                 // clean up
