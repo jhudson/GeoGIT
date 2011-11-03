@@ -44,6 +44,14 @@ public class RefDatabase {
         final String master = Ref.MASTER;
         condCreate(master, TYPE.COMMIT);
     }
+    
+    /**
+     * Add a new tracked remote to the reference database
+     * @param refName the name of the remote to track, no need to add the prefix, "remotes/".
+     */
+    public void addRef(final Ref ref){
+        condCreate(ref.getName(), TYPE.REMOTE);
+    }
 
     private void condCreate(final String refName, TYPE type) {
         RevTree refsTree = getRefsTree();
@@ -58,10 +66,12 @@ public class RefDatabase {
         RevTree refsTree;
         try {
             if (db.exists(REFS_TREE_ID)) {
-                refsTree = db.get(REFS_TREE_ID, new RevTreeReader(db));
+                refsTree = db.get(REFS_TREE_ID, WrappedSerialisingFactory.getInstance().createRevTreeReader(db));
+//                refsTree = db.get(REFS_TREE_ID, new BxmlRevTreeReader(db));
             } else {
                 refsTree = new RevSHA1Tree(db);
-                db.put(REFS_TREE_ID, new RevTreeWriter(refsTree));
+                db.put(REFS_TREE_ID, WrappedSerialisingFactory.getInstance().createRevTreeWriter(refsTree));
+//                db.put(REFS_TREE_ID, new BxmlRevTreeWriter(refsTree));
             }
         } catch (RuntimeException e) {
             throw e;
@@ -80,9 +90,6 @@ public class RefDatabase {
         Preconditions.checkNotNull(name, "Ref name can't be null");
         RevTree refsTree = getRefsTree();
         Ref child = refsTree.get(name);
-        if (child == null) {
-            return null;
-        }
         return child;
     }
 
@@ -128,7 +135,8 @@ public class RefDatabase {
         refsTree = refsTree.mutable();
         ((MutableTree) refsTree).put(ref);
         try {
-            db.put(REFS_TREE_ID, new RevTreeWriter(refsTree));
+            db.put(REFS_TREE_ID, WrappedSerialisingFactory.getInstance().createRevTreeWriter(refsTree));
+//            db.put(REFS_TREE_ID, new BxmlRevTreeWriter(refsTree));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

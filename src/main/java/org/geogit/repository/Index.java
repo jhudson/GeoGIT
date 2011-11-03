@@ -22,8 +22,8 @@ import org.geogit.api.TreeVisitor;
 import org.geogit.storage.ObjectDatabase;
 import org.geogit.storage.ObjectWriter;
 import org.geogit.storage.RawObjectWriter;
-import org.geogit.storage.RevTreeWriter;
 import org.geogit.storage.StagingDatabase;
+import org.geogit.storage.WrappedSerialisingFactory;
 import org.geotools.util.NullProgressListener;
 import org.opengis.geometry.BoundingBox;
 import org.opengis.util.ProgressListener;
@@ -104,7 +104,9 @@ public class Index implements StagingArea {
 
         final String nodeId = newTreePath.get(newTreePath.size() - 1);
         MutableTree emptyTree = indexDatabase.getObjectDatabase().newTree();
-        ObjectId emptyTreeId = indexDatabase.getObjectDatabase().put(new RevTreeWriter(emptyTree));
+        ObjectWriter<RevTree> treeWriter;
+        treeWriter = WrappedSerialisingFactory.getInstance().createRevTreeWriter(emptyTree);
+        ObjectId emptyTreeId = indexDatabase.getObjectDatabase().put(treeWriter);
         Ref newTreeRef = new Ref(nodeId, emptyTreeId, TYPE.TREE);
 
         DiffEntry entry = DiffEntry.newInstance(null, newTreeRef, newTreePath);

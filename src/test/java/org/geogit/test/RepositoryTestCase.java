@@ -21,9 +21,9 @@ import org.geogit.api.RevCommit;
 import org.geogit.repository.Repository;
 import org.geogit.repository.StagingArea;
 import org.geogit.repository.Triplet;
-import org.geogit.storage.FeatureWriter;
 import org.geogit.storage.ObjectWriter;
 import org.geogit.storage.RepositoryDatabase;
+import org.geogit.storage.WrappedSerialisingFactory;
 import org.geogit.storage.bdbje.EntityStoreConfig;
 import org.geogit.storage.bdbje.EnvironmentBuilder;
 import org.geogit.storage.bdbje.JERepositoryDatabase;
@@ -130,7 +130,7 @@ public abstract class RepositoryTestCase extends TestCase {
 
         // repositoryDatabase = new FileSystemRepositoryDatabase(envHome);
 
-        repo = new Repository(repositoryDatabase);
+        repo = new Repository(repositoryDatabase, envHome);
 
         repo.create();
 
@@ -143,11 +143,11 @@ public abstract class RepositoryTestCase extends TestCase {
         linesType = DataUtilities.createType(linesNs, linesName, linesTypeSpec);
 
         lines1 = feature(linesType, idL1, "StringProp2_1", new Integer(1000),
-                "LINESTRING(1 1, 2 2)");
+                "LINESTRING (1 1, 2 2)");
         lines2 = feature(linesType, idL2, "StringProp2_2", new Integer(2000),
-                "LINESTRING(3 3, 4 4)");
+                "LINESTRING (3 3, 4 4)");
         lines3 = feature(linesType, idL3, "StringProp2_3", new Integer(3000),
-                "LINESTRING(5 5, 6 6)");
+                "LINESTRING (5 5, 6 6)");
 
         setUpInternal();
     }
@@ -240,7 +240,8 @@ public abstract class RepositoryTestCase extends TestCase {
         String localPart = name.getLocalPart();
         String id = f.getIdentifier().getID();
 
-        Ref ref = index.inserted(new FeatureWriter(f), f.getBounds(), namespaceURI, localPart, id);
+        Ref ref = index.inserted(
+        		WrappedSerialisingFactory.getInstance().createFeatureWriter(f), f.getBounds(), namespaceURI, localPart, id);
         ObjectId objectId = ref.getObjectId();
         return objectId;
     }
@@ -265,7 +266,7 @@ public abstract class RepositoryTestCase extends TestCase {
                 String id = f.getIdentifier().getID();
 
                 Triplet<ObjectWriter<?>, BoundingBox, List<String>> tuple;
-                ObjectWriter<?> writer = new FeatureWriter(f);
+                ObjectWriter<?> writer = WrappedSerialisingFactory.getInstance().createFeatureWriter(f);
                 BoundingBox bounds = f.getBounds();
                 List<String> path = Arrays.asList(namespaceURI, localPart, id);
                 tuple = new Triplet<ObjectWriter<?>, BoundingBox, List<String>>(writer, bounds,

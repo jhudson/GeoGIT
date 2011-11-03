@@ -66,7 +66,7 @@ public class RevSHA1Tree extends AbstractRevObject implements RevTree {
                 BigInteger.ZERO);
     }
 
-    RevSHA1Tree(final ObjectId id, final ObjectDatabase db, final int order,
+    public RevSHA1Tree(final ObjectId id, final ObjectDatabase db, final int order,
             TreeMap<String, Ref> references, TreeMap<Integer, Ref> subTrees, final BigInteger size) {
         super(id, TYPE.TREE);
         this.db = db;
@@ -109,7 +109,8 @@ public class RevSHA1Tree extends AbstractRevObject implements RevTree {
                     subtreeId = subtreeRef.getObjectId();
                     if (visitor.visitSubTree(bucket, subtreeId)) {
                         subtree = (RevSHA1Tree) db
-                                .get(subtreeId, new RevTreeReader(db, childDepth));
+                                .get(subtreeId, 
+                                WrappedSerialisingFactory.getInstance().createRevTreeReader(db, childDepth));
                         subtree.accept(visitor, myEntries);
                     }
                 }
@@ -175,7 +176,8 @@ public class RevSHA1Tree extends AbstractRevObject implements RevTree {
                 RevTree subTree;
                 try {
                     ObjectId subtreeId = subTreeRef.getObjectId();
-                    subTree = db.getCached(subtreeId, new RevTreeReader(db, this.depth + 1));
+                    subTree = db.getCached(subtreeId, 
+                    		WrappedSerialisingFactory.getInstance().createRevTreeReader(db, this.depth + 1));
                 } catch (IOException ioe) {
                     throw new RuntimeException(ioe);
                 }
@@ -279,7 +281,8 @@ public class RevSHA1Tree extends AbstractRevObject implements RevTree {
             if (subject == null) {
                 RevTree subtree;
                 try {
-                    subtree = db.get(objectId, new RevTreeReader(db, depth));
+                    subtree = db.get(objectId, 
+                    		WrappedSerialisingFactory.getInstance().createRevTreeReader(db, depth));
                     subject = subtree.iterator(filter);
                 } catch (IOException e) {
                     Throwables.propagate(e);

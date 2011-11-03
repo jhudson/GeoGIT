@@ -2,11 +2,11 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-package org.geogit.storage;
+package org.geogit.storage.bxml;
 
-import static org.geogit.storage.BLOBS.BUCKET;
-import static org.geogit.storage.BLOBS.REF;
-import static org.geogit.storage.BLOBS.TREE;
+import static org.geogit.storage.bxml.BLOBS.BUCKET;
+import static org.geogit.storage.bxml.BLOBS.REF;
+import static org.geogit.storage.bxml.BLOBS.TREE;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,26 +17,29 @@ import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.api.RevTree;
+import org.geogit.storage.ObjectDatabase;
+import org.geogit.storage.ObjectReader;
+import org.geogit.storage.RevSHA1Tree;
 import org.gvsig.bxml.stream.BxmlInputFactory;
 import org.gvsig.bxml.stream.BxmlStreamReader;
 import org.gvsig.bxml.stream.EventType;
 
-public class RevTreeReader implements ObjectReader<RevTree> {
+class BxmlRevTreeReader implements ObjectReader<RevTree> {
 
     private ObjectDatabase objectDb;
 
     private int order;
 
-    private final RefReader refReader;
+    private final BxmlRefReader refReader;
 
-    public RevTreeReader(ObjectDatabase objectDb) {
+    public BxmlRevTreeReader(ObjectDatabase objectDb) {
         this(objectDb, 0);
     }
 
-    public RevTreeReader(ObjectDatabase objectDb, int order) {
+    public BxmlRevTreeReader(ObjectDatabase objectDb, int order) {
         this.objectDb = objectDb;
         this.order = order;
-        this.refReader = new RefReader();
+        this.refReader = new BxmlRefReader();
     }
 
     /**

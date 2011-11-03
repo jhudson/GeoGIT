@@ -29,13 +29,17 @@ public class Ref {
     public static final String HEAD = "HEAD";
 
     public static final String REFS_PREFIX = "refs/";
+    
+    public static final String REMOTES_PREFIX = "remotes/";
 
     public static final String TAGS_PREFIX = REFS_PREFIX + "tags/";
 
     public static final String HEADS_PREFIX = REFS_PREFIX + "heads/";
 
-    private String name;
+    public static final String ORIGIN = "origin/";
 
+    private String name;
+    
     private RevObject.TYPE type;
 
     private ObjectId objectId;
@@ -55,7 +59,7 @@ public class Ref {
     public String getName() {
         return name;
     }
-
+    
     /**
      * @see org.geogit.api.Ref#getObjectId()
      */
@@ -94,7 +98,7 @@ public class Ref {
     public int compareTo(Ref o) {
         return name.compareTo(o.getName());
     }
-
+    
     @Override
     public String toString() {
         return new StringBuilder("Ref").append('[').append(name).append(" -> ").append(objectId)

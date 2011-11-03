@@ -184,5 +184,14 @@ public class ObjectId implements Comparable<ObjectId> {
             throw new RuntimeException(e);
         }
     }
+    
+    /**
+     * Prints the object ID just like the git command "0000000..0000000"
+     * @return
+     */
+    public String printSmallId(){
+        String out = toString();
+        return out.substring(0, 7)+".."+out.substring(out.length()-7, out.length());
+    }
 
 }

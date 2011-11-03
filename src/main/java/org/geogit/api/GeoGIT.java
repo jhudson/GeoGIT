@@ -6,6 +6,8 @@ package org.geogit.api;
 
 import java.util.List;
 
+import org.geogit.api.config.Config;
+import org.geogit.api.config.RemoteConfigObject;
 import org.geogit.repository.Repository;
 import org.geotools.feature.FeatureCollection;
 import org.opengis.feature.type.Name;
@@ -27,14 +29,20 @@ import com.google.common.base.Preconditions;
 public class GeoGIT {
 
     private final Repository repository;
+    
+    /**
+     * The configuration object stores the git projects configuration
+     */
+    private Config config;
 
     public static final CommitStateResolver DEFAULT_COMMIT_RESOLVER = new PlatformResolver();
 
     private static CommitStateResolver commitStateResolver = DEFAULT_COMMIT_RESOLVER;
-
+    
     public GeoGIT(final Repository repository) {
         Preconditions.checkNotNull(repository, "repository can't be null");
         this.repository = repository;
+        this.config = new Config(getRepository());
     }
 
     public static CommitStateResolver getCommitStateResolver() {
@@ -49,8 +57,9 @@ public class GeoGIT {
         return repository;
     }
 
-    // public static CloneOp clone(){
-    // }
+    public static CloneOp clone(final String url) {
+        return null;//new CloneOp(url);
+    }
     /**
      * Clone a FeatureType into a new working tree for the {@code user}'s repository.
      * <p>
@@ -141,9 +150,10 @@ public class GeoGIT {
 
     /**
      * Download objects and refs from another repository
+     * @return new FetchOp
      */
-    public void fetch() {
-
+    public FetchOp fetch() {
+        return new FetchOp(repository, config.getRemotes());
     }
 
     /**
@@ -170,22 +180,26 @@ public class GeoGIT {
     /**
      * Fetch from and merge with another repository or a local branch
      */
-    public void pull() {
-
+    public PullOp pull() {
+        return new PullOp(repository);
     }
 
     /**
      * Update remote refs along with associated objects
      */
-    public void push() {
-
+    public PushOp push() {
+        RemoteConfigObject origin = config.getRemote("origin");
+        if (origin != null) {
+            return new PushOp(repository, origin.getUrl());
+        }
+        return new PushOp(repository, "");
     }
 
     /**
      * Forward-port local commits to the updated upstream head
      */
-    public void rebase() {
-
+    public RebaseOp rebase() {
+        return new RebaseOp(repository);
     }
 
     /**
@@ -218,4 +232,23 @@ public class GeoGIT {
 
     }
 
+    /**
+     * Return this GeoGit repositories config object, 
+     * stores 
+     *  CORE (TODO)
+     *  REMOTES
+     *  BRANCHS (TODO)
+     * @return
+     */
+    public Config getConfig() {
+       return this.config;
+    }
+
+    /**
+     * Implementation of a "git remote add" command to add remotes to the configuraiton, which get updated after a fetch
+     * @return
+     */
+    public RemoteAddOp remoteAddOp(){
+        return new RemoteAddOp(getRepository(), this.config);
+    }
 }
