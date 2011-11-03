@@ -21,7 +21,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.identity.ResourceId;
+import org.opengis.filter.identity.FeatureId;
 
 import com.caucho.hessian.io.Hessian2Input;
 import com.vividsolutions.jts.geom.Geometry;
@@ -74,7 +74,7 @@ class HessianFeatureReader implements ObjectReader<Feature> {
             values.add(obj);
         }
         in.completeMessage();
-        ResourceId fid = FILTER_FAC.resourceId(featureId, id.toString());
+        FeatureId fid = FILTER_FAC.featureId(featureId, id.toString());
         SimpleFeature feat = new SimpleFeatureImpl(values, (SimpleFeatureType) featureType, fid);
         return feat;
     }
