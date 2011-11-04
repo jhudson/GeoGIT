@@ -296,14 +296,12 @@
   </dependencies>
 
   <distributionManagement>
-    <!-- repository> <id>opengeo</id> <name>OpenGeo Maven Repository</name> <url>dav:http://repo.opengeo.org</url> <uniqueVersion>false</uniqueVersion> 
-      </repository -->
-    <snapshotRepository>
-      <id>adelaide-nexus</id>
-      <name>adelaide-nexus</name>
-      <url>dav:http://hyde:8081/nexus/content/repositories/snapshots</url>
+    <repository>
+      <id>opengeo</id>
+      <name>OpenGeo Maven Repository</name>
+      <url>dav:http://repo.opengeo.org</url>
       <uniqueVersion>false</uniqueVersion>
-    </snapshotRepository>
+    </repository>
   </distributionManagement>
 
   <build>
