@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.geogit.api.ObjectId;
 import org.geogit.storage.ObjectReader;
@@ -138,6 +139,10 @@ class HessianFeatureReader implements ObjectReader<Feature> {
         case BIGINT:
             byte[] biBytes = in.readBytes();
             return new BigInteger(biBytes);
+        case UUID:
+            long most = in.readLong();
+            long least = in.readLong();
+            return new UUID(most, least);
         case GEOMETRY:
             String srs = in.readString();
             if (geometryFactory == null)

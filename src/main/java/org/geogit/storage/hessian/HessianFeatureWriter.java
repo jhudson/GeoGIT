@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.UUID;
 
 import org.geogit.storage.ObjectWriter;
 import org.geotools.referencing.CRS;
@@ -140,6 +141,13 @@ class HessianFeatureWriter implements ObjectWriter<Feature> {
         case BIGINT:
             byte[] bigBytes = ((BigInteger) value).toByteArray();
             out.writeBytes(bigBytes);
+            break;
+        case UUID:
+            UUID uuid = (UUID)value;
+            long most = uuid.getMostSignificantBits();
+            long least = uuid.getLeastSignificantBits();
+            out.writeLong(most);
+            out.writeLong(least);
             break;
         case GEOMETRY:
             Geometry geom = (Geometry) value;

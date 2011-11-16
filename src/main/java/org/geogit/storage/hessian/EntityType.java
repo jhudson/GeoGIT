@@ -23,7 +23,7 @@ import com.vividsolutions.jts.geom.Geometry;
 enum EntityType implements Serializable {
     STRING(0), BOOLEAN(1), BYTE(2), DOUBLE(3), BIGDECIMAL(4), FLOAT(5), INT(6), BIGINT(7), LONG(8), BOOLEAN_ARRAY(
             11), BYTE_ARRAY(12), CHAR_ARRAY(13), DOUBLE_ARRAY(14), FLOAT_ARRAY(15), INT_ARRAY(16), LONG_ARRAY(
-            17), GEOMETRY(9), NULL(10), UNKNOWN_SERIALISABLE(18), UNKNOWN(19);
+            17), GEOMETRY(9), NULL(10), UNKNOWN_SERIALISABLE(18), UNKNOWN(19), UUID(20);
 
     public static EntityType determineType(Object value) {
         if (value == null)
@@ -60,6 +60,8 @@ enum EntityType implements Serializable {
             return INT_ARRAY;
         if (value instanceof long[])
             return LONG_ARRAY;
+        if (value instanceof java.util.UUID)
+            return UUID;
         if (value instanceof Geometry)
             return GEOMETRY;
         if (value instanceof Serializable)
