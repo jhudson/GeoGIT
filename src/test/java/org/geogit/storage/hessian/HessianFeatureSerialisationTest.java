@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.UUID;
 
 import junit.framework.TestCase;
 
@@ -26,7 +27,8 @@ public class HessianFeatureSerialisationTest extends TestCase {
 
     private String typeSpec1 = "str:String," + "bool:Boolean," + "byte:java.lang.Byte,"
             + "doub:Double," + "bdec:java.math.BigDecimal," + "flt:Float," + "int:Integer,"
-            + "bint:java.math.BigInteger," + "pp:Point:srid=4326," + "lng:java.lang.Long";
+            + "bint:java.math.BigInteger," + "pp:Point:srid=4326," + "lng:java.lang.Long,"
+            + "uuid:java.util.UUID";
 
     private SimpleFeatureType featureType1;
 
@@ -40,7 +42,7 @@ public class HessianFeatureSerialisationTest extends TestCase {
         feature1_1 = feature(featureType1, "TestType.feature.1", "StringProp1_1", Boolean.TRUE,
                 Byte.valueOf("18"), new Double(100.01), new BigDecimal("1.89e1021"),
                 new Float(12.5), new Integer(1000), new BigInteger("90000000"), "POINT(1 1)",
-                new Long(800000));
+                new Long(800000), UUID.fromString("bd882d24-0fe9-11e1-a736-03b3c0d0d06d"));
     };
 
     public void testSerialise() throws Exception {
