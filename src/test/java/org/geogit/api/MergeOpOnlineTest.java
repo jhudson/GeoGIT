@@ -1,8 +1,9 @@
-package org.geogit.api;
 /* Copyright (c) 2011 TOPP - www.openplans.org. All rights reserved.
- * This code is licensed under the LGPL 2.0 license, available at the root
+ * This code is licensed under the LGPL 2.1 license, available at the root
  * application directory.
  */
+package org.geogit.api;
+
 import org.geogit.test.MultipleRepositoryTestCase;
 import org.opengis.feature.Feature;
 
