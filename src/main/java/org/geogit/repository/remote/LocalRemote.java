@@ -216,7 +216,7 @@ public class LocalRemote extends AbstractRemote {
 
     @Override
     public void dispose() {
-        repository.close();
+    	if (repository!= null) repository.close();
     }
 
     private class CommitTreeVisitor implements TreeVisitor {

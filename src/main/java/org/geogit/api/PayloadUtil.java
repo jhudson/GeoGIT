@@ -37,14 +37,17 @@ public class PayloadUtil {
 
     public void applyPayloadTo(String branchName, IPayload payload) throws Exception {
         
-        LOGGER.info("====APPLYING PAYLOAD TO "+branchName+"====");
-
         int commits = 0;
         int deltas = 0;
 
         WrappedSerialisingFactory fact = WrappedSerialisingFactory.getInstance();
         ObjectInserter objectInserter = getRepository().newObjectInserter();
 
+        if (payload == null) {
+        	//nothing to do
+        	return;
+        }
+        
         /**
          * Update the local repos commits
          */
