@@ -68,6 +68,8 @@
 
   <properties>
     <gt.version>8-SNAPSHOT</gt.version>
+    <guava.version>11.0.1</guava.version>
+    <bdbje.version>4.1.10</bdbje.version>
     <test.maxHeapSize>256M</test.maxHeapSize>
     <maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
     <build.timestamp>${maven.build.timestamp}</build.timestamp>
@@ -112,7 +114,7 @@
         <!-- Google Common Libraries. Featuring com.google.collect collection classes -->
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
-        <version>r09</version>
+        <version>${guava.version}</version>
       </dependency>
 
       <dependency>
@@ -125,7 +127,7 @@
       <dependency>
         <groupId>com.sleepycat</groupId>
         <artifactId>je</artifactId>
-        <version>4.1.7</version>
+        <version>${bdbje.version}</version>
       </dependency>
 
       <!-- dependency> <groupId>com.amazonaws</groupId> <artifactId>aws-java-sdk</artifactId> <version>1.0.002</version> 
