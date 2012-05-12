@@ -286,6 +286,16 @@
         <directory>src/test/resources</directory>
       </testResource>
     </testResources>
+
+    <!-- http://www.ibiblio.org/maven2/org/apache/maven/wagon/ -->
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
