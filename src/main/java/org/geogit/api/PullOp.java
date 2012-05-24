@@ -4,6 +4,7 @@
  */
 package org.geogit.api;
 
+import org.geogit.api.merge.MergeResult;
 import org.geogit.repository.Repository;
 
 /**

@@ -2,10 +2,12 @@
  * This code is licensed under the LGPL 2.1 license, available at the root
  * application directory.
  */
-package org.geogit.api;
+package org.geogit.api.merge;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.geogit.api.DiffEntry;
 
 /**
  * A list of object ID's which are the content ID's of features which have been changed in this merge
@@ -15,19 +17,18 @@ import java.util.List;
  */
 public class MergeResult {
 
-    List<ObjectId> merged;
+    private List<DiffEntry> diffs;
 
     public MergeResult() {
         super();
-
-        merged = new ArrayList<ObjectId>();
+        diffs = new ArrayList<DiffEntry>();
     }
 
-    public List<ObjectId> getMerged() {
-        return merged;
+    public List<DiffEntry> getDiffs() {
+        return diffs;
     }
 
-    public void addMerged(ObjectId merged) {
-        this.merged.add(merged);
+    public void addDiff(DiffEntry entry) {
+        this.diffs.add(entry);
     }
 }
