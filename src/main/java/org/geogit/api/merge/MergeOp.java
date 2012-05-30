@@ -26,7 +26,7 @@ public class MergeOp extends AbstractGeoGitOp<MergeResult> {
     public MergeOp(Repository repository) {
         super(repository);
         this.comment = "";
-        this.mergeStrategy = (IMergeOp) ConfigurationContext.getInstance().getBean("mergeOp", new Object[]{repository});
+        this.mergeStrategy = (IMergeOp) ConfigurationContext.getInstance().getBean("mergeOp");
     }
 
     /**
