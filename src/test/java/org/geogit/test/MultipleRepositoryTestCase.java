@@ -6,6 +6,8 @@ package org.geogit.test;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -34,6 +36,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 
+import com.google.common.collect.Iterators;
 import com.sleepycat.je.Environment;
 import com.vividsolutions.jts.io.ParseException;
 
@@ -50,6 +53,8 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
     protected static final String idP2 = "Points.2";
 
     protected static final String idP3 = "Points.3";
+    
+    protected static final String idP4 = "Points.4";
 
     protected static final String pointsNs = "http://geogit.points";
 
@@ -66,6 +71,11 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
     protected Feature points2;
 
     protected Feature points3;
+    
+    protected Feature points_conflicting1_1;
+    protected Feature points_conflicting2_2;
+    protected Feature points_conflicting3_3;
+    protected Feature points_conflicting4_4;
     
     protected Feature points3_modify;
 
@@ -96,7 +106,7 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
     
     protected int numberOfRepos;
     
-    protected static final String GEOGIT_URL = "http://localhost:8081/geoserver/geogit";
+    protected static final String GEOGIT_URL = "http://localhost:8080/geoserver/geogit";
     
     public MultipleRepositoryTestCase( int numberOfRepos ) {
         super();
@@ -125,6 +135,10 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
             points2 = feature(pointsType, idP2, "StringProp1_2", new Integer(2000), "POINT(2 2)");
             points3 = feature(pointsType, idP3, "StringProp1_3", new Integer(3000), "POINT(3 3)");
             points3_modify = feature(pointsType, idP3, "StringProp1_3", new Integer(3000), "POINT(3 5)");
+            points_conflicting1_1 = feature(pointsType, idP4, "StringProp1_3", new Integer(1000), "POINT(1 1)");
+            points_conflicting2_2 = feature(pointsType, idP4, "StringProp1_3", new Integer(2000), "POINT(2 2)");
+            points_conflicting3_3 = feature(pointsType, idP4, "StringProp1_3", new Integer(3000), "POINT(3 3)");
+            points_conflicting4_4 = feature(pointsType, idP4, "StringProp1_3", new Integer(4000), "POINT(4 4)");
 
             linesType = DataUtilities.createType(linesNs, linesName, linesTypeSpec);
     
@@ -241,5 +255,11 @@ public abstract class MultipleRepositoryTestCase extends TestCase {
         for (RevCommit commit : commits) {
             assertTrue(parentIds.contains(commit.getId()));
         }
+    }
+    
+    protected <E> List<E> toList(Iterator<E> logs) {
+        List<E> logged = new ArrayList<E>();
+        Iterators.addAll(logged, logs);
+        return logged;
     }
 }

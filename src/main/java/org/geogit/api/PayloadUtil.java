@@ -55,7 +55,7 @@ public class PayloadUtil {
             commits++;
             ObjectId commitId = objectInserter.insert(fact.createCommitWriter(commit));
             getRepository().getRefDatabase().put(new Ref(branchName, commitId, TYPE.COMMIT));
-            LOGGER.info("Adding commit: " + commit.toString());
+            LOGGER.info("Adding commit: " + commit.toString() + " to " + branchName);
         }
 
         /**

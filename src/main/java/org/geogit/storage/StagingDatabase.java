@@ -273,7 +273,7 @@ public class StagingDatabase implements ObjectDatabase {
                 try {
                     crs = CRS.decode(srs);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                     crs = null;
                 }
 

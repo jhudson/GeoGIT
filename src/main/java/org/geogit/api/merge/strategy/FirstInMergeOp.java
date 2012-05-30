@@ -1,51 +1,47 @@
-/* Copyright (c) 2011 TOPP - www.openplans.org. All rights reserved.
+/* Copyright (c) 2012 TOPP - www.openplans.org. All rights reserved.
  * This code is licensed under the LGPL 2.1 license, available at the root
  * application directory.
  */
-package org.geogit.api;
+package org.geogit.api.merge.strategy;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import org.geogit.api.DiffEntry;
 import org.geogit.api.DiffEntry.ChangeType;
+import org.geogit.api.DiffOp;
+import org.geogit.api.LogOp;
+import org.geogit.api.ObjectId;
+import org.geogit.api.RebaseOp;
+import org.geogit.api.Ref;
+import org.geogit.api.RevCommit;
 import org.geogit.api.RevObject.TYPE;
-import org.geogit.api.config.RefIO;
+import org.geogit.api.merge.AbstractMergeOp;
+import org.geogit.api.merge.MergeResult;
 import org.geogit.repository.CommitBuilder;
-import org.geogit.repository.Repository;
 import org.geogit.storage.ObjectInserter;
 import org.geogit.storage.WrappedSerialisingFactory;
 
 import com.google.common.collect.Iterators;
 
 /**
+ * <p>
  * Very simple merge; to push the HEAD up to the current remotes head.
- * 
+ * </p>
+ * <p>
  * This will rebase if there are no new commits on this repo. Otherwise
  * it will create a new commit head and set the parents the old head and
  * the branch head.
+ * </p>
  * 
  * @author jhudson
  * @since 1.2.0
  */
-public class MergeOp extends AbstractGeoGitOp<MergeResult> {
+public class FirstInMergeOp extends AbstractMergeOp {
 
-    private Ref branch;
-    private String comment;
-    
-    public MergeOp(Repository repository) {
-        super(repository);
-        this.comment = "";
-    }
-
-    public MergeOp include(final Ref branch) {
-        this.branch = branch;
-        return this;
-    }
-
-    public MergeOp setComment(final String comment){
-        this.comment = comment;
-        return this;
+    public FirstInMergeOp() {
+        super();
     }
 
     public MergeResult call() throws Exception {
@@ -123,7 +119,7 @@ public class MergeOp extends AbstractGeoGitOp<MergeResult> {
             while (diffs.hasNext()) {
                 DiffEntry diff = diffs.next();
                 if (diff.getType()==ChangeType.MODIFY){
-                    mergeResult.addMerged(diff.getNewObjectId());
+                    mergeResult.addDiff(diff);
                 }
             }
 

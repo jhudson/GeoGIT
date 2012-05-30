@@ -4,6 +4,7 @@
  */
 package org.geogit.api;
 
+import org.geogit.api.merge.MergeResult;
 import org.geogit.test.MultipleRepositoryTestCase;
 
 public class PullOpOnlineTest extends MultipleRepositoryTestCase {
@@ -95,6 +96,6 @@ public class PullOpOnlineTest extends MultipleRepositoryTestCase {
 
         assertEquals(clientRemoteMaster.getObjectId(), this.server.getRepository().getHead()
                 .getObjectId());
-        assertEquals(0, mergeResults.getMerged().size());
+        assertEquals(0, mergeResults.getDiffs().size());
     }
 }

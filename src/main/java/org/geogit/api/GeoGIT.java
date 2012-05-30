@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.geogit.api.config.Config;
 import org.geogit.api.config.RemoteConfigObject;
+import org.geogit.api.merge.MergeOp;
 import org.geogit.repository.Repository;
 import org.geotools.feature.FeatureCollection;
 import org.opengis.feature.type.Name;
@@ -174,7 +175,7 @@ public class GeoGIT {
      * Join two or more development histories together
      */
     public MergeOp merge() {
-        return new MergeOp(repository);
+    	return new MergeOp(repository);
     }
 
     /**
