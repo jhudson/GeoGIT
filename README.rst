@@ -1,6 +1,6 @@
-######
-GeoGit
-######
+######################################################
+GeoGit - Geospatial Distributed Version Control System
+######################################################
 
 Welcome to the GeoGit project, exploring the use of distributed management of spatial
 data.
@@ -49,5 +49,7 @@ Participation is encouraged using the github *fork* and *pull request* workflow:
 * contributions are expected to pass test and not break the build
 
 Additional resources:
+
+* `GeoGit Group`:https://groups.google.com/a/opengeo.org/group/geogit/
 * The build is `actively monitored using hudson`:http://hudson.opengeo.org/hudson/view/geogit/
 * https://github.com/opengeo/GeoGit/issues
