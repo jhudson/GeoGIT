@@ -5,16 +5,12 @@ GeoGit - Geospatial Distributed Version Control System
 Welcome to the GeoGit project, exploring the use of distributed management of spatial
 data.
 
-For background reading please review this GeoServer wiki page: `GeoGit approvah`:http://geoserver.org/display/GEOS/GeoGit+approach
+For background reading please review this GeoServer wiki page: `GeoGit approach <http://geoserver.org/display/GEOS/GeoGit+approach>`_
 
 Details
 =======
 
-*Project Lead*
-
-`Gabriel Roldan`:https://github.com/groldan
-
-*Header*
+Project Lead: `Gabriel Roldan <https://github.com/groldan>`_
 
 Source files use the following header::
    
@@ -23,9 +19,10 @@ Source files use the following header::
     * application directory.
     */
  
-As indicated above the code is distributed under an `LGPL 2.1`:LICENSE.txt license.
+As indicated above the code is distributed under an `LGPL 2.1 <LICENSE.txt>`_ license.
 
-*Build*
+Build
+-----
 
 GeoGit is built using Maven::
   
@@ -50,6 +47,6 @@ Participation is encouraged using the github *fork* and *pull request* workflow:
 
 Additional resources:
 
-* `GeoGit Group`:https://groups.google.com/a/opengeo.org/group/geogit/
-* The build is `actively monitored using hudson`:http://hudson.opengeo.org/hudson/view/geogit/
+* `GeoGit Group <https://groups.google.com/a/opengeo.org/group/geogit/>`_
+* The build is `actively monitored using hudson <http://hudson.opengeo.org/hudson/view/geogit/>`_
 * https://github.com/opengeo/GeoGit/issues
