@@ -28,7 +28,7 @@ GeoGit is built using Maven::
   
   mvn clean install
 
-Online tests avaialble using::
+Online tests, require a geogit endpoint, are available using::
 
   mvn -Ponline
 
@@ -38,6 +38,8 @@ Corertura is configufred for a test coverage report::
   open target/site/cobertura/index.html
     
 Any additional build profiles are documented in the root `pom.xml`:pom.xml .
+
+If you would like to work in Eclipse use of the `m2eclipse plugin <http://www.sonatype.org/m2eclipse>`_ recommended.
 
 Participation
 =============
