@@ -28,9 +28,18 @@ GeoGit is built using Maven::
   
   mvn clean install
 
-Additional build profiles are documented in the root `pom.xml`:pom.xml ::
-  
-  more pom.xml
+Online tests, require a geogit endpoint, are available using::
+
+  mvn -Ponline
+
+Corertura is configufred for a test coverage report::
+
+  mvn cobertura:cobertura
+  open target/site/cobertura/index.html
+    
+Any additional build profiles are documented in the root `pom.xml`:pom.xml .
+
+If you would like to work in Eclipse use of the `m2eclipse plugin <http://www.sonatype.org/m2eclipse>`_ recommended.
 
 Participation
 =============
@@ -45,8 +54,12 @@ Participation is encouraged using the github *fork* and *pull request* workflow:
 * include test case demonstrating functionality
 * contributions are expected to pass test and not break the build
 
-Additional resources:
+Project resources:
 
 * `GeoGit Group <https://groups.google.com/a/opengeo.org/group/geogit/>`_
 * The build is `actively monitored using hudson <http://hudson.opengeo.org/hudson/view/geogit/>`_
 * https://github.com/opengeo/GeoGit/issues
+
+Additional resources:
+
+* `guava-libraries <http://code.google.com/p/guava-libraries/>`_

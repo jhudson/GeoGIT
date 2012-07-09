@@ -8,7 +8,24 @@
   <version>1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>GeoGit</name>
-
+  <!--
+  
+  Build Instructions and Profiles
+  
+  Handled as a normal maven java project:
+    
+    mvn clean install
+  
+  Online tests avaialble using:
+    
+    mvn -Ponline
+  
+  Corertura is configufred for a test coverage report:
+    
+    mvn cobertura:cobertura
+    open target/site/cobertura/index.html
+  
+  -->
   <organization>
     <name>The Open Planning Project</name>
     <url>http://www.openplans.org</url>
@@ -67,7 +84,7 @@
 
 
   <properties>
-    <gt.version>8-SNAPSHOT</gt.version>
+    <gt.version>9-SNAPSHOT</gt.version>
     <guava.version>11.0.1</guava.version>
     <bdbje.version>4.1.10</bdbje.version>
     <test.maxHeapSize>256M</test.maxHeapSize>
