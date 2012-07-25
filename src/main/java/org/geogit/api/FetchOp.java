@@ -23,7 +23,7 @@ import com.google.common.base.Preconditions;
  * 
  * @author jhudson
  */
-public class FetchOp extends AbstractGeoGitOp<Void> {
+public class FetchOp extends AbstractGeoGitOp<FetchResult> {
 
     private Map<String, RemoteConfigObject> remotes;
 
@@ -33,7 +33,8 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
     }
 
     @Override
-    public Void call() throws Exception {
+    public FetchResult call() throws Exception {
+    	FetchResult result = new FetchResult();
         /**
          * For each remote_service : 
          * 		get the refs/remotes/REF_NAME/REMOTE(S)
@@ -49,12 +50,11 @@ public class FetchOp extends AbstractGeoGitOp<Void> {
             	IPayload payload = remoteRepo.requestFetchPayload(RefIO.getRemoteList(getRepository().getRepositoryHome(),remote.getName()));
 
             	PayloadUtil payloadUtil = new PayloadUtil(getRepository());
-                payloadUtil.applyPayloadTo(remote.getName(), payload);
+                result.merge(payloadUtil.applyPayloadTo(remote.getName(), payload));
                 // clean up
                 remoteRepo.dispose();
             }
         }
-
-        return null;
+        return result;
     }
 }

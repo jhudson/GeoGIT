@@ -20,7 +20,6 @@ import org.geogit.api.MutableTree;
 import org.geogit.api.ObjectId;
 import org.geogit.api.PrintTreeVisitor;
 import org.geogit.api.Ref;
-import org.geogit.api.RevBlob;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.api.RevTree;
 import org.geogit.api.TreeVisitor;

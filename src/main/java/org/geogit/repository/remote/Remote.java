@@ -10,15 +10,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-
-import org.apache.http.util.ByteArrayBuffer;
-import org.geogit.api.ObjectId;
-import org.geogit.api.Ref;
-import org.geogit.api.RevBlob;
-import org.geogit.api.RevCommit;
-import org.geogit.api.RevObject.TYPE;
-import org.geogit.api.RevTree;
-
 import org.geogit.repository.remote.payload.IPayload;
 import org.geogit.repository.remote.payload.Payload;
 

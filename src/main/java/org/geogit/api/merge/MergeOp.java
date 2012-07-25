@@ -60,9 +60,9 @@ public class MergeOp extends AbstractGeoGitOp<MergeResult> {
     	this.mergeStrategy.setComment(this.comment);
     	this.mergeStrategy.setRepository(getRepository());
 
-    	if (this.branch == null) {
-    		throw new NoBranchToMergeException("There is no branch set to merge from, exiting - nothing to merge");
-    	}
+    	//if (this.branch == null) {
+    		//throw new NoBranchToMergeException("There is no branch set to merge from, exiting - nothing to merge");
+    	//}
     	this.mergeStrategy.setBranch(this.branch);
 
         return this.mergeStrategy.call();

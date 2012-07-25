@@ -164,6 +164,15 @@ public class Repository {
     public RevObject getBlob(ObjectId objectId) {
         return getObjectDatabase().getBlob(objectId);
     }
+    
+    public boolean blobExists(final ObjectId id) {
+    	try {
+    		getObjectDatabase().getBlob(id);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+        return true;
+    }
 
     private RevObject parse(final Ref ref) {
         final ObjectDatabase objectDatabase = getObjectDatabase();
@@ -207,7 +216,7 @@ public class Repository {
         }
         return true;
     }
-
+    
     public RevCommit getCommit(final ObjectId commitId) {
         Preconditions.checkNotNull(commitId, "commitId");
         return getObjectDatabase().getCommit(commitId);
@@ -225,6 +234,17 @@ public class Repository {
             throw new RuntimeException(e);
         }
         return tree;
+    }
+    
+    public boolean treeExists(final ObjectId id) {
+        try {
+            getObjectDatabase().getCached(id, WrappedSerialisingFactory.getInstance().createRevTreeReader(getObjectDatabase()));
+        } catch (IllegalArgumentException e) {
+            return false;
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
+        return true;
     }
 
     public ObjectId getRootTreeId() {

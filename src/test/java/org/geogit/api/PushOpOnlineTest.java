@@ -4,8 +4,6 @@
  */
 package org.geogit.api;
 
-import java.io.IOException;
-
 import org.geogit.test.MultipleRepositoryTestCase;
 
 public class PushOpOnlineTest extends MultipleRepositoryTestCase {

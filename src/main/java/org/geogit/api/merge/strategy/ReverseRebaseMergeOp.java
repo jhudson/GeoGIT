@@ -57,9 +57,10 @@ public class ReverseRebaseMergeOp extends AbstractMergeOp {
 		 * Grab old head
 		 */
 		RevCommit oldHead;
-		if (!ObjectId.NULL.equals(getRepository().getHead().getObjectId())) {
-			oldHead = getRepository().getCommit(
-					getRepository().getHead().getObjectId());
+		
+		Ref head = getRepository().getHead();
+		if (!ObjectId.NULL.equals(head.getObjectId())) {
+			oldHead = getRepository().getCommit(getRepository().getHead().getObjectId());
 		} else {
 			rebase();
 			return mergeResult;
@@ -74,7 +75,6 @@ public class ReverseRebaseMergeOp extends AbstractMergeOp {
 		if (Iterators.contains(s, oldHead)) { /* rebase */
 			rebase();
 		} else { /* merge - new commit head and add parents of both branches */
-
 			/**
 			 * New head
 			 */
