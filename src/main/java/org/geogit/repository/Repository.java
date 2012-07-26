@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 TOPP - www.openplans.org. All rights reserved.
+/* Copyright (c) 2011-2012 TOPP - www.openplans.org. All rights reserved.
  * This code is licensed under the LGPL 2.1 license, available at the root
  * application directory.
  */
@@ -165,6 +165,11 @@ public class Repository {
         return getObjectDatabase().getBlob(objectId);
     }
     
+    /**
+     * Test if a blob exists in the object database
+     * @param id the ID of the blob in the object database
+     * @return true if the blob exists with the parameter ID, false otherwise
+     */
     public boolean blobExists(final ObjectId id) {
     	try {
     		getObjectDatabase().getBlob(id);
@@ -236,6 +241,11 @@ public class Repository {
         return tree;
     }
     
+    /**
+     * Test if a tree exists in the object database
+     * @param id the ID of the tree in the object database
+     * @return true if the tree exists with the parameter ID, false otherwise
+     */
     public boolean treeExists(final ObjectId id) {
         try {
             getObjectDatabase().getCached(id, WrappedSerialisingFactory.getInstance().createRevTreeReader(getObjectDatabase()));

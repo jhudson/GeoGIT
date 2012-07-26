@@ -15,6 +15,10 @@ import org.geogit.storage.ObjectInserter;
 import org.geogit.storage.WrappedSerialisingFactory;
 import org.geotools.util.logging.Logging;
 
+/**
+ * A utility object to help insert new Commits, Trees, Blobs into the object database
+ * @author jhudson
+ */
 public class PayloadUtil {
 
     Repository repository;
@@ -36,12 +40,17 @@ public class PayloadUtil {
     }
 
     public FetchResult applyPayloadTo(String branchName, IPayload payload) throws Exception {
-        
+        /*
+         * The results of what has been added to the object database 
+         */
     	FetchResult result = new FetchResult();
     	
         int commits = 0;
-        int deltas = 0;
-
+        int deltas = 0; /*fancy name for blobs*/
+        
+        /*
+         * Used to write objects into the object database 
+         */
         WrappedSerialisingFactory fact = WrappedSerialisingFactory.getInstance();
         ObjectInserter objectInserter = getRepository().newObjectInserter();
 
@@ -50,13 +59,15 @@ public class PayloadUtil {
         	return result;
         }
         
-        /**
+        /*
          * Update the local repos commits
          */
         for (RevCommit commit : payload.getCommitUpdates()) {
-        	/*ignore anything that is already in the repository - its likely this situation is
-        	 *a commit that has been committed by this repository and pushed back to the server
-        	 * - and so we already have it*/
+        	/*
+        	 * ignore anything that is already in the repository - its likely this situation is
+        	 * a commit that has been committed by this repository and pushed back to the server
+        	 * - and so we already have it
+        	 */
         	if (!getRepository().commitExists(commit.getId())) {
         		commits++;
             	ObjectId commitId = objectInserter.insert(fact.createCommitWriter(commit));
@@ -66,10 +77,15 @@ public class PayloadUtil {
         	}
         }
 
-        /**
+        /*
          * Update the local repos trees
          */
         for (RevTree tree : payload.getTreeUpdates()) {
+        	/*
+        	 * ignore anything that is already in the repository - its likely this situation is
+        	 * a commit that has been committed by this repository and pushed back to the server
+        	 * - and so we already have it
+        	 */
         	if (!getRepository().treeExists(tree.getId())){
         		ObjectId treeId = objectInserter.insert(fact.createRevTreeWriter(tree));
             	getRepository().getRefDatabase().put(new Ref(branchName, treeId, TYPE.TREE));
@@ -78,10 +94,15 @@ public class PayloadUtil {
         	}
         }
 
-        /**
+        /*
          * Update the local repos blobs
          */
         for (RevBlob blob : payload.getBlobUpdates()) {
+        	/*
+        	 * ignore anything that is already in the repository - its likely this situation is
+        	 * a commit that has been committed by this repository and pushed back to the server
+        	 * - and so we already have it
+        	 */
         	if (!getRepository().blobExists(blob.getId())){
         		deltas++;
             	ObjectId blobId = objectInserter.insert(new BlobWriter((byte[]) blob.getParsed()));
@@ -90,18 +111,20 @@ public class PayloadUtil {
         	}
         }
 
-        /**
-         * Update the local repos tags, there are none... for (RevTag tag: payload.getTagUpdates())
-         * { deltas++; ObjectId tagId = objectInserter.insert(new RevTagWriter(tag)); Ref ref = new
-         * Ref(remote.getName(), tagId, TYPE.TAG); getRepository().getRefDatabase().put(ref); }
-         */
-
         LOGGER.info("Remote: counted " + commits + " commits (" + deltas + " deltas), done.");
         LOGGER.info("Added " + commits + " new commits added to repository");
         LOGGER.info("Added " + deltas + " new deltas added to repository");
 
-        /**
-         * Update the local repos branch refs for the remote
+        /*
+         * Update the local repos branch refs for the remote so the branch head is 
+         * pointing at the correct commit
+         *  
+         * for (RevTag tag: payload.getTagUpdates()) { 
+         * 		deltas++; 
+         * 		ObjectId tagId = objectInserter.insert(new RevTagWriter(tag)); 
+         * 		Ref ref = new Ref(remote.getName(), tagId, TYPE.TAG); 
+         * 		getRepository().getRefDatabase().put(ref); 
+         * }
          */
         for (String name : payload.getBranchUpdates().keySet()) {
             Ref ref = payload.getBranchUpdates().get(name);
