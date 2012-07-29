@@ -148,7 +148,7 @@ public class LogOp extends AbstractGeoGitOp<Iterator<RevCommit>> {
             if (this.since == null) {
                 oldestCommitId = ObjectId.NULL;
             } else {
-                if (!repository.commitExists(this.since)) {
+                if (!ObjectId.NULL.equals(this.since) && !repository.commitExists(this.since)) {
                     throw new IllegalStateException("Provided 'since' commit id does not exist: "
                             + since.toString());
                 }

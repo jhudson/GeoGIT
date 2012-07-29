@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 TOPP - www.openplans.org. All rights reserved.
+/* Copyright (c) 2011-2012 TOPP - www.openplans.org. All rights reserved.
  * This code is licensed under the LGPL 2.1 license, available at the root
  * application directory.
  */
@@ -164,6 +164,20 @@ public class Repository {
     public RevObject getBlob(ObjectId objectId) {
         return getObjectDatabase().getBlob(objectId);
     }
+    
+    /**
+     * Test if a blob exists in the object database
+     * @param id the ID of the blob in the object database
+     * @return true if the blob exists with the parameter ID, false otherwise
+     */
+    public boolean blobExists(final ObjectId id) {
+    	try {
+    		getObjectDatabase().getBlob(id);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+        return true;
+    }
 
     private RevObject parse(final Ref ref) {
         final ObjectDatabase objectDatabase = getObjectDatabase();
@@ -207,7 +221,7 @@ public class Repository {
         }
         return true;
     }
-
+    
     public RevCommit getCommit(final ObjectId commitId) {
         Preconditions.checkNotNull(commitId, "commitId");
         return getObjectDatabase().getCommit(commitId);
@@ -225,6 +239,22 @@ public class Repository {
             throw new RuntimeException(e);
         }
         return tree;
+    }
+    
+    /**
+     * Test if a tree exists in the object database
+     * @param id the ID of the tree in the object database
+     * @return true if the tree exists with the parameter ID, false otherwise
+     */
+    public boolean treeExists(final ObjectId id) {
+        try {
+            getObjectDatabase().getCached(id, WrappedSerialisingFactory.getInstance().createRevTreeReader(getObjectDatabase()));
+        } catch (IllegalArgumentException e) {
+            return false;
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
+        return true;
     }
 
     public ObjectId getRootTreeId() {

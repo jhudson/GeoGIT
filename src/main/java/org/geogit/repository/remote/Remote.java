@@ -1,4 +1,4 @@
-/* Copyright (c) 2011 TOPP - www.openplans.org. All rights reserved.
+/* Copyright (c) 2011-2012 TOPP - www.openplans.org. All rights reserved.
  * This code is licensed under the LGPL 2.1 license, available at the root
  * application directory.
  */
@@ -10,15 +10,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
-
-import org.apache.http.util.ByteArrayBuffer;
-import org.geogit.api.ObjectId;
-import org.geogit.api.Ref;
-import org.geogit.api.RevBlob;
-import org.geogit.api.RevCommit;
-import org.geogit.api.RevObject.TYPE;
-import org.geogit.api.RevTree;
-
 import org.geogit.repository.remote.payload.IPayload;
 import org.geogit.repository.remote.payload.Payload;
 
@@ -64,22 +55,36 @@ public class Remote extends AbstractRemote {
 
         StringBuffer branchBuffer = new StringBuffer();
 
+        /*
+         * Create a string to send to the geogit server in the form of:
+         * BRANCH_NAME:UUID,...
+         */
         for (String branchName : branchHeads.keySet()) {
             branchBuffer.append(branchName + ":" + branchHeads.get(branchName) + ",");
         }
 
         String branches = branchBuffer.toString();
 
+        /*
+         * remote the last ',' 
+         */
         if (branches.length() > 0) {
             branches = branches.substring(0,branches.length() - 1);
         }
 
+        /*
+         * Use the http client to communicate with the server geogit
+         */
         DefaultHttpClient httpclient = new DefaultHttpClient();
 
         try {
             HttpGet httpget = new HttpGet(location + "?branches=" + branches);
             HttpResponse response = httpclient.execute(httpget);
             HttpEntity entity = response.getEntity();
+            /*
+             * The NetworkIO class knows how to translate an input stream of bytes into a payload 
+             * that GeoGit understands.
+             */
             payload = NetworkIO.receivePayload(entity.getContent());
         } catch (Exception e) {
             e.printStackTrace();

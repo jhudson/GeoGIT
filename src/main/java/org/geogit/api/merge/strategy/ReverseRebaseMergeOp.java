@@ -49,23 +49,32 @@ public class ReverseRebaseMergeOp extends AbstractMergeOp {
 	public MergeResult call() throws Exception {
 		MergeResult mergeResult = new MergeResult();
 
+		/*
+		 * just in case
+		 */
 		if (branch == null) {
 			return mergeResult;
 		}
 
-		/**
-		 * Grab old head
+		/*
+		 * Grab old head - this will be used to find all the new 
+		 * commits above what our current head is.
 		 */
 		RevCommit oldHead;
-		if (!ObjectId.NULL.equals(getRepository().getHead().getObjectId())) {
-			oldHead = getRepository().getCommit(
-					getRepository().getHead().getObjectId());
+		
+		Ref head = getRepository().getHead();
+		if (!ObjectId.NULL.equals(head.getObjectId())) {
+			oldHead = getRepository().getCommit(getRepository().getHead().getObjectId());
 		} else {
+			/*
+			 * current head is 000...000 so just grab the top commit - its now the index. 
+			 * rebase to it
+			 */
 			rebase();
 			return mergeResult;
 		}
 
-		/**
+		/*
 		 * Work out if this is a rebase or a merge
 		 */
 		LogOp l = new LogOp(getRepository());
@@ -74,25 +83,24 @@ public class ReverseRebaseMergeOp extends AbstractMergeOp {
 		if (Iterators.contains(s, oldHead)) { /* rebase */
 			rebase();
 		} else { /* merge - new commit head and add parents of both branches */
-
-			/**
+			/*
 			 * New head
 			 */
 			final ObjectId commitId;
 			final RevCommit branchHead;
 			{
-				/**
+				/*
 				 * Grab branch head parents
 				 */
 				branchHead = getRepository().getCommit(branch.getObjectId());
 
-				/**
+				/*
 				 * Grab the branch split
 				 */
 				RevCommit branchSplit = MergeUtils.findBranchCommitSplit(
 						branchHead, getRepository());
 
-				/**
+				/*
 				 * Set the parents to the current master head commit - thus
 				 * moving it to 'above' the head
 				 */
@@ -102,13 +110,13 @@ public class ReverseRebaseMergeOp extends AbstractMergeOp {
 
 				CommitBuilder cb = new CommitBuilder();
 
-				/**
+				/*
 				 * Merge the trees
 				 */
 				ObjectId treeId = mergeTrees(oldHead.getId(),
 						branchHead.getId());
 
-				/**
+				/*
 				 * add the parents
 				 */
 				List<ObjectId> parents = Arrays.asList(branchHead.getId());
@@ -116,7 +124,7 @@ public class ReverseRebaseMergeOp extends AbstractMergeOp {
 				cb.setTreeId(treeId);
 				cb.setMessage(this.comment);
 
-				/**
+				/*
 				 * insert the new commit
 				 */
 				ObjectInserter objectInserter = getRepository()
@@ -126,13 +134,13 @@ public class ReverseRebaseMergeOp extends AbstractMergeOp {
 								cb.build(ObjectId.NULL)));
 			}
 
-			/**
+			/*
 			 * Update the head
 			 */
 			getRepository().getRefDatabase().put(
 					new Ref(Ref.HEAD, commitId, TYPE.COMMIT));
 
-			/**
+			/*
 			 * diff the changes
 			 */
 			DiffOp diffOp = new DiffOp(getRepository());
@@ -141,6 +149,9 @@ public class ReverseRebaseMergeOp extends AbstractMergeOp {
 
 			while (diffs.hasNext()) {
 				DiffEntry diff = diffs.next();
+				/*
+				 * This might be a little over zealous - what about ChangeType.ADD and ChangeType.DELETE?
+				 */
 				if (diff.getType() == ChangeType.MODIFY) {
 					mergeResult.addDiff(diff);
 				}

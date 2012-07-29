@@ -118,7 +118,11 @@ public class FirstInMergeOp extends AbstractMergeOp {
 
             while (diffs.hasNext()) {
                 DiffEntry diff = diffs.next();
-                if (diff.getType()==ChangeType.MODIFY){
+                /*
+                 * This might need to be changed to add the ChangeType.ADD and ChangeType.Delete, 
+                 * there is no real reason they are missing here?
+                 */
+                if (diff.getType()==ChangeType.MODIFY) {
                     mergeResult.addDiff(diff);
                 }
             }
