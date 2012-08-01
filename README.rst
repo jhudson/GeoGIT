@@ -41,6 +41,10 @@ Any additional build profiles are documented in the root `pom.xml`:pom.xml .
 
 If you would like to work in Eclipse use of the `m2eclipse plugin <http://www.sonatype.org/m2eclipse>`_ recommended.
 
+Please carefully apply the code formatting options in the buld/eclipse/formatter.xml file. These are the standard
+Java formatting options with 100 character line length for both code and comments, and 4 spaces for indentation.
+It is also recommended to use the code templates from build/eclipse/codetemlates.xml.
+
 Participation
 =============
 
