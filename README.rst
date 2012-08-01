@@ -32,7 +32,7 @@ Online tests, require a geogit endpoint, are available using::
 
   mvn -Ponline
 
-Corertura is configufred for a test coverage report::
+Cobertura is configured for a test coverage report::
 
   mvn cobertura:cobertura
   open target/site/cobertura/index.html
@@ -63,3 +63,4 @@ Project resources:
 Additional resources:
 
 * `guava-libraries <http://code.google.com/p/guava-libraries/>`_
+
