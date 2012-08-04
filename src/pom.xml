@@ -6,8 +6,15 @@
   <groupId>org.geogit</groupId>
   <artifactId>geogit</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
   <name>GeoGit</name>
+
+ <scm>
+  <connection>scm:git:git@github.com:opengeo/GeoGit.git</connection>
+  <developerConnection>scm:git:[fetch=]git://github.com/opengeo/GeoGit.git[push=]git@github.com:opengeo/GeoGit.git</developerConnection>
+  <url>https://github.com/opengeo/GeoGit</url>
+ </scm>
+
   <!--
   
   Build Instructions and Profiles
@@ -78,10 +85,6 @@
       </snapshots>
     </repository>
   </repositories>
-
-  <!--pluginRepositories> <pluginRepository> <id>codehaus-snapshot-plugins</id> <name>codehaus-shapshot-plugins</name> <url>http://snapshots.repository.codehaus.org/</url> 
-    <snapshots> <enabled>true</enabled> </snapshots> <releases> <enabled>false</enabled> </releases> </pluginRepository> </pluginRepositories -->
-
 
   <properties>
     <gt.version>9-SNAPSHOT</gt.version>
@@ -188,101 +191,6 @@
     </dependencies>
   </dependencyManagement>
 
-  <dependencies>
-    <dependency>
-      <!-- used for LRUMap, can be removed once/if AbstractObjectDatabase uses an alternate/external caching mechanism -->
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.vividsolutions</groupId>
-      <artifactId>jts</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-opengis</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-referencing</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-epsg-hsql</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.geotools</groupId>
-      <artifactId>gt-main</artifactId>
-    </dependency>
-    <dependency>
-      <!-- Google Common Libraries. Featuring com.google.collect collection classes -->
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.ning</groupId>
-      <artifactId>compress-lzf</artifactId>
-    </dependency>
-
-    <!-- Berkeley DB JE -->
-    <dependency>
-      <groupId>com.sleepycat</groupId>
-      <artifactId>je</artifactId>
-    </dependency>
-
-    <!-- dependency> <groupId>com.amazonaws</groupId> <artifactId>aws-java-sdk</artifactId> </dependency -->
-
-    <!-- Test scope dependencies -->
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.8.2</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>xmlunit</groupId>
-      <artifactId>xmlunit</artifactId>
-      <version>1.3</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.caucho</groupId>
-      <artifactId>resin-hessian</artifactId>
-      <version>4.0.20</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-core</artifactId>
-      <version>3.0.5.RELEASE</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
-      <version>3.0.5.RELEASE</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpclient</artifactId>
-      <version>4.1.2</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpcore</artifactId>
-      <version>4.1.3</version>
-    </dependency>
-  </dependencies>
-
   <distributionManagement>
     <repository>
       <id>opengeo</id>
@@ -293,18 +201,6 @@
   </distributionManagement>
 
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-      </resource>
-    </resources>
-    <testResources>
-      <testResource>
-        <directory>src/test/resources</directory>
-      </testResource>
-    </testResources>
-
-    <!-- http://www.ibiblio.org/maven2/org/apache/maven/wagon/ -->
     <extensions>
       <extension>
         <groupId>org.apache.maven.wagon</groupId>
@@ -396,4 +292,8 @@
       </properties>
     </profile>
   </profiles>
+
+  <modules>
+   <module>core</module>
+  </modules>
 </project>

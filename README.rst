@@ -26,6 +26,7 @@ Build
 
 GeoGit is built using Maven::
   
+  cd src
   mvn clean install
 
 Online tests, require a geogit endpoint, are available using::
