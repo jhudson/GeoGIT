@@ -122,7 +122,7 @@ display: none;
 }
 
 .wrap {
-width: 990px;
+width: 95%;
 margin: 0 auto; 
 padding: 0;
 }
@@ -135,15 +135,14 @@ background: #fff url(./chrome/header-bg.png) 0 100% repeat-x;
 }
 
 #main {
-background: #fff url(./chrome/main-bg.png) repeat-x;
+
 }
 
 #content {
-width: 740px; /*790px total*/
+width: 75%; /*790px total*/
 float: left;
 margin: -3px 0 0 0;
 padding: 16px 28px 0 22px;
-background: #fff url(./chrome/content-bg.png) repeat-x;
 color: #262523;
 font-size: 1.2em;
 }
