@@ -209,14 +209,15 @@ QA-Plan Checklist
 *****************
 
 Do the selected activities in the QA Strategy provide enough assurance that the project will meet it's quality goals?
+  Not yet, we're at the early stages of planning and the plan needs to be reviewed by different stakeholders.
   ..  Yes, if all activities are carried out as planned, we are confident that the quality goals will be satisfied. We will, of course, adjust this plan as needed.
   .. No, this plan leaves open several quality risks that have been noted in the Risk Management section of the Project Plan.
-  Not yet, we're at the early stages of planning and the plan needs to be reviewed by different stakeholders.
-  
+
+
 Have human resources been allocated to carry out the QA activities?
+  Not completely. They should be identified and listed as "pending" in the Resource Needs document.
   .. Yes, human resources have been allocated. They are listed in the Resource Needs document.
   .. No, human resources have not been allocated. They are listed as "pending" in the Resource Needs document.
-  Not completely. They should be identified and listed as "pending" in the Resource Needs document.
   
 Have machine and software resources been allocated as needed for the QA activities?
   Yes, the QA team will use desktop machines and servers that are already allocated to them. The QA/Integration server location and access mechanisms should be documented.
@@ -224,7 +225,7 @@ Have machine and software resources been allocated as needed for the QA activiti
   .. No, needed machine and software resources are listed as pending in the Resource Needs document.
   
 Has this QA Plan been communicated to the development team and other stakeholders?
+  No, most stakeholders are not aware of and have not agreed upon the quality goals and planned QA activities for this release. This is a risk that is noted in the Risk Management section of the Project Plan.
   .. Yes, everyone is aware of our prioritized quality goals for this release and understands how their work will help achieve those goals. Feedback is welcome.
   .. Yes, this document is being posted to the project website. Feedback is welcome.
-  No, most stakeholders are not aware of and have not agreed upon the quality goals and planned QA activities for this release. This is a risk that is noted in the Risk Management section of the Project Plan.
 
