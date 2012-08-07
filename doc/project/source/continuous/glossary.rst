@@ -9,12 +9,6 @@ This is a dictionary of terms defined as they are used during the project.
 
 .. glossary::
 
- DAG
-  `Directed acyclic graph <http://en.wikipedia.org/wiki/Directed_acyclic_graph>`_.
- 
- CLI
-  `Command Line Interface <http://en.wikipedia.org/wiki/Command-line_interface>`_
-
 Standard Terms
 **************
 
@@ -39,7 +33,21 @@ Process Terms
 
  System Testing
   `System testing <http://en.wikipedia.org/wiki/System_testing>`_ is a software testing practice conducted on a complete, integrated system to evaluate the system's compliance with its specified requirements.
+
+Software Development Terms
+==========================
+
+.. glossary:: 
+
+ DAG
+  `Directed acyclic graph <http://en.wikipedia.org/wiki/Directed_acyclic_graph>`_.
  
+ CLI
+  `Command Line Interface <http://en.wikipedia.org/wiki/Command-line_interface>`_
+
+ Scriptability
+   The ability to be driven programmatically as well as interactively.
+   
 Development Tool Terms
 ======================
 .. glossary::

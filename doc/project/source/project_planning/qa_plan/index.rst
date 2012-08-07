@@ -126,7 +126,7 @@ QA Strategy
      - The QA team will author and maintain a detailed written suite of manual tests to test the entire system through the user interface. This plan will be detailed enough that a person could repeatably carry out the tests from the test suite document and other associated documents. 
    * - Automated system testing
      - 100% of specified requirements
-     - The QA team will use a system test automation tool to author and maintain a suite of test scripts to test the entire system through the user/programming interface. Ideally the library will support `scriptability <http://en.wiktionary.org/wiki/scriptability>`_ natively which will ease the writing of automatic system tests.
+     - The QA team will use a system test automation tool to author and maintain a suite of test scripts to test the entire system through the user/programming interface. Ideally the library will support :term:`scriptability` natively which will ease the writing of automatic system tests.
    * - Regression testing
      - Continuous
      - Developers run all unit tests before each commit. A continuous integration monitor will run all unit tests upon each commit.
