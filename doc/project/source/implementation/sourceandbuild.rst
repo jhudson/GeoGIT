@@ -17,7 +17,7 @@ Include test cases demonstrating functionality, contributions are expected to pa
 Project resources
 *****************
 
-Join the `GeoGit Group <https://groups.google.com/a/opengeo.org/group/geogit/>` and talk to us early. Do not take the
+Join the `GeoGit Group <https://groups.google.com/a/opengeo.org/group/geogit/>`_ and talk to us early. Do not take the
 risk of your contribution being rejected or needing major modifications because you didn't engage in the community
 and its rules early in your development cycle.
 

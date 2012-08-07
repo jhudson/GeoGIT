@@ -18,7 +18,7 @@ Back in September 2010, there were some `interesting discussions <http://osgeo-o
 The question of whether something similar to “git” exists is timely because ``git`` and other `distributed version management systems <http://en.wikipedia.org/wiki/Distributed_revision_control>`_ arose in the last years making a big impact in how source code is managed, and it becomes natural to ask if these benefits could be achieved for the geospatial data domain. The first instinctive reaction is to question whether such an existing tool could be used directly to manage geospatial data, and a quick assessment of the technology makes it clear that though “possible” it would not be practical because of three fundamental differences in the problem domain:
 
 * **Data volume**: source code management systems won't scale well for the sheer size of information that a geospatial dataset may encompass. `SCM <http://en.wikipedia.org/wiki/Source_Control_Management>`_'s work with plain files on disk and scale well up to a couple dozen thousand files, then their performance degrade too much due to a variety of reasons, most notably the stress imposed to the disk caches for “working tree” lookups and memory constraints.
-* **Data representation**: source management systems are intrinsically prepared to work with text files as the unit of work, and so the algorithms to identify differences between two versions of the same file. To do so, ``git`` works with canonical internal representations of each text file, so that it can compare any two versions of the same file by merely comparing the `SHA1 <http://en.wikipedia.org/wiki/SHA-1>`_ hash of their *contents*. Geospatial data is best represented (at least for storage and processing) in binary form and the unit of work would be a *Feature* instead of a text file, and hence the geo-data version management system should work with a binary internal representation of a Feature that allows for easy diff'ing between two versions of the same Feature.
+* **Data representation**: source management systems are intrinsically prepared to work with text files as the unit of work, and so the algorithms to identify differences between two versions of the same file. To do so, ``git`` works with canonical internal representations of each text file, so that it can compare any two versions of the same file by merely comparing the :term:`SHA-1` hash of their *contents*. Geospatial data is best represented (at least for storage and processing) in binary form and the unit of work would be a *Feature* instead of a text file, and hence the geo-data version management system should work with a binary internal representation of a Feature that allows for easy diff'ing between two versions of the same Feature.
 * **Data distribution**: source code is usually organized in directories forming a more or less deep tree of directories and files, producing small internal representations of each tree. Geo-data, on the contrary, is organized in very flat namespaces with potentially lots of items for a single data set or “leaf tree node”, making it impractical to hold such a large tree representation in memory at once.
 
 There is also another fundamental difference between how source code management tools and existing geo-data management approaches work, that would be worth considering and trying to solve for the geospatial domain: the task of **managing source code is totally orthogonal to the task of working on the source code**, allowing developers to chose the best tool for the job, like in using emacs or eclipse as coding environments, regardless of if the version history is tracked by svn, git, CVS, etc. Conversely, all geo-data versioning systems so far are tightly coupled to the storage mechanisms and the tools to work with the data, generally forcing the use of a specific database and edit tools, imposing a workflow, and even the modification of the original data structures to account for extra information needed by the versioning system, further complicating the proliferation of a collaboration tool outside very constrained environments.
@@ -60,6 +60,11 @@ Disposable experimentation:
 Notably, when you push to a remote repository, you do not have to push all of your branches. You can only share one of your branches and not all of them. This tends to free people to try new ideas without worrying about having to plan how and when they are going to merge it in or share it with others.
 
 
+Spatially Enabled
+=================
+
+GeoGit is about geospatial datasets, so spatial-awareness is key to its functionality. Change sets have a notion of what geographic region they were applied to. Common revision control operations such as listing changes, checking out a subset of a dataset, pulling changes from a remote repository, and finding differences between two versions of a dataset allow for a spatial filter to be specified.
+
 Small and Fast
 ==============
 
@@ -93,6 +98,10 @@ Auditable
 
 Every commit in GeoGit contains information about who and when performed that change. Even when the author is not the same person that applied the change, that information is available. So its easy to check who exactly performed a change and when, listing or reverting all the changes made by a given user, and so forth.
 
+Scalable
+========
+
+GeoGit is meant to operate on a wide spectrum of platforms, where there's a Java 6 runtime environment, including Android tablets and cell phones, to desktops and workstations to high end servers for the disemination and collaboration on large geospatial data repositories.
 
 .. toctree::
    :maxdepth: 2

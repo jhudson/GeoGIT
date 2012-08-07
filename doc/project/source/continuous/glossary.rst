@@ -47,7 +47,10 @@ Software Development Terms
 
  Scriptability
    The ability to be driven programmatically as well as interactively.
-   
+ 
+ SHA-1
+    `SHA-1 <http://en.wikipedia.org/wiki/SHA-1>`_ is a cryptographic hash function. SHA stands for "secure hash algorithm". SHA-1 is the most widely used of the existing SHA hash functions, and is employed in several widely used applications and protocols 
+    
 Development Tool Terms
 ======================
 .. glossary::
