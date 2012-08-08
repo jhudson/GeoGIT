@@ -9,6 +9,23 @@ This is a dictionary of terms defined as they are used during the project.
 
 .. glossary::
 
+ ArcSDE
+  `ArcSDE <http://en.wikipedia.org/wiki/ArcSDE>`_ (Spatial Database Engine) is a software server gateway that adds spatial data support on top of a variety of relational databases. ArcSDE is produced and marketed by Esri as part of its ArcGIS Server software. 
+
+ FGDB
+  `FGDB <http://webhelp.esri.com/arcgisdesktop/9.2/index.cfm?topicname=types_of_geodatabases>`_ (a.k.a. FileGDB, formally **File Geodatabase**) is "a collection of various types of GIS datasets held in a file system folder." 
+  FGDB is closed source. A C++ "`public API <http://resources.arcgis.com/content/geodatabases/10.0/file-gdb-api>`_" is provided by Esri.
+  There exist open source `GDAL Bindings <http://www.gdal.org/ogr/drv_filegdb.html>`_ for FGDB based on the public API. 
+  
+ Oracle Spatial
+  `Oracle Spatial <http://en.wikipedia.org/wiki/Oracle_Spatial>`_ is a component of the Oracle Database, which adds geographic and location-data in a native type within an Oracle database.
+  
+ PostGIS
+  `PostGIS <http://en.wikipedia.org/wiki/PostGIS>`_  is an open extension to the PostgreSQL object-relational database that adds support for geographic types and operations following the Simple Features for SQL specification from the Open Geospatial Consortium (OGC). 
+   
+ Shapefile
+  `Shapefile <http://en.wikipedia.org/wiki/Shapefile>`_ is a popular geospatial vector data format for geographic information systems software.
+
 Standard Terms
 **************
 
@@ -39,22 +56,40 @@ Software Development Terms
 
 .. glossary:: 
 
+ AOP
+  `Aspect Oriented Programming <http://en.wikipedia.org/wiki/Aspect-oriented_programming>`_  is a programming paradigm which aims to increase modularity by allowing the separation of cross-cutting concerns. AOP forms a basis for aspect-oriented software development.
+ 
  DAG
-  `Directed acyclic graph <http://en.wikipedia.org/wiki/Directed_acyclic_graph>`_.
+  `Directed acyclic graph <http://en.wikipedia.org/wiki/Directed_acyclic_graph>`_ is a directed graph with no directed cycles. That is, it is formed by a collection of vertices and directed edges, each edge connecting one vertex to another, such that there is no way to start at some vertex v and follow a sequence of edges that eventually loops back to v again.
  
  CLI
-  `Command Line Interface <http://en.wikipedia.org/wiki/Command-line_interface>`_
+  `Command Line Interface <http://en.wikipedia.org/wiki/Command-line_interface>`_ is a means of interaction with a computer program where the user (or client) passes commands in the form of a line of text (a command line).
 
+ CRUD
+  `CRUD <http://en.wikipedia.org/wiki/Create,_read,_update_and_delete>`_ stands for `create,read,update,delete` as the four basic functions of persistent storage.
+ 
  Scriptability
-   The ability to be driven programmatically as well as interactively.
+  The ability to be driven programmatically as well as interactively.
  
  SHA-1
-    `SHA-1 <http://en.wikipedia.org/wiki/SHA-1>`_ is a cryptographic hash function. SHA stands for "secure hash algorithm". SHA-1 is the most widely used of the existing SHA hash functions, and is employed in several widely used applications and protocols 
+   `SHA-1 <http://en.wikipedia.org/wiki/SHA-1>`_ is a cryptographic hash function. SHA stands for "secure hash algorithm". SHA-1 is the most widely used of the existing SHA hash functions, and is employed in several widely used applications and protocols 
+ 
+ SSL
+  `SSL <http://en.wikipedia.org/wiki/Secure_Sockets_Layer>`_  is a cryptographic protocol that provide communication security over the Internet, using asymmetric cryptography for key exchange, symmetric encryption for privacy, and message authentication codes for message integrity.
+ 
+ REST
+  `Representational state transfer <http://en.wikipedia.org/wiki/Representational_state_transfer>`_ is a style of software architecture for distributed systems that uses HTTP as its transport layer and leverages its methods to implement :term:`CRUD` operations.
+ 
+ Transaction
+  See `Transaction <http://en.wikipedia.org/wiki/Transaction_processing>`_.
     
 Development Tool Terms
 ======================
 .. glossary::
 
+ Android
+  `Android <http://en.wikipedia.org/wiki/Android_(operating_system)>`_  is a Linux-based operating system for mobile devices such as smartphones and tablet computers. It is developed by the `Open Handset Alliance <http://en.wikipedia.org/wiki/Open_Handset_Alliance>`_, led by Google.
+ 
  Eclipse
   Eclipse is perhaps the most popular free Java Development Environment or IDE originally developed by IBM and provided by the `Eclipse Foundation <http://www.eclipse.org/>`_. 
  

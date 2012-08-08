@@ -9,16 +9,46 @@ The statement of user needs documents and explains the actual desires of stakeho
 Agreed Goals
 ************
 
-Environment
-***********
+All stakeholders have agreed on the :ref:`general_project_goals`.
 
 
 Stakeholders / Actors
 *********************
 
+ .. todo:: List and describe the stakeholders for this product. These can be named individuals or roles that people play. For each stakeholder, list/rank their key needs. Consider the expected technical expertise of the stakeholders and how often they are likely to use the system, as well as key strengths, weaknesses, preferences, or other characteristics. Use a greater-than sign to indicate inheritance among types of actors. TIP: To get information on types of users, you can talk to actual users. You may also want to talk to user surrogates (people who work with users), such as domain experts, technical trainers, technical support staff, technical writers, supervisors of users, and your own sales and marketing department. You can find clues in manuals and marketing materials for competing products.
+
+.. _actor_dp:
+
+Data Publisher
+==============
+(DP) Data Publishers are individuals or agencies that wish to make their versioned geospatial data repositories available to others. They set up a GeoGit end point on a server and provide the URL of their repositories to the public.
+
+
+.. _actor_erv:
+
+
+Emergency Response Volunteer (ERV)
+==================================
+
+Emergency Response Volunteers are people with low technical and GIS background that volunteer to form part of a `crowdsourcing <http://en.wikipedia.org/wiki/Crowdsourcing>`_ group to
+
+
+.. _actor_erp:
+
+
+Emergency Response Planner
+==========================
+Emergency Response Planners see
+
+
+Environment
+***********
+
 
 User Stories
 ************
+
+
 
 
 Performance and Capacity Needs

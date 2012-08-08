@@ -25,8 +25,10 @@ There is also another fundamental difference between how source code management 
 
 Finally, what's compelling about following the ``git`` principles and basic design to build a geospatial distributed version control system, is that the basics of ``git``'s architecture are really simple yet, very powerful. The immutability of the objects and the separation of concerns between an object's contents and its metadata (name, location, etc) makes the object model really suitable for a wide variety of target platforms, from handheld devices to cloud servers.
 
-Goal
-****
+.. _general_project_goals: 
+
+General Project Goals
+*********************
 
 The project will produce a distributed geo-data versioning system that enables different collaboration workflows without imposing the technology restrictions that current approaches, proprietary and open source, encompass.
 
