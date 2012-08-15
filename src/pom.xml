@@ -84,6 +84,14 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+    <repository>
+      <id>mapfish</id>
+      <name>mapfish</name>
+      <url>http://dev.mapfish.org/maven/repository/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
   </repositories>
 
   <properties>
@@ -133,6 +141,16 @@
       </dependency>
       <dependency>
         <groupId>org.geotools</groupId>
+        <artifactId>gt-cql</artifactId>
+        <version>${gt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
+        <artifactId>gt-property</artifactId>
+        <version>${gt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geotools</groupId>
         <artifactId>gt-main</artifactId>
         <version>${gt.version}</version>
         <exclusions>
@@ -142,6 +160,16 @@
           </exclusion>
         </exclusions>
       </dependency>
+      <dependency>
+        <groupId>com.fasterxml.uuid</groupId>
+        <artifactId>java-uuid-generator</artifactId>
+        <version>3.1.2</version>
+      </dependency>
+      <dependency>
+        <groupId>com.caucho</groupId>
+        <artifactId>resin-hessian</artifactId>
+        <version>4.0.20</version>
+      </dependency>      
       <dependency>
         <!-- Google Common Libraries. Featuring com.google.collect collection classes -->
         <groupId>com.google.guava</groupId>
@@ -333,5 +361,6 @@
 
   <modules>
    <module>core</module>
+   <module>datastore</module>
   </modules>
 </project>
