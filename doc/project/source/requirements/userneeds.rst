@@ -11,28 +11,6 @@ Agreed Goals
 
 All stakeholders have agreed on the :ref:`general_project_goals`.
 
-Actors
-******
-
-.. list-table:: Actors Grid
-   :widths: 10 10 50 
-   :header-rows: 1
-
-   * - ID 
-     - Name
-     - Documentation
-   * - AC01
-     - Owner
-     - Every GeoGit user is an owner of his own repositories.
-       As such, an Owner can create and manage repositories, set them up online for sharing, grant and revoke access to collaborators
-   * - AC02
-     - Contributor
-     - A Contributor is an Owner that also has read-only access to other Owners repositories. As such, it can clone, copy-cat, or fetch data from remote repositories not owned by him, incorporate others changes to its own repository. A Contributor is not allowed to modify a remote repository he doesn't own in any way.
-       It can send patches to the repository owner, and when/if applied, proper credit is given to the Contributor as the commit's "author", while whomever performed the commit will be the "committer"
-   * - AC03
-     - Collaborator
-     - A Collaborator is a Contributor for a remote repository not owned by himself, that also has permission to directly modify the repository through a "push" operation. "Push" operations on remote repositories are used to apply changesets between branches in the local and remote repository with common history (fast forward), and can also be used to upload new branches, tags, or delete them.
-
 User Stories
 ************
 
