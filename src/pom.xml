@@ -84,6 +84,14 @@
         <enabled>false</enabled>
       </snapshots>
     </repository>
+    <repository>
+      <id>mapfish</id>
+      <name>mapfish</name>
+      <url>http://dev.mapfish.org/maven/repository/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
   </repositories>
 
   <properties>
@@ -333,5 +341,6 @@
 
   <modules>
    <module>core</module>
+   <module>datastore</module>
   </modules>
 </project>
