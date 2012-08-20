@@ -5,68 +5,41 @@ Software Requirements Specification
 
 This SRS precisely defines the software product that will be built. Decisions made in writing the SRS are based on information in the :ref:`proposal` and :ref:`user_needs` documents. The SRS sets requirements that must be satisfied by the system design. The SRS is verified and validated by activities outlined in the :ref:`qa_plan`.
 
+Actors
+******
+
+.. _Owner:
+
+Owner
+=====
+
+Every GeoGit user is an owner of his own repositories. As such, an Owner can create and manage repositories, set them up online for sharing, grant and revoke access to collaborators.
+
+.. _Contributor:
+
+Contributor
+===========
+
+A Contributor is an Owner that also has read-only access to other Owners repositories. As such, it can clone, sparse-clone, or fetch data from remote repositories not owned by him, incorporate others changes to its own repository. A Contributor is not allowed to modify a remote repository he doesn't own in any way. It can send patches to the repository owner, and when/if applied, proper credit is given to the Contributor as the commit's "author", while whomever performed the commit will be the "committer".
+
+
+.. _Collaborator:
+
+Collaborator
+============
+
+A Collaborator is a Contributor for a remote repository not owned by himself, that also has permission to directly modify the repository through a "push" operation. "Push" operations on remote repositories are used to apply changesets between branches in the local and remote repository with common history (fast forward), and can also be used to upload new branches, tags, or delete them.
+
 Use Cases
 *********
 
 .. image:: img/use_cases.png
 
+For more detail see:
+
 .. toctree:: :maxdepth: 2 
 
     use_case_suite
-
-
-Actors Grid
-***********
-
-.. list-table::
-   :widths: 10 10 50 
-   :header-rows: 1
-
-   * - ID 
-     - Name
-     - Documentation
-   * - .. _Owner:
-
-       AC01
-     - Owner
-     - Every GeoGit user is an owner of his own repositories.
-       As such, an Owner can create and manage repositories, set them up online for sharing, grant and revoke access to collaborators
-   * - .. _Contributor:
-   
-       AC02
-     - Contributor
-     - A Contributor is an Owner that also has read-only access to other Owners repositories. As such, it can clone, copy-cat, or fetch data from remote repositories not owned by him, incorporate others changes to its own repository. A Contributor is not allowed to modify a remote repository he doesn't own in any way.
-       It can send patches to the repository owner, and when/if applied, proper credit is given to the Contributor as the commit's "author", while whomever performed the commit will be the "committer"
-   * - .. _Collaborator:
-   
-       AC03
-     - Collaborator
-     - A Collaborator is a Contributor for a remote repository not owned by himself, that also has permission to directly modify the repository through a "push" operation. "Push" operations on remote repositories are used to apply changesets between branches in the local and remote repository with common history (fast forward), and can also be used to upload new branches, tags, or delete them.
-     
-Use Case Grid
-=============
-
-
-.. list-table::
-   :widths: 10 30 10 10 10 10 10 10 
-   :header-rows: 1 
-   
-   * - ID 
-     - Name 
-     - Primary Actors
-     - Rank
-     - Use Case Status
-     - Implementation Status
-     - Difficulty
-     - Priority
-   * - UC01
-     - Create repository  
-     - `Owner`_
-     - High
-     - Base
-     - Started
-     - Easy
-     - High
 
 Functional Requirements
 ***********************

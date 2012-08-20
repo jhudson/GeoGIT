@@ -11,10 +11,14 @@ Agreed Goals
 
 All stakeholders have agreed on the :ref:`general_project_goals`.
 
+
+.. _user_stories:
+
+
 User Stories
 ************
 
-.. user_story_01:
+.. _user_story_01:
 
 User Story 01: **Basic workflow**
 =================================
@@ -33,7 +37,13 @@ When done, he re-runs the `import` command for each of the shapefiles.
 
 Using the `status` command he can see the ids of the features that have been added, removed, and deleted on each feature type. Decides to ditch the changes made to the `roads` feature type, so uses the `checkout` command to re-establish the repository version of the modified roads onto the working tree. Now, in order to provide different commit messages to the changes made to each of the reminding feature types, uses the `add` command with the path to the `buildings` feature type to stage the changes made to buildings and the `commit` message to effectively persist those changes to the repository, and finally does the same for the changes made to the `rivers` feature type.
 
-.. user_story_02: 
+**Related Use Cases:**
+
+.. image:: img/us01_deps.png
+
+------
+
+.. _user_story_02: 
 
 User Story 02: **Publish - Clone - Pull**
 =========================================
@@ -44,13 +54,13 @@ Ben is given the publication URL for the `chile_osm` repository and clones it to
 
 Alice performs a couple commits to the repository, then Ben uses the geogit `pull` command with the name of the remote repository as argument to fetch Alice's changes to his clone. The GeoGit command line interface notifies Ben that the `master` branch has been synchronized with the upstream version, and how many changes to features have been recorded.
 
+**Related Use Cases:**
+
+.. image:: img/us02_deps.png 
+
 ------
 
-Related Use Cases:
-
-* :ref:`uc_01`
-
-.. user_story_03:
+.. _user_story_03:
 
 User Story 03: **Contributing with patch files**
 ================================================
@@ -62,6 +72,14 @@ This patch file is in a GeoGit specific format and contains the differences betw
 The patch file works as a single changeset, regardless of how many commits were between the two chosen points in history. Still, when creating the patch file, an optional commit message can be provided so that when the remote repository owner applies it, GeoGit knows what the original patche's author intention was. Additionally, the GeoGit automatically set the author name and email address as part of the patch file metadata.
 
 When Rob receives the patch file, he first checks whether the patch would cleanly apply to his working tree, and if so, he applies the patch. The resulting commit names John as the author of the changeset and Ben as the committer. If the patch file didn't contain a commit message, Ben has to provide one. Or if it did contain a commit message Ben can chose to ignore it and provide one he things applies better.
+
+**Related Use Cases:**
+
+.. image:: img/us03_deps.png 
+
+------
+
+.. _user_story_04:
 
 User Story 04: **"Partial cloning" with spatial filter**
 ========================================================
@@ -80,9 +98,17 @@ As a result, the new local repository is completely different than the original 
 
 * commits that partially satisfy the spatial filter are fetched, but only the features changed that do satisfy the spatial filter are fetched
 
-Yet the new 'copy cat' repository contains enough metadata information as to know how to reconcile its information with the "upstream" repository.
+Yet the new 'sparse cloned' repository contains enough metadata information as to know how to reconcile its information with the "upstream" repository.
 
-When the field worker comes back with changes on the 'copy cat' repository, she can pull from, and push to, the upstream repository as easily as if it were a normal `clone`.
+When the field worker comes back with changes on the 'sparse cloned' repository, she can pull from, and push to, the upstream repository as easily as if it were a normal `clone`.
+
+**Related Use Cases:**
+
+.. image:: img/us04_deps.png 
+
+------
+
+.. _user_story_05:
 
 User Story 05: **Reverting bad actor's contributions**
 ======================================================
@@ -97,6 +123,14 @@ With that list at hand, the `revert` command with an option not to automatically
 
 When finished, all the changes from the bad actor are staged and the whole reverse patch is applied with a single commit.
 
+**Related Use Cases:**
+
+.. image:: img/us05_deps.png 
+
+------
+
+.. _user_story_06:
+
 User Story 06: **Establishing fixed dataset versions (tagging)**
 ================================================================
 
@@ -107,6 +141,14 @@ When that time comes, a `tag` is created against the current state of the `maste
 This `tag` represents a whole snapshot of the repository at a given point in time.
 
 Finally, the `diff` command between this year's tag and last year's is used with an option to generate statistics about how many changes have been made over the course of the year, for reporting purposes.
+
+**Related Use Cases:**
+
+.. image:: img/us06_deps.png 
+
+------
+
+.. _user_story_07:
 
 User Story 07: **Basic branching and merging**
 ==============================================
@@ -128,8 +170,15 @@ Meanwhile, some other changes have been made to the company's `master` branch.
 Mike pulls the company's `master` branch to his clone's `master` branch, and switches to the `proposal` branch. In order to apply the change in the proposal branch on top of the latest changes to `master`, he performs a `rebase` on the `proposal` branch, which re-writes the history of this branch adding his changeset at the top of the history. Given no conflicts arised while rebasing, he switches back to the `master` branch and performs a `merge` of the `proposal` branch onto the `master`, and pushes his `master` branch to the company's official repository.
 
 
-User Story 08: **Solving Merge Conflicts**
-==========================================
+**Related Use Cases:**
+
+.. image:: img/us07_deps.png 
+
+------
+
+.. _user_story_08:
+
+User Story 08: **Solving Merge Conflicts** ==========================================
 
 Object has both attributes and geometry. 2 users modify the same object.
 
@@ -154,6 +203,14 @@ When resolving a conflict over a non geometry attribute, the user can choose whi
 When resolving a conflict over a geometry attribute, the user can chose which of the two versions to apply, or to keep the original value, or to apply the geometric **union** of either pair of geometries. When applying a union geometry, if the resulting geometry does not comply to the geometry attribute's `geometry type` (e.g. attribute type is `polygon` but result is `multipolygon`) then the conflict is not resolved.
 
 
+**Related Use Cases:**
+
+.. image:: img/us08_deps.png 
+
+------
+
+.. _user_story_09:
+
 User Story 09: **Applying changes from third parties**
 ======================================================
 
@@ -177,6 +234,14 @@ Chris indicates the merge tool to respect the change from company 1 and ignore t
 
 The rebase process finishes with no more merge conflicts and Chris merges the changes back to his `master` branch, which is then published online by pushing to the company's official repository.
 
+**Related Use Cases:**
+
+.. image:: img/us09_deps.png 
+
+------
+
+.. _user_story_10:
+
 User Story 10: **Changing FeatureType definition**
 ==================================================
 
@@ -186,6 +251,14 @@ Once done, the GeoGit `import` command is used to copy over the new features to 
 
 Now the company decides to rename the feature type `Buildings` to `Constructions`. To do so, the operator uses the GeoGit `mv` command to change the feature type name. The `status` command shows all `Buildings` features have been moved to the *`Contuction`* feature type. The operator realizes he's made a mistake in naming the new feature type: *Contuction* instead of *Constructions*, and uses the `reset` command with the `--hard` option to revert everything and go back to the initial state. Now correctly moves `Buildings` to `Constructions` performs a commit. As a result, the new tree is written to the repository, but absolutely no change to any stored version of the features needs to be made.
 
+
+**Related Use Cases:**
+
+.. image:: img/us10_deps.png 
+
+------
+
+.. _user_story_11:
 
 User Story 11: **Fully connected scenario - web client**
 ========================================================
@@ -199,6 +272,14 @@ The repositories reside on the server, and are managed through `GeoGit`'s REST A
 The web-client uses a combination of WMS/WMS-C and client-side vector editing for map composition, and has its own geometry and feature attribute edit tools. It can also ask the remote `GeoGit` API to provide differences between features at different repository snapshots or points in time in different formats, including image formats and GeoJSON/XML formats.
 
 
+**Related Use Cases:**
+
+.. image:: img/us11_deps.png 
+
+------
+
+.. _user_story_12:
+
 User Story 12: **Publication of versioned datasets through WFS and WMS**
 ========================================================================
 
@@ -209,6 +290,12 @@ The GeoGit GeoServer extension allows to configure multiple repositories, at the
 The GeoGit GeoServer extension seamlessly integrates revision control with the selected layers without requiring any structural change to the original datasets.
 
 If one dataset is modified by other means than GeoServer's WFS (say, a PostGIS layer is changed through QGis by directly accessing the PostGIS database), the GeoServer administrator has the choice to "re-synchronize" the PostGIS feature type with the GeoGit repository.
+
+**Related Use Cases:**
+
+.. image:: img/us12_deps.png 
+
+------
 
 Performance and Capacity Needs
 ******************************
