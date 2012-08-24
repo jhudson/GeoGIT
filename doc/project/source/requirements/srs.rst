@@ -5,8 +5,41 @@ Software Requirements Specification
 
 This SRS precisely defines the software product that will be built. Decisions made in writing the SRS are based on information in the :ref:`proposal` and :ref:`user_needs` documents. The SRS sets requirements that must be satisfied by the system design. The SRS is verified and validated by activities outlined in the :ref:`qa_plan`.
 
+Actors
+******
+
+.. _Owner:
+
+Owner
+=====
+
+Every GeoGit user is an owner of his own repositories. As such, an Owner can create and manage repositories, set them up online for sharing, grant and revoke access to collaborators.
+
+.. _Contributor:
+
+Contributor
+===========
+
+A Contributor is an Owner that also has read-only access to other Owners repositories. As such, it can clone, sparse-clone, or fetch data from remote repositories not owned by him, incorporate others changes to its own repository. A Contributor is not allowed to modify a remote repository he doesn't own in any way. It can send patches to the repository owner, and when/if applied, proper credit is given to the Contributor as the commit's "author", while whomever performed the commit will be the "committer".
+
+
+.. _Collaborator:
+
+Collaborator
+============
+
+A Collaborator is a Contributor for a remote repository not owned by himself, that also has permission to directly modify the repository through a "push" operation. "Push" operations on remote repositories are used to apply changesets between branches in the local and remote repository with common history (fast forward), and can also be used to upload new branches, tags, or delete them.
+
 Use Cases
 *********
+
+.. image:: img/use_cases.png
+
+For more detail see:
+
+.. toctree:: :maxdepth: 2 
+
+    use_case_suite
 
 Functional Requirements
 ***********************
@@ -21,8 +54,7 @@ Usability requirements
 
 Our main criteria for making the system usable is the difficulty of performing each high-frequency use case. Difficulty depends on the number of steps, the knowledge that the user must have at each step, the decisions that the user must make at each step, and the mechanics of each step (e.g., typing a book title exactly is hard, clicking on a title in a list is easy).
 
-The user facing interfaces (CLI, Java and REST APIs) should be as familiar as possible to users who have used other similar interfaces.
-Extensive on-line help should be provided.
+The user facing interfaces (CLI, Java and REST APIs) should be as familiar as possible to users who have used other similar interfaces. Extensive on-line help should be provided.
 
 Error messages should be informative enough as to give the user a clear indicatio of what inputs are erroneous, or aid in identifying bugs.
 
@@ -44,8 +76,7 @@ The combination of easy branching, diff'ing, and merging, and cryptographic hash
 Security requirements
 =====================
 
-Users of loccal repositories have full access to them.
-Authentication and authorization to access and change remote repositories is to be considered an orthogonal concern, and is not a requirement at this stage of the project life cycle.
+Users of loccal repositories have full access to them. Authentication and authorization to access and change remote repositories is to be considered an orthogonal concern, and is not a requirement at this stage of the project life cycle.
 
 It is anticipated, though, that a security layer, either in form of a proxy or :term:`AOP` advisors would form a security barrier to access a remote repository.
 
@@ -62,7 +93,7 @@ Maintainability and upgradability requirements
 
 Maintainability is our ability to make changes to the product over time. We need strong maintainability in order to retain our early adopters. We will address this by anticipating several types of change, and by carefully documenting our design and implementation.
 
-Upgradability is our ability to cost-effectively deploy new versions of the product to customers with minimal downtime or disruption. 
+Upgradability is our ability to cost-effectively deploy new versions of the product to customers with minimal downtime or disruption.
 
 Version upgrades to server side product should remain compatible with client side product that hasn't upgraded for at least two minor versions (e.g. `0.5.0` API should remain compatible with at least `0.4.0` and `0.3.0`). Versioning of the :ref:`REST <requirements_apis>` API and a complete set of unit and integration tests for each API version would do fine.
 
@@ -72,12 +103,12 @@ Also, we shall use data formats that include enough meta-data to allow us to rel
 Supportability and operability requirements
 ===========================================
 
-Supportability is our ability to provide cost effective technical support. 
+Supportability is our ability to provide cost effective technical support.
 
-* Product upgrades should be easy and backwards compatible. 
+* Product upgrades should be easy and backwards compatible.
 * The user guide and product documentation will include a troubleshooting guide and checklist of information to have at hand before contacting technical support.
 
-Operability is our ability to host and operate the software as an ASP (Application Service Provider). 
+Operability is our ability to host and operate the software as an ASP (Application Service Provider).
 
 The server side product features should help us achieve our goal of 99.9% uptime (at most 43 minutes downtime each month). Key features supporting that are the ability to do hot data backups, and application monitoring.
 
@@ -124,6 +155,5 @@ Application program interfaces (APIs)
 Data import and export requirements
 ===================================
 
-The system will support importing and exporting dataset snapshots from and to common geospatial data formats and major geospatial databases.
-Exporting to and importing from :term:`shapefile` and :term:`PostGIS` is required. :term:`Oracle Spatial`, :term:`FGDB`, and :term:`ArcSDE` is desired but non blocker.
+The system will support importing and exporting dataset snapshots from and to common geospatial data formats and major geospatial databases. Exporting to and importing from :term:`shapefile` and :term:`PostGIS` is required. :term:`Oracle Spatial`, :term:`FGDB`, and :term:`ArcSDE` is desired but non blocker.
 

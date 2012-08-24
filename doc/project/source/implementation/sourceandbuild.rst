@@ -8,25 +8,21 @@ Welcome to the GeoGit project, exploring the use of distributed management of sp
 Participation
 *************
 
-The project is hosted on github: https://github.com/opengeo/GeoGit 
+The project is hosted on github: https://github.com/opengeo/GeoGit
 
-Participation is encouraged using the github fork and pull request workflow. 
+Participation is encouraged using the github fork and pull request workflow.
 
 Include test cases demonstrating functionality, contributions are expected to pass tests and not break the build.
 
 Project resources
 *****************
 
-Join the `GeoGit Group <https://groups.google.com/a/opengeo.org/group/geogit/>`_ and talk to us early. Do not take the
-risk of your contribution being rejected or needing major modifications because you didn't engage in the community
-and its rules early in your development cycle.
+Join the `GeoGit Group <https://groups.google.com/a/opengeo.org/group/geogit/>`_ and talk to us early. Do not take the risk of your contribution being rejected or needing major modifications because you didn't engage in the community and its rules early in your development cycle.
 
 Issue tracking
-***************
+**************
 
-Bugs and improvement requests are tracked at the project's GitHub `issue tracker <https://github.com/opengeo/GeoGit/issues>`_.
-However, please speak to the mailing list first before filing bug reports just because. Core developers will be able
-to confirm a bug and ask you to file a bug report, or direct you to the solution if there's one already.
+Bugs and improvement requests are tracked at the project's GitHub `issue tracker <https://github.com/opengeo/GeoGit/issues>`_. However, please speak to the mailing list first before filing bug reports just because. Core developers will be able to confirm a bug and ask you to file a bug report, or direct you to the solution if there's one already.
 
 Licence Headers
 ***************
@@ -58,25 +54,22 @@ Online tests, require a geogit endpoint, are available using::
 
 Test coverage and continuous integration
 ****************************************
-   
-The `Cobertura Maven plugin <http://maven-plugins.sourceforge.net/maven-cobertura-plugin/>`_ is configured for a 
-test coverage report::
+
+The `Cobertura Maven plugin <http://maven-plugins.sourceforge.net/maven-cobertura-plugin/>`_ is configured for a test coverage report::
 
     $mvn cobertura:cobertura
     $open target/site/cobertura/index.html 
     
-Any additional build profiles are documented in the root `pom.xml`. 
+Any additional build profiles are documented in the root `pom.xml`.
 
 The build is actively monitored using `hudson <http://hudson.opengeo.org/hudson/view/geogit/>`_.
 
 Code formatting
 ***************
 
-Please carefully apply the code formatting options in the `buld/eclipse/formatter.xml` file. These are the 
-standard Java formatting options with 100 character line length for both code and comments, and 4 spaces for
-indentation. It is also recommended to use the code templates from `build/eclipse/codetemlates.xml`. 
+Please carefully apply the code formatting options in the `buld/eclipse/formatter.xml` file. These are the standard Java formatting options with 100 character line length for both code and comments, and 4 spaces for indentation. It is also recommended to use the code templates from `build/eclipse/codetemlates.xml`.
 
-Additional resources 
+Additional resources
 ********************
 
 * `guava-libraries <http://code.google.com/p/guava-libraries/>`_
