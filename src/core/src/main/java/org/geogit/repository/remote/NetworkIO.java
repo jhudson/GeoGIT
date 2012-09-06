@@ -99,7 +99,11 @@ public class NetworkIO {
         int trees = 0;
         for( RevTree tree : payload.getTreeUpdates() ) {
             output.write("T".getBytes());
-            output.write(tree.getId().getRawValue());         
+            if (tree.getId() == null) { /*Handle ObjectId.NULL*/
+            	output.write(ObjectId.NULL.getRawValue());
+            } else {
+            	output.write(tree.getId().getRawValue());
+            }
             ObjectWriter<RevTree> tw = factory.createRevTreeWriter(tree);
             ByteArrayOutputStream bufferedCount = new ByteArrayOutputStream();
             tw.write(bufferedCount);
