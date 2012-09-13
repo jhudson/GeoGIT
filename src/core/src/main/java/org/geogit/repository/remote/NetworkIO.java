@@ -98,19 +98,17 @@ public class NetworkIO {
 
         int trees = 0;
         for( RevTree tree : payload.getTreeUpdates() ) {
-            output.write("T".getBytes());
-            if (tree.getId() == null) { /*Handle ObjectId.NULL*/
-            	output.write(ObjectId.NULL.getRawValue());
-            } else {
+            if (tree.getId() != null) { /*Handle ObjectId.NULL - dont send it*/
+                output.write("T".getBytes());
             	output.write(tree.getId().getRawValue());
+            	ObjectWriter<RevTree> tw = factory.createRevTreeWriter(tree);
+                ByteArrayOutputStream bufferedCount = new ByteArrayOutputStream();
+                tw.write(bufferedCount);
+                output.write(Arrays.copyOf((String.valueOf(bufferedCount.size())).getBytes(), 10));
+                tw.write(output);
+                trees++;
+                //System.out.println( tree.getId() + " : " + bufferedCount.size() + " : " + tree);
             }
-            ObjectWriter<RevTree> tw = factory.createRevTreeWriter(tree);
-            ByteArrayOutputStream bufferedCount = new ByteArrayOutputStream();
-            tw.write(bufferedCount);
-            output.write(Arrays.copyOf((String.valueOf(bufferedCount.size())).getBytes(), 10));
-            tw.write(output);
-            trees++;
-            //System.out.println( tree.getId() + " : " + bufferedCount.size() + " : " + tree);
         }
         //System.out.println("  " + trees + " new trees");
 
