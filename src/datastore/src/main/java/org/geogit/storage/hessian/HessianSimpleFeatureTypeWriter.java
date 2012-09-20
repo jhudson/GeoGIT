@@ -17,10 +17,9 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import com.caucho.hessian.io.Hessian2Output;
 import com.google.common.base.Preconditions;
 
-public class HessianSimpleFeatureTypeWriter implements
-        ObjectWriter<SimpleFeatureType> {
+public class HessianSimpleFeatureTypeWriter implements ObjectWriter<SimpleFeatureType> {
 
-    private SimpleFeatureType type;
+    private final SimpleFeatureType type;
 
     public HessianSimpleFeatureTypeWriter(final SimpleFeatureType type) {
         Preconditions.checkNotNull(type);
@@ -32,13 +31,13 @@ public class HessianSimpleFeatureTypeWriter implements
         Hessian2Output hout = new Hessian2Output(out);
         try {
             hout.startMessage();
-            Name typeName = type.getName();
+            Name typeName = this.type.getName();
             hout.writeString(typeName.getNamespaceURI() == null ? "" : typeName.getNamespaceURI());
             hout.writeString(typeName.getLocalPart());
-            List<AttributeDescriptor> descriptors = type.getAttributeDescriptors();
+            List<AttributeDescriptor> descriptors = this.type.getAttributeDescriptors();
             hout.writeInt(descriptors.size());
-            for(AttributeDescriptor descriptor : descriptors) {
-                writeDescriptor(hout, descriptor);
+            for (AttributeDescriptor descriptor : descriptors) {
+                this.writeDescriptor(hout, descriptor);
             }
 
             hout.completeMessage();
@@ -60,7 +59,7 @@ public class HessianSimpleFeatureTypeWriter implements
      * <li>type namespace - String</li>
      * <li>type name - String</li>
      * </ol>
-     * If the entity type is a geometry, then there are additional fields, 
+     * If the entity type is a geometry, then there are additional fields,
      * <ol>
      * <li>geometry type - String</li>
      * <li>crs code - boolean</li>
@@ -69,36 +68,38 @@ public class HessianSimpleFeatureTypeWriter implements
      * 
      * @param hout
      */
-    private void writeDescriptor(Hessian2Output hout, AttributeDescriptor descriptor) throws IOException {
+    private void writeDescriptor(Hessian2Output hout, AttributeDescriptor descriptor)
+            throws IOException {
         AttributeType attrType = descriptor.getType();
-        GtEntityType type = GtEntityType.fromBinding(attrType.getBinding());
+        EntityType type = EntityType.fromBinding(attrType.getBinding());
         hout.writeInt(type.getValue());
         hout.writeBoolean(descriptor.isNillable());
         Name propertyName = descriptor.getName();
-        hout.writeString(propertyName.getNamespaceURI() == null ? "" : propertyName.getNamespaceURI());
+        hout.writeString(propertyName.getNamespaceURI() == null ? "" : propertyName
+                .getNamespaceURI());
         hout.writeString(propertyName.getLocalPart());
         hout.writeInt(descriptor.getMaxOccurs());
         hout.writeInt(descriptor.getMinOccurs());
         Name typeName = attrType.getName();
         hout.writeString(typeName.getNamespaceURI() == null ? "" : typeName.getNamespaceURI());
         hout.writeString(typeName.getLocalPart());
-        if(type.equals(GtEntityType.GEOMETRY) && attrType instanceof GeometryType) {
-            GeometryType gt = (GeometryType)attrType;
+        if (type.equals(EntityType.GEOMETRY) && attrType instanceof GeometryType) {
+            GeometryType gt = (GeometryType) attrType;
             hout.writeObject(gt.getBinding());
             CoordinateReferenceSystem crs = gt.getCoordinateReferenceSystem();
             String srsName;
-            if(crs == null) {
+            if (crs == null) {
                 srsName = "urn:ogc:def:crs:EPSG::0";
             } else {
                 srsName = CRS.toSRS(crs);
             }
-            if(srsName != null) {
+            if (srsName != null) {
                 hout.writeBoolean(true);
                 hout.writeString(srsName);
             } else {
                 String wkt;
-                if(crs instanceof Formattable) {
-                    wkt = ((Formattable)crs).toWKT(Formattable.SINGLE_LINE);
+                if (crs instanceof Formattable) {
+                    wkt = ((Formattable) crs).toWKT(Formattable.SINGLE_LINE);
                 } else {
                     wkt = crs.toWKT();
                 }

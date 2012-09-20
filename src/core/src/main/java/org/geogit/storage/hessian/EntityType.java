@@ -21,62 +21,124 @@ import com.vividsolutions.jts.geom.Geometry;
  * @author mleslie
  */
 enum EntityType implements Serializable {
-    STRING(0), BOOLEAN(1), BYTE(2), DOUBLE(3), BIGDECIMAL(4), FLOAT(5), INT(6), BIGINT(7), LONG(8), BOOLEAN_ARRAY(
-            11), BYTE_ARRAY(12), CHAR_ARRAY(13), DOUBLE_ARRAY(14), FLOAT_ARRAY(15), INT_ARRAY(16), LONG_ARRAY(
-            17), GEOMETRY(9), NULL(10), UNKNOWN_SERIALISABLE(18), UNKNOWN(19), UUID(20);
+    STRING(0, String.class), BOOLEAN(1, Boolean.class), BYTE(2, Byte.class), DOUBLE(3, Double.class), BIGDECIMAL(
+            4, BigDecimal.class), FLOAT(5, Float.class), SMALLINT(23, Short.class), INT(6,
+            Integer.class), BIGINT(7, BigInteger.class), LONG(8, Long.class), BOOLEAN_ARRAY(11,
+            boolean[].class), BYTE_ARRAY(12, byte[].class), CHAR_ARRAY(13, char[].class), DOUBLE_ARRAY(
+            14, double[].class), FLOAT_ARRAY(15, float[].class), INT_ARRAY(16, int[].class), LONG_ARRAY(
+            17, long[].class), GEOMETRY(9, Geometry.class), NULL(10, null), UNKNOWN_SERIALISABLE(
+            18, Serializable.class), UNKNOWN(19, null), UUID(20, java.util.UUID.class), DATE_UTIL(
+            21, java.util.Date.class), DATE_SQL(22, java.sql.Date.class);
 
     public static EntityType determineType(Object value) {
-        if (value == null)
+        if (value == null) {
             return NULL;
-        if (value instanceof String)
+        }
+        if (value instanceof String) {
             return STRING;
-        if (value instanceof Boolean)
+        }
+        if (value instanceof Boolean) {
             return BOOLEAN;
-        if (value instanceof Byte)
+        }
+        if (value instanceof Byte) {
             return BYTE;
-        if (value instanceof Double)
+        }
+        if (value instanceof Double) {
             return DOUBLE;
-        if (value instanceof BigDecimal)
+        }
+        if (value instanceof BigDecimal) {
             return BIGDECIMAL;
-        if (value instanceof Float)
+        }
+        if (value instanceof Float) {
             return FLOAT;
-        if (value instanceof Integer)
+        }
+        if (value instanceof Integer) {
             return INT;
-        if (value instanceof BigInteger)
+        }
+        if (value instanceof BigInteger) {
             return BIGINT;
-        if (value instanceof Long)
+        }
+        if (value instanceof Long) {
             return LONG;
-        if (value instanceof boolean[])
+        }
+        if (value instanceof boolean[]) {
             return BOOLEAN_ARRAY;
-        if (value instanceof byte[])
+        }
+        if (value instanceof byte[]) {
             return BYTE_ARRAY;
-        if (value instanceof char[])
+        }
+        if (value instanceof char[]) {
             return CHAR_ARRAY;
-        if (value instanceof double[])
+        }
+        if (value instanceof double[]) {
             return DOUBLE_ARRAY;
-        if (value instanceof float[])
+        }
+        if (value instanceof float[]) {
             return FLOAT_ARRAY;
-        if (value instanceof int[])
+        }
+        if (value instanceof int[]) {
             return INT_ARRAY;
-        if (value instanceof long[])
+        }
+        if (value instanceof long[]) {
             return LONG_ARRAY;
-        if (value instanceof java.util.UUID)
+        }
+        if (value instanceof java.util.UUID) {
             return UUID;
-        if (value instanceof Geometry)
+        }
+        if (value instanceof Geometry) {
             return GEOMETRY;
-        if (value instanceof Serializable)
+        }
+        if (value instanceof java.util.Date) {
+            return DATE_UTIL;
+        }
+        if (value instanceof java.sql.Date) {
+            return DATE_SQL;
+        }
+        if (value instanceof java.lang.Short) {
+            return SMALLINT;
+        }
+        if (value instanceof Serializable) {
             return UNKNOWN_SERIALISABLE;
+        }
         return UNKNOWN;
     }
 
     private int value;
 
-    private EntityType(int value) {
+    private Class binding;
+
+    private EntityType(int value, Class binding) {
         this.value = value;
+        this.binding = binding;
     }
 
     public int getValue() {
         return this.value;
+    }
+
+    public Class getBinding() {
+        return this.binding;
+    }
+
+    public static EntityType fromBinding(Class cls) {
+        if (cls == null) {
+            return NULL;
+        }
+        /*
+         * We're handling equality first, as some entity types are top-level catch-alls, and we
+         * can't rely on processing order to ensure the more specific cases are handled first.
+         */
+        for (EntityType type : EntityType.values()) {
+            if (type.binding != null && type.binding.equals(cls)) {
+                return type;
+            }
+        }
+        for (EntityType type : EntityType.values()) {
+            if (type.binding != null && type.binding.isAssignableFrom(cls)) {
+                return type;
+            }
+        }
+        return UNKNOWN;
     }
 
     /**
@@ -87,8 +149,9 @@ enum EntityType implements Serializable {
      */
     public static EntityType fromValue(int value) {
         for (EntityType type : EntityType.values()) {
-            if (type.value == value)
+            if (type.value == value) {
                 return type;
+            }
         }
         return null;
     }

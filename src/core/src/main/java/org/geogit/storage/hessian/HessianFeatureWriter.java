@@ -46,17 +46,19 @@ class HessianFeatureWriter implements ObjectWriter<Feature> {
         this.feat = feature;
     }
 
+    @Override
     public void write(final OutputStream out) throws IOException {
         Hessian2Output hout = new Hessian2Output(out);
         try {
             hout.startMessage();
             hout.writeInt(BlobType.FEATURE.getValue());
-            Collection<Property> props = feat.getProperties();
+            Collection<Property> props = this.feat.getProperties();
 
-            hout.writeString(feat.getType().getName().getURI());
+            hout.writeString(this.feat.getType().getName().getURI());
             hout.writeInt(props.size());
             for (Property p : props) {
-                writeProperty(hout, p);
+                //System.out.println("prop: " + p.getName());
+                this.writeProperty(hout, p);
             }
             hout.completeMessage();
         } finally {
@@ -80,9 +82,9 @@ class HessianFeatureWriter implements ObjectWriter<Feature> {
     private void writeProperty(final Hessian2Output out, Property prop) throws IOException {
         final Object value = prop.getValue();
         final EntityType type = EntityType.determineType(value);
-        
+
         out.writeInt(type.getValue());
-        
+
         switch (type) {
         case STRING:
             out.writeString((String) value);
@@ -143,7 +145,7 @@ class HessianFeatureWriter implements ObjectWriter<Feature> {
             out.writeBytes(bigBytes);
             break;
         case UUID:
-            UUID uuid = (UUID)value;
+            UUID uuid = (UUID) value;
             long most = uuid.getMostSignificantBits();
             long least = uuid.getLeastSignificantBits();
             out.writeLong(most);
@@ -168,6 +170,7 @@ class HessianFeatureWriter implements ObjectWriter<Feature> {
              */
             final OutStream wkbOut = new OutStream() {
 
+                @Override
                 public void write(byte[] buf, int len) throws IOException {
                     out.writeByteBufferPart(buf, 0, len);
                 }
