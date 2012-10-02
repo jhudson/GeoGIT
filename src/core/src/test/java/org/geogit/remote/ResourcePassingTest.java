@@ -365,7 +365,7 @@ public class ResourcePassingTest {
         this.printLogs(client, 1);
 
 		
-        logger.log(Level.WARNING, "++++++++++++++++++++++ Doing a push ++++++++++++++++++++++");
+        
         // insert local feature
         this.printLogs(client, 1);
         RevCommit revCommit =  this.insertAddCommit(client, this.sample2, "commited a new feature into site");
@@ -374,6 +374,7 @@ public class ResourcePassingTest {
         this.printLogs(server, 1);
         logger.log(Level.WARNING, "++++++++++++++++++++++ Doing a push ++++++++++++++++++++++");
          result3 = client.push().call();
+         logger.log(Level.WARNING, "++++++++++++++++++++++ Doing a second push no changes ++++++++++++++++++++++");
          this.printLogs(server, 2);
         assertEquals(STATUS.OK_APPLIED, result3.getStatus());
         result3 = client.push().call();
@@ -398,11 +399,6 @@ public class ResourcePassingTest {
         MergeResult result = client.pull().call();
         assertEquals(0, result.getDiffs());
         
-	}
-	
-	@Test
-	public void testMerge() throws Exception {
-		fail("Test not implemented.");
 	}
 	
     /**
