@@ -260,9 +260,9 @@ public class FetchResourceService extends AbstractHandler implements Runnable {
 		 * 
 		 * You will notice Ref.HEAD here, we **ONLY** handle pushes to HEAD - no branch support (yet)
 		 */
-		System.out.println("+++++++++++++++++++++++initial HEAD for remote server" + lr.getRepository().getHead().getObjectId());
+		logger.log(Level.FINE,"+++++++++++++++++++++++initial HEAD for remote server" + lr.getRepository().getHead().getObjectId());
 		String lastKnownHead = request.getHeader(Ref.HEAD);
-System.out.println("lastKnownHead check: " + lastKnownHead);
+		logger.log(Level.FINE,"lastKnownHead check: " + lastKnownHead);
 
 		/*
 		 * If this fails, do nothing... consider returning an error
@@ -330,7 +330,7 @@ System.out.println("lastKnownHead check: " + lastKnownHead);
 				}
 				
 			}
-			System.out.println("+++++++++++++++++++++++final HEAD for remote server " + lr.getRepository().getHead().getObjectId());
+			logger.log(Level.FINE,"+++++++++++++++++++++++final HEAD for remote server " + lr.getRepository().getHead().getObjectId());
 			response.setStatus(HttpServletResponse.SC_OK);
 
 			
