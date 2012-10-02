@@ -1,9 +1,6 @@
 package org.geogit.remote;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,7 +9,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,8 +20,6 @@ import org.geogit.api.PushResult;
 import org.geogit.api.PushResult.STATUS;
 import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
-import org.geogit.api.RevObject.TYPE;
-import org.geogit.api.config.RefIO;
 import org.geogit.api.merge.MergeResult;
 import org.geogit.repository.Repository;
 import org.geogit.repository.StagingArea;
@@ -40,9 +34,7 @@ import org.geotools.feature.NameImpl;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.WKTReader2;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
@@ -66,9 +58,6 @@ public class ResourcePassingTest {
 	protected static final String sampleNs = "http://geogit.sample";
     protected static final String sampleName = "Sample";
     protected static final String sampleTypeSpec = "st:String,it:Integer,pn:Point:srid=4326,db:Double";
-    private static String newString1 = "New String Value";
-    private static String newString2 = "Another new string";
-    private static String newString3 = "Third iteration change.";
     protected SimpleFeatureType sampleType;
 	private SimpleFeature sample1;
 	private SimpleFeature sample2;
@@ -90,7 +79,7 @@ public class ResourcePassingTest {
 		/*
 		 * Start the Fetch Resource Service to act as a remote repository.
 		 */
-		System.out.println("Starting service.");
+		logger.log(Level.INFO,"Starting service.");
 		File repoRootName = File.createTempFile("mock", "");
 		if(!repoRootName.delete()) {
 			throw new IOException("Could not delete " + repoRootName.getAbsolutePath());
@@ -103,21 +92,20 @@ public class ResourcePassingTest {
 		remoteEnvHome.mkdir();
 		localEnvHome = new File(repoRoot, LOCAL_ENV_HOME);
 		localEnvHome.mkdir();
-		fetch = new FetchResourceService(PORT, remoteEnvHome.getAbsolutePath(), INDEX_PATH, REPO_PATH);
-		Thread thread = new Thread(fetch);
-		thread.start();
+		//fetch = new FetchResourceService(PORT, remoteEnvHome.getAbsolutePath(), INDEX_PATH, REPO_PATH);
+		//Thread thread = new Thread(fetch);
+		//thread.start();
 	}
 	
 	
 	public static void tearDownClass() throws Exception {
-		System.out.println("Stopping service.");
+		logger.log(Level.INFO,"Stopping service.");
 		fetch.stop();
 	}
 	
 	private static File repoRoot;
-	private Repository localRepo;
-	//private File localRepoRoot;
 	private Repository remoteRepo;
+	//private Thread thread;
 	private static File localEnvHome;
 	private static File remoteEnvHome;
 
@@ -140,7 +128,6 @@ public class ResourcePassingTest {
 		fetch = new FetchResourceService(PORT, remoteEnvHome.getAbsolutePath(), INDEX_PATH, REPO_PATH);
 		Thread thread = new Thread(fetch);
 		thread.start();
-		
 		/*
 		 * Initialise test data type and features.
 		 */
@@ -155,33 +142,22 @@ public class ResourcePassingTest {
         this.sample3 = (SimpleFeature) this.feature(this.sampleType, idS3, "Sample String 3",
                 new Integer(81), "POINT (2 2)", new Double(78.2));
         this.sample3.getUserData().put(Hints.USE_PROVIDED_FID, Boolean.TRUE);
-        
-
-		
-	
-		
 		/*
 		 * Initialise remote repository.
-		 */
-
-		
+		 */		
 		File remoteRepositoryHome = new File(remoteEnvHome, REPO_PATH);
 		remoteRepositoryHome.mkdir();
 		File remoteIndexHome = new File(remoteEnvHome, INDEX_PATH);
 		remoteIndexHome.mkdir();
 		remoteRepo = RepositoryUtils.createRepository( remoteEnvHome, remoteRepositoryHome, remoteIndexHome);
 		remoteRepo.close();
-		
 		/*
 		 * Initialise local repository.
 		 */
-
-
 		File localRepositoryHome = new File(localEnvHome, REPO_PATH);
 		localRepositoryHome.mkdir();
 		File localIndexHome = new File(localEnvHome, INDEX_PATH);
 		localIndexHome.mkdir();
-		
 		
 		this.copySiteFromCentral();
 		System.out.println("finished setup");
@@ -189,37 +165,21 @@ public class ResourcePassingTest {
 	
     private void copySiteFromCentral() throws Exception {
 
-        if (this.remoteEnvHome.exists()) {
+        if (ResourcePassingTest.remoteEnvHome.exists()) {
             ResourcePassingTest.copyFile(remoteEnvHome, localEnvHome);
             Repository client = this.createRepo(localEnvHome.getAbsolutePath(), true);
             GeoGIT gg = new GeoGIT(client);
 
-            /*
-             * using a localremote object to handle a fetch from a HDD locally, can be done like this: 
-             */
-
-            //gg.remoteAddOp().setName("origin").setFetch(Ref.MASTER)
-            //       .setUrl(this.remoteEnvHome.getAbsolutePath()).call();
-
             gg.remoteAddOp().setName("origin").setFetch(Ref.MASTER)
             .setUrl(ResourcePassingTest.CENTRAL_URL).call();
-            
-            /*
-             * We need to write out a new ref for the remote 'branch' 
-             * - this is used when fetching updates
-             */
-//            Ref remoteRef = new Ref(Ref.REMOTES_PREFIX + Ref.ORIGIN + Ref.MASTER, gg.getRepository().getHead().getObjectId(), TYPE.REMOTE);
-//            gg.getRepository().updateRef(remoteRef);
-//            RefIO.writeRemoteRefs(gg.getRepository().getRepositoryHome(), "origin", Ref.HEAD, gg.getRepository().getHead().getObjectId());  //$NON-NLS-1$
-//            
 
             /*
              * some logging to visually check...
              */
             Repository server = this.createRepo(localEnvHome.getAbsolutePath(), false);
             GeoGIT serverGG = new GeoGIT(server);
-            System.out.println("+++++++++++++++++++++++++++ SERVER: " + serverGG.getRepository().getHead().getObjectId());
-            System.out.println("+++++++++++++++++++++++++++ CLIENT: " + gg.getRepository().getHead().getObjectId());
+            logger.log(Level.INFO,"+++++++++++++++++++++++++++ SERVER: " + serverGG.getRepository().getHead().getObjectId());
+            logger.log(Level.INFO,"+++++++++++++++++++++++++++ CLIENT: " + gg.getRepository().getHead().getObjectId());
 
             serverGG.getRepository().close();
             gg.getRepository().close();
@@ -257,13 +217,11 @@ public class ResourcePassingTest {
     }
     
     public static void copyFile(File src, File dest) throws IOException {
-
         if (src.isDirectory()) {
-
             // if directory not exists, create it
             if (!dest.exists()) {
                 dest.mkdir();
-                System.out.println("Directory copied from " + src + "  to " + dest);
+                logger.log(Level.INFO,"Directory copied from " + src + "  to " + dest);
             }
 
             // list all the directory contents
@@ -297,7 +255,7 @@ public class ResourcePassingTest {
 
             in.close();
             out.close();
-            System.out.println("File copied from " + src + " to " + dest);
+            logger.log(Level.INFO,"File copied from " + src + " to " + dest);
         }
     }
 	
@@ -305,6 +263,7 @@ public class ResourcePassingTest {
 	public void tearDown() throws Exception {
 		System.out.println("Stopping service.");
 		fetch.stop();
+		fetch = null;
 		
 	}
 	@Test
@@ -312,19 +271,17 @@ public class ResourcePassingTest {
 		Repository clientRepo = this.createRepo(localEnvHome.getAbsolutePath(), false);
 		GeoGIT client = new GeoGIT(clientRepo);
 		
-		Repository serverRepo = this.createRepo(this.remoteEnvHome.getAbsolutePath(), false);
+		Repository serverRepo = this.createRepo(ResourcePassingTest.remoteEnvHome.getAbsolutePath(), false);
 		GeoGIT server = new GeoGIT(serverRepo);
-		
 	        logger.log(Level.WARNING, "++++++++++++++++++++++ Doing a fetch ++++++++++++++++++++++");
 	        FetchResult result = client.fetch().call();
 	        assertEquals(0, result.getCommits());
 	        assertEquals(0, result.getTrees());
 	        assertEquals(0, result.getBlobs());
 	        assertEquals(1, result.getBranches());
-	        
+
 	        // insert remote feature
 	        this.printLogs(server, 0);
-	        
 	        this.insertAddCommit(server, this.sample1, "commited a new feature into site");
 	        this.printLogs(server, 1);
 	        
@@ -340,17 +297,15 @@ public class ResourcePassingTest {
 	public void testPush() throws Exception {
 		Repository clientRepo = this.createRepo(localEnvHome.getAbsolutePath(), false);
 		GeoGIT client = new GeoGIT(clientRepo);
-		
-		Repository serverRepo = this.createRepo(this.remoteEnvHome.getAbsolutePath(), false);
+
+		Repository serverRepo = this.createRepo(ResourcePassingTest.remoteEnvHome.getAbsolutePath(), false);
 		GeoGIT server = new GeoGIT(serverRepo);
-        
+
 		this.printLogs(server, 0);
 		this.printLogs(client, 0);
 		//insert remote
 		this.insertAddCommit(server, this.sample1, "commited a new feature into site");
         this.printLogs(server, 1);
-        
-
         
         logger.log(Level.WARNING, "++++++++++++++++++++++ Doing a push ++++++++++++++++++++++");
         PushResult result3 = client.push().call();
@@ -363,18 +318,17 @@ public class ResourcePassingTest {
         MergeResult result2 = client.pull().call();
         assertEquals(0, result2.getDiffs().size());
         this.printLogs(client, 1);
-
-		
         
         // insert local feature
         this.printLogs(client, 1);
         RevCommit revCommit =  this.insertAddCommit(client, this.sample2, "commited a new feature into site");
-        System.out.println("commit after local insert: " +revCommit.getId());
+        logger.log(Level.WARNING,"commit after local insert: " +revCommit.getId());
         this.printLogs(client, 2);
         this.printLogs(server, 1);
         logger.log(Level.WARNING, "++++++++++++++++++++++ Doing a push ++++++++++++++++++++++");
          result3 = client.push().call();
          logger.log(Level.WARNING, "++++++++++++++++++++++ Doing a second push no changes ++++++++++++++++++++++");
+         //Thread.sleep(4000);
          this.printLogs(server, 2);
         assertEquals(STATUS.OK_APPLIED, result3.getStatus());
         result3 = client.push().call();
@@ -385,20 +339,18 @@ public class ResourcePassingTest {
 	public void testPull() throws Exception {
 		Repository clientRepo = this.createRepo(localEnvHome.getAbsolutePath(), false);
 		GeoGIT client = new GeoGIT(clientRepo);
-		
-		Repository serverRepo = this.createRepo(this.remoteEnvHome.getAbsolutePath(), false);
+
+		Repository serverRepo = this.createRepo(ResourcePassingTest.remoteEnvHome.getAbsolutePath(), false);
 		GeoGIT server = new GeoGIT(serverRepo);
-        
+
         // insert remote feature
         this.printLogs(server, 0);
-        RevCommit revCommit =  this.insertAddCommit(server, this.sample1, "commited a new feature into site");
-
+        this.insertAddCommit(server, this.sample1, "commited a new feature into site");
+        //Thread.sleep(4000);
         this.printLogs(server, 1);
-        
         logger.log(Level.WARNING, "++++++++++++++++++++++ Doing a pull ++++++++++++++++++++++");
         MergeResult result = client.pull().call();
-        assertEquals(0, result.getDiffs());
-        
+        assertEquals(0, result.getDiffs().size());
 	}
 	
     /**
@@ -455,12 +407,12 @@ public class ResourcePassingTest {
         try {
             it = gg.log().call();
             int total = 0;
-            System.out.println("+++++++++++++COMMITS+++++++++++++");
+            logger.log(Level.WARNING,"+++++++++++++COMMITS+++++++++++++");
             while (it.hasNext()) {
-                System.out.println(it.next());
+            	logger.log(Level.WARNING,it.next().toString());
                 total++;
             }
-            System.out.println("+++++++++++++COMMITS+++++++++++++");
+            logger.log(Level.WARNING,"+++++++++++++COMMITS+++++++++++++");
             assertEquals(expectedLogs, total);
         } catch (Exception e) {
             e.printStackTrace();

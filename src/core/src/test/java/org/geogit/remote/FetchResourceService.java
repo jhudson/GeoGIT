@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.geogit.api.ObjectId;
 import org.geogit.api.PayloadUtil;
 import org.geogit.api.RebaseOp;
 import org.geogit.api.Ref;
@@ -23,14 +22,12 @@ import org.geogit.repository.remote.payload.IPayload;
 import org.geogit.repository.remote.payload.Payload;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.handler.AbstractHandler;
-import org.mortbay.jetty.handler.ContextHandler;
 
 public class FetchResourceService extends AbstractHandler implements Runnable {
 	private String versionedEnvironmentHome;
 	private String versionedIndexHome;
 	private String versionedRepositoryHome;
 	private int port;
-	
 	private Server server;
 
 	public FetchResourceService(int port, String versionedEnvironmentHome, 
@@ -48,25 +45,29 @@ public class FetchResourceService extends AbstractHandler implements Runnable {
 	
 	@Override
 	public void run() {
-		Server server = new Server(port);
-		
-		
-//		ContextHandler context = new ContextHandler();
-//		context.setContextPath(CONTEXT_PATH);
-//		context.setHandler(this);
-//		context.setResourceBase(".");
-//		context.setClassLoader(Thread.currentThread().getContextClassLoader());
-		
+		server = new Server(port);
 		server.setHandler(this);
 		
 		try {
 			server.start();
 			server.join();
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.toString());
 		}
 	}
+	
+	public void doStop() throws Exception{
+		if (server!=null){
+			server.stop();
+			server = null;
+		}
+	}
+	
+	
+	
+	
 
 	/**
 	 * The actual code that does the handling of requests.
@@ -268,10 +269,6 @@ public class FetchResourceService extends AbstractHandler implements Runnable {
 		 * If this fails, do nothing... consider returning an error
 		 */
 		if (lastKnownHead != null && !"".equals(lastKnownHead)) { 
-			/* 
-			 * Grab the UUID of the local repository HEAD UUID 
-			 */
-			ObjectId id = ObjectId.valueOf(lastKnownHead);
 
 			/*
 			 * Check it against the one send from the client
@@ -349,6 +346,7 @@ public class FetchResourceService extends AbstractHandler implements Runnable {
 		 */
 		logger.log(Level.WARNING,"+++++++++++++++++++++++++++++ DONE +++++++++++++++++++++++++++++");
 	}
+
 
 
 
