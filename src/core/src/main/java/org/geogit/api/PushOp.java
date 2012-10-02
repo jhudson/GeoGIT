@@ -4,6 +4,7 @@
  */
 package org.geogit.api;
 
+import java.io.File;
 import java.util.Map;
 
 import org.apache.http.HttpResponse;
@@ -57,10 +58,19 @@ public class PushOp extends AbstractGeoGitOp<PushResult> {
             post.setEntity(new PayloadEntity(payload));
 
             HttpResponse response = httpclient.execute(post);
-            if (response.getStatusLine().getStatusCode()!= HttpStatus.SC_OK){
+            if (response.getStatusLine().getStatusCode()== HttpStatus.SC_CONFLICT){
                 result.setStatus(PushResult.STATUS.CONFLICT);
-            } else {
+            } if (response.getStatusLine().getStatusCode()== HttpStatus.SC_EXPECTATION_FAILED){
+                result.setStatus(PushResult.STATUS.INCORRECT_PARAMETER);
+            } else if (response.getStatusLine().getStatusCode()== HttpStatus.SC_NOT_ACCEPTABLE){
+                result.setStatus(PushResult.STATUS.NO_CHANGE);
+            } else if (response.getStatusLine().getStatusCode()== HttpStatus.SC_OK) {
                 result.setStatus(PushResult.STATUS.OK_APPLIED);
+                
+                System.out.println(" trying to write commit: " + getRepository().getHead().getObjectId());
+                RefIO.writeRemoteRefs( getRepository().getRepositoryHome(), "origin",
+                		"HEAD", getRepository().getHead().getObjectId() );
+                
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -70,7 +70,7 @@ public class Remote extends AbstractRemote {
          */
         if (branches.length() > 0) {
             branches = branches.substring(0,branches.length() - 1);
-        }
+        } else branches="HEAD";
 
         /*
          * Use the http client to communicate with the server geogit

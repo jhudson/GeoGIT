@@ -50,6 +50,7 @@ public class FetchResourceService extends AbstractHandler implements Runnable {
 	public void run() {
 		Server server = new Server(port);
 		
+		
 //		ContextHandler context = new ContextHandler();
 //		context.setContextPath(CONTEXT_PATH);
 //		context.setHandler(this);
@@ -259,7 +260,9 @@ public class FetchResourceService extends AbstractHandler implements Runnable {
 		 * 
 		 * You will notice Ref.HEAD here, we **ONLY** handle pushes to HEAD - no branch support (yet)
 		 */
+		System.out.println("+++++++++++++++++++++++initial HEAD for remote server" + lr.getRepository().getHead().getObjectId());
 		String lastKnownHead = request.getHeader(Ref.HEAD);
+System.out.println("lastKnownHead check: " + lastKnownHead);
 
 		/*
 		 * If this fails, do nothing... consider returning an error
@@ -273,7 +276,7 @@ public class FetchResourceService extends AbstractHandler implements Runnable {
 			/*
 			 * Check it against the one send from the client
 			 */
-			if (!lr.getRepository().getHead().getObjectId().equals(id)) {
+			if (!lr.getRepository().getHead().getObjectId().toString().equals(lastKnownHead)) {
 				/*
 				 * Arc!! they differ, fail out.
 				 */
@@ -295,6 +298,7 @@ public class FetchResourceService extends AbstractHandler implements Runnable {
 				 */
 				Payload payload = NetworkIO.receivePayload(in);
 
+				
 				/*
 				 * Apply the payload to the local repository
 				 */
@@ -306,6 +310,7 @@ public class FetchResourceService extends AbstractHandler implements Runnable {
 				 *    HEAD pointer you need to do that - see the next line of code.
 				 */
 				payloadUtil.applyPayloadTo(Ref.HEAD, payload);
+				//response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE,"Nothing to update");
 
 				/*
 				 * Rebase to the new head - effectively move the HEAD pointer to the new top commit
@@ -314,8 +319,24 @@ public class FetchResourceService extends AbstractHandler implements Runnable {
 				/*
 				 * call it 
 				 */
+				Ref payloadHead = payload.getBranchUpdates().get(Ref.HEAD);
+				//ensure that head is not the same. If it is then we should send back a nothing updated message. 
+				//Caused by consecutive pushes without a commit.
+				if (lr.getRepository().getHead().getObjectId().equals(payloadHead.getObjectId())){
+					response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE,"Nothing to update");
+					response.flushBuffer();
+				} else {
 				rebase.include(payload.getBranchUpdates().get(Ref.HEAD)).call();
+				}
+				
 			}
+			System.out.println("+++++++++++++++++++++++final HEAD for remote server " + lr.getRepository().getHead().getObjectId());
+			response.setStatus(HttpServletResponse.SC_OK);
+
+			
+			response.flushBuffer();
+		} else {
+				response.sendError(HttpServletResponse.SC_EXPECTATION_FAILED,"last known commit is empty.");
 		}
 
 		/*

@@ -28,6 +28,17 @@ public class PushResult {
             public int value() {
                 return 1;
             }
+        }, INCORRECT_PARAMETER {
+            @Override
+            public int value() {
+                return 1;
+            }
+        } ,
+        NO_CHANGE {
+            @Override
+            public int value() {
+                return 1;
+            }
         };
 
         public abstract int value();
