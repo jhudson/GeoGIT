@@ -2,7 +2,6 @@ package org.geogit.storage.hessian;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.geogit.api.ObjectId;
@@ -24,24 +23,24 @@ import org.opengis.util.InternationalString;
 import com.caucho.hessian.io.Hessian2Input;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.vividsolutions.jts.geom.Geometry;
 
 public class HessianSimpleFeatureTypeReader implements ObjectReader<SimpleFeatureType> {
 
-    private Name typeName;
-    private SimpleFeatureTypeBuilder builder;
-    private FeatureTypeFactory typeFactory;
+    private final Name typeName;
+
+    private final SimpleFeatureTypeBuilder builder;
+
+    private final FeatureTypeFactory typeFactory;
 
     public HessianSimpleFeatureTypeReader(final Name typeName) {
         Preconditions.checkNotNull(typeName);
         this.typeName = typeName;
         this.builder = new SimpleFeatureTypeBuilder();
-        this.typeFactory = builder.getFeatureTypeFactory();
+        this.typeFactory = this.builder.getFeatureTypeFactory();
     }
 
     @Override
-    public SimpleFeatureType read(ObjectId id, InputStream rawData)
-            throws IOException {
+    public SimpleFeatureType read(ObjectId id, InputStream rawData) throws IOException {
         Hessian2Input hin = new Hessian2Input(rawData);
         try {
             hin.startMessage();
@@ -49,24 +48,23 @@ public class HessianSimpleFeatureTypeReader implements ObjectReader<SimpleFeatur
             String typeName = hin.readString();
             int attributeCount = hin.readInt();
             SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();
-            for(int i = 0; i < attributeCount; i++) {
+            for (int i = 0; i < attributeCount; i++) {
                 try {
-                    builder.add(readDescriptor(hin));
-                } catch(FactoryException ex) {
+                    builder.add(this.readDescriptor(hin));
+                } catch (FactoryException ex) {
                     Throwables.propagate(ex);
                 }
             }
             hin.completeMessage();
-            
-            builder.setName(new NameImpl(
-                    "".equals(typeNamespace) ? null : typeNamespace, typeName));
+
+            builder.setName(new NameImpl("".equals(typeNamespace) ? null : typeNamespace, typeName));
             SimpleFeatureType type = builder.buildFeatureType();
             return type;
         } finally {
             hin.close();
         }
     }
-    
+
     /**
      * The format will be written as follows:
      * <ol>
@@ -79,13 +77,15 @@ public class HessianSimpleFeatureTypeReader implements ObjectReader<SimpleFeatur
      * <li>type namespace - String</li>
      * <li>type name - String</li>
      * </ol>
-     * If the entity type is a geometry, then there is an additional (srid - String) field at the end.
+     * If the entity type is a geometry, then there is an additional (srid - String) field at the
+     * end.
      * 
      * @param hout
      */
-    private AttributeDescriptor readDescriptor(Hessian2Input hin) throws IOException, FactoryException {
+    private AttributeDescriptor readDescriptor(Hessian2Input hin) throws IOException,
+            FactoryException {
         int typeValue = hin.readInt();
-        GtEntityType type = GtEntityType.fromValue(typeValue);
+        EntityType type = EntityType.fromValue(typeValue);
         Class binding = type.getBinding();
         boolean nillable = hin.readBoolean();
         String pNamespace = hin.readString();
@@ -97,15 +97,15 @@ public class HessianSimpleFeatureTypeReader implements ObjectReader<SimpleFeatur
         String geomTypeName = null;
         String crsText = null;
         boolean crsCode = false;
-        if(GtEntityType.GEOMETRY.equals(type)) {
+        if (EntityType.GEOMETRY.equals(type)) {
             Object bObj = hin.readObject();
-            if(bObj instanceof Class) {
-                binding = (Class)bObj;
+            if (bObj instanceof Class) {
+                binding = (Class) bObj;
             }
             crsCode = hin.readBoolean();
             crsText = hin.readString();
         }
-        
+
         /*
          * Default values that are currently not encoded.
          */
@@ -115,19 +115,16 @@ public class HessianSimpleFeatureTypeReader implements ObjectReader<SimpleFeatur
         AttributeType superType = null;
         InternationalString description = null;
         Object defaultValue = null;
-        
-        
-        Name propertyName = new NameImpl(
-                "".equals(pNamespace) ? null : pNamespace, pName);
-        Name typeName = new NameImpl(
-                "".equals(tNamespace) ? null : tNamespace, tName);
-        
+
+        Name propertyName = new NameImpl("".equals(pNamespace) ? null : pNamespace, pName);
+        Name typeName = new NameImpl("".equals(tNamespace) ? null : tNamespace, tName);
+
         AttributeType attributeType;
         AttributeDescriptor attributeDescriptor;
-        if(GtEntityType.GEOMETRY.equals(type)) {
+        if (EntityType.GEOMETRY.equals(type)) {
             CoordinateReferenceSystem crs;
-            if(crsCode) {
-                if("urn:ogc:def:crs:EPSG::0".equals(crsText)) {
+            if (crsCode) {
+                if ("urn:ogc:def:crs:EPSG::0".equals(crsText)) {
                     crs = null;
                 } else {
                     crs = CRS.decode(crsText);
@@ -135,14 +132,19 @@ public class HessianSimpleFeatureTypeReader implements ObjectReader<SimpleFeatur
             } else {
                 crs = CRS.parseWKT(crsText);
             }
-            attributeType = typeFactory.createGeometryType(typeName, binding, crs, isIdentifiable, isAbstract, restrictions, superType, description);
-            attributeDescriptor = typeFactory.createGeometryDescriptor((GeometryType)attributeType, propertyName, minOccurs, maxOccurs, nillable, defaultValue);
+            attributeType = this.typeFactory.createGeometryType(typeName, binding, crs,
+                    isIdentifiable, isAbstract, restrictions, superType, description);
+            attributeDescriptor = this.typeFactory.createGeometryDescriptor(
+                    (GeometryType) attributeType, propertyName, minOccurs, maxOccurs, nillable,
+                    defaultValue);
         } else {
-            attributeType = typeFactory.createAttributeType(typeName, binding, isIdentifiable, isAbstract, restrictions, superType, description);
-            attributeDescriptor = typeFactory.createAttributeDescriptor(attributeType, propertyName, minOccurs, maxOccurs, nillable, defaultValue);
+            attributeType = this.typeFactory.createAttributeType(typeName, binding, isIdentifiable,
+                    isAbstract, restrictions, superType, description);
+            attributeDescriptor = this.typeFactory.createAttributeDescriptor(attributeType,
+                    propertyName, minOccurs, maxOccurs, nillable, defaultValue);
         }
         return attributeDescriptor;
-        
+
     }
 
 }
